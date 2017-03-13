@@ -32,7 +32,12 @@ if ($action == 'logout' && !empty($redirect)) {
     }
 
     // Finally, send user to the return URL.
-    redirect($redirect);
+    $url = parse_url($redirect);
+    $schemeok = isset($url['scheme']) && ($url['scheme'] === 'http' || $url['scheme'] === 'https');
+    $hostok = isset($url['host']) && $url['host'] === parse_url($CFG->wwwroot, PHP_URL_HOST);
+    if ($schemeok && $hostok) {
+        redirect($redirect);
+    }
 
 } else if (!empty($inputstream)) {
 
