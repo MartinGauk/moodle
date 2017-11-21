@@ -320,6 +320,8 @@ class course_edit_form extends moodleform {
                     array('itemtype' => 'course', 'component' => 'core'));
         }
 
+        $this->plugin_extend_course_edit_definition();
+
         // When two elements we need a group.
         $buttonarray = array();
         $classarray = array('class' => 'form-submit');
@@ -383,6 +385,8 @@ class course_edit_form extends moodleform {
                 $mform->removeElement('newsitems');
             }
         }
+
+        $this->plugin_extend_course_edit_definition_after_data();
     }
 
     /**
@@ -425,7 +429,57 @@ class course_edit_form extends moodleform {
             $errors = array_merge($errors, $formaterrors);
         }
 
+        $pluginerrors = $this->plugin_extend_course_edit_validation($data, $files);
+        if (!empty($pluginerrors)) {
+            $errors = array_merge($errors, $pluginerrors);
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Plugins can extend the settings form.
+     */
+    protected function plugin_extend_course_edit_definition() {
+        $callbacks = get_plugins_with_function('course_edit_definition', 'lib.php');
+        foreach ($callbacks as $type => $plugins) {
+            foreach ($plugins as $plugin => $pluginfunction) {
+                $pluginfunction($this, $this->_form);
+            }
+        }
+    }
+
+    /**
+     * Plugins can extend the settings form.
+     */
+    protected function plugin_extend_course_edit_definition_after_data() {
+        $callbacks = get_plugins_with_function('course_edit_definition_after_data', 'lib.php');
+        foreach ($callbacks as $type => $plugins) {
+            foreach ($plugins as $plugin => $pluginfunction) {
+                $pluginfunction($this, $this->_form);
+            }
+        }
+    }
+
+    /**
+     * Extend the validation function from any other plugin.
+     *
+     * @param stdClass $data The submitted form data.
+     * @param array $files uploaded files
+     * @return array $errors The list of errors keyed by element name.
+     */
+    protected function plugin_extend_course_edit_validation($data, $files) {
+        $errors = array();
+
+        $callbacks = get_plugins_with_function('course_edit_validation', 'lib.php');
+        foreach ($callbacks as $type => $plugins) {
+            foreach ($plugins as $plugin => $pluginfunction) {
+                $pluginerrors = $pluginfunction($this, $data, $files);
+                if (!empty($pluginerrors)) {
+                    $errors = array_merge($errors, $pluginerrors);
+                }
+            }
+        }
         return $errors;
     }
 }
-

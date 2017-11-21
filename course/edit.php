@@ -188,6 +188,13 @@ if ($editform->is_cancelled()) {
         $courseurl = new moodle_url('/course/view.php', array('id' => $course->id));
     }
 
+    $callbacks = get_plugins_with_function('course_edit_post_actions', 'lib.php');
+    foreach ($callbacks as $type => $plugins) {
+        foreach ($plugins as $plugin => $pluginfunction) {
+            $pluginfunction($editform, $course);
+        }
+    }
+
     if (isset($data->saveanddisplay)) {
         // Redirect user to newly created/updated course.
         redirect($courseurl);
