@@ -707,7 +707,9 @@ class comment {
         $newcmt->content      = $content;
         $newcmt->format       = $format;
         $newcmt->userid       = $USER->id;
+        $newcmt->usermodified = $USER->id;
         $newcmt->timecreated  = $now;
+        $newcmt->timemodified = $now;
 
         // This callback allow module to modify the content of comment, such as filter or replacement
         plugin_callback($this->plugintype, $this->pluginname, 'comment', 'add', array(&$newcmt, $this->comment_param));
