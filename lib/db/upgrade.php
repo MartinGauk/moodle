@@ -2680,14 +2680,16 @@ function xmldb_main_upgrade($oldversion) {
         $table = new xmldb_table('comments');
 
         // Adding fields to table comments.
-        $field = new xmldb_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+        $previous = new xmldb_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+        $field = new xmldb_field('usermodified', XMLDB_TYPE_INTEGER, '10', null, null, null, null, $previous);
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
             $DB->execute('UPDATE {comments} SET usermodified = userid');
             $field->setNotNull(XMLDB_NOTNULL);
             $dbman->change_field_notnull($table, $field);
         }
-        $field = new xmldb_field('pseudonym', XMLDB_TYPE_CHAR, '255', null, null, null, null);
+        $previous = $field;
+        $field = new xmldb_field('pseudonym', XMLDB_TYPE_CHAR, '100', null, null, null, null, $previous);
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
@@ -2787,7 +2789,9 @@ function xmldb_main_upgrade($oldversion) {
         $table->add_key('commentid', XMLDB_KEY_FOREIGN, ['commentid'], 'comments', ['id']);
 
         // Adding indexes to table comments_subscriptions.
-        $table->add_index('component-commentarea-contextid-itemid-commentid-userid', XMLDB_INDEX_UNIQUE, ['component', 'commentarea', 'contextid', 'itemid', 'commentid', 'userid']);
+        $table->add_index('component-commentarea-contextid-itemid-commentid-userid', XMLDB_INDEX_UNIQUE, [
+            'component', 'commentarea', 'contextid', 'itemid', 'commentid', 'userid'
+        ]);
 
         // Conditionally launch create table for comments_subscriptions.
         if (!$dbman->table_exists($table)) {
