@@ -119,6 +119,7 @@ class core_comment_privacy_testcase extends provider_testcase {
 
         // Because of the way things are set up with validation, creating an entry with the same context in a different component
         // or comment area is a huge pain. We're just going to jam entries into the table instead.
+        $now = time();
         $record = (object) [
             'contextid' => $coursecontext1->id,
             'component' => 'block_comments',
@@ -127,7 +128,9 @@ class core_comment_privacy_testcase extends provider_testcase {
             'content' => 'Comment user 1 different comment area',
             'format' => 0,
             'userid' => $user1->id,
-            'timecreated' => time()
+            'usermodified' => $user1->id,
+            'timecreated' => $now,
+            'timemodified' => $now
         ];
         $DB->insert_record('comments', $record);
         $record = (object) [
@@ -138,7 +141,9 @@ class core_comment_privacy_testcase extends provider_testcase {
             'content' => 'Comment user 1 different component',
             'format' => 0,
             'userid' => $user1->id,
-            'timecreated' => time()
+            'usermodified' => $user1->id,
+            'timecreated' => $now,
+            'timemodified' => $now
         ];
         $DB->insert_record('comments', $record);
 
@@ -187,6 +192,7 @@ class core_comment_privacy_testcase extends provider_testcase {
 
         // Because of the way things are set up with validation, creating an entry with the same context in a different component
         // or comment area is a huge pain. We're just going to jam entries into the table instead.
+        $now = time();
         $record = (object) [
             'contextid' => $coursecontext1->id,
             'component' => 'block_comments',
@@ -195,7 +201,9 @@ class core_comment_privacy_testcase extends provider_testcase {
             'content' => 'Comment user 1 different comment area',
             'format' => 0,
             'userid' => $user1->id,
-            'timecreated' => time()
+            'usermodified' => $user1->id,
+            'timecreated' => $now,
+            'timemodified' => $now
         ];
         $DB->insert_record('comments', $record);
         $record = (object) [
@@ -206,7 +214,9 @@ class core_comment_privacy_testcase extends provider_testcase {
             'content' => 'Comment user 1 different component',
             'format' => 0,
             'userid' => $user1->id,
-            'timecreated' => time()
+            'usermodified' => $user1->id,
+            'timecreated' => $now,
+            'timemodified' => $now
         ];
         $DB->insert_record('comments', $record);
 
@@ -261,6 +271,7 @@ class core_comment_privacy_testcase extends provider_testcase {
 
         // Because of the way things are set up with validation, creating an entry with the same context in a different component
         // or comment area is a huge pain. We're just going to jam entries into the table instead.
+        $now = time();
         $record = (object) [
             'contextid' => $coursecontext1->id,
             'component' => 'block_comments',
@@ -269,7 +280,9 @@ class core_comment_privacy_testcase extends provider_testcase {
             'content' => 'Comment user 1 different comment area',
             'format' => 0,
             'userid' => $user1->id,
-            'timecreated' => time()
+            'usermodified' => $user1->id,
+            'timecreated' => $now,
+            'timemodified' => $now
         ];
         $DB->insert_record('comments', $record);
         $record = (object) [
@@ -280,7 +293,9 @@ class core_comment_privacy_testcase extends provider_testcase {
             'content' => 'Comment user 1 different component',
             'format' => 0,
             'userid' => $user1->id,
-            'timecreated' => time()
+            'usermodified' => $user1->id,
+            'timecreated' => $now,
+            'timemodified' => $now
         ];
         $DB->insert_record('comments', $record);
 
@@ -348,6 +363,7 @@ class core_comment_privacy_testcase extends provider_testcase {
 
         // Because of the way things are set up with validation, creating an entry with the same context in a different component
         // or comment area is a huge pain. We're just going to jam entries into the table instead.
+        $now = time();
         $record = (object) [
             'contextid' => $coursecontext1->id,
             'component' => 'block_comments',
@@ -356,7 +372,9 @@ class core_comment_privacy_testcase extends provider_testcase {
             'content' => 'Comment user 1 different comment area',
             'format' => 0,
             'userid' => $user1->id,
-            'timecreated' => time()
+            'usermodified' => $user1->id,
+            'timecreated' => $now,
+            'timemodified' => $now
         ];
         $DB->insert_record('comments', $record);
         $record = (object) [
@@ -367,7 +385,9 @@ class core_comment_privacy_testcase extends provider_testcase {
             'content' => 'Comment user 1 different component',
             'format' => 0,
             'userid' => $user1->id,
-            'timecreated' => time()
+            'usermodified' => $user1->id,
+            'timecreated' => $now,
+            'timemodified' => $now
         ];
         $DB->insert_record('comments', $record);
 

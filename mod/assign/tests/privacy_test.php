@@ -186,6 +186,7 @@ class mod_assign_privacy_testcase extends provider_testcase {
         $context = $assign1->get_context();
 
         // Jam an entry in the comments table for user 1.
+        $now = time();
         $comment = (object) [
             'contextid' => $context->id,
             'component' => 'assignsubmission_comments',
@@ -194,7 +195,9 @@ class mod_assign_privacy_testcase extends provider_testcase {
             'content' => 'A comment by user 1',
             'format' => 0,
             'userid' => $user1->id,
-            'timecreated' => time()
+            'usermodified' => $user1->id,
+            'timecreated' => $now,
+            'timemodified' => $now
         ];
         $DB->insert_record('comments', $comment);
 
@@ -707,6 +710,7 @@ class mod_assign_privacy_testcase extends provider_testcase {
         $context = $assign1->get_context();
 
         // Jam an entry in the comments table for user 1.
+        $now = time();
         $comment = (object) [
             'contextid' => $context->id,
             'component' => 'assignsubmission_comments',
@@ -715,7 +719,9 @@ class mod_assign_privacy_testcase extends provider_testcase {
             'content' => 'A comment by user 1',
             'format' => 0,
             'userid' => $user1->id,
-            'timecreated' => time()
+            'usermodified' => $user1->id,
+            'timecreated' => $now,
+            'timemodified' => $now
         ];
         $DB->insert_record('comments', $comment);
 

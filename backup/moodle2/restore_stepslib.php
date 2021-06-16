@@ -2514,6 +2514,13 @@ class restore_comments_structure_step extends restore_structure_step {
 
         $data = (object)$data;
 
+        if (!isset($data->usermodified)) {
+            $data->usermodified = $data->userid;
+        }
+        if (!isset($data->timemodified)) {
+            $data->timemodified = $data->timecreated;
+        }
+
         // First of all, if the comment has some itemid, ask to the task what to map
         $mapping = false;
         if ($data->itemid) {
@@ -2524,6 +2531,7 @@ class restore_comments_structure_step extends restore_structure_step {
         if (!$mapping || $data->itemid) {
             // Only if user mapping and context
             $data->userid = $this->get_mappingid('user', $data->userid);
+            $data->usermodified = $this->get_mappingid('user', $data->usermodified);
             if ($data->userid && $this->task->get_contextid()) {
                 $data->contextid = $this->task->get_contextid();
                 // Only if there is another comment with same context/user/timecreated
