@@ -80,7 +80,7 @@ abstract class section {
      * @return string HTML to display
      */
     public function output(int $pagesize) : string {
-        // TODO
+        // TODO move to renderer
     }
 
     /**
@@ -110,10 +110,10 @@ abstract class section {
      * @param int $pagesize maximum number of comments to fetch
      * @param string $sortdirection ASC or DESC (comments are ordered by timecreated)
      * @param \stdClass|null $user user object
-     * @return comments_found
+     * @return comment_search
      */
     public function get_comments(?int $replytoid, ?int $timefrom, ?int $timeto, int $page, int $pagesize, string $sortdirection,
-            ?\stdClass $user) : comments_found {
+            ?\stdClass $user) : comment_search {
         // TODO
     }
 

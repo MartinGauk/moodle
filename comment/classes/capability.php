@@ -55,20 +55,19 @@ abstract class capability {
 
     // TODO add phpdocs
     abstract public function can_view() : bool;
-    abstract public function can_post_realname(?comment $comment = null) : bool;
-    abstract public function can_post_pseudonym(?comment $comment = null) : bool;
+    abstract public function can_post_realname(?comment $replyto = null) : bool;
+    abstract public function can_post_pseudonym(?comment $replyto = null) : bool;
     abstract public function can_edit(comment $comment = null) : bool;
     abstract public function can_delete(comment $comment = null) : bool;
     abstract public function can_upvote(comment $comment = null) : bool;
 
     /**
-     * Can the user (un)subscribe to the comment section or a specific comment?
+     * Can the user (un)subscribe to the comment section?
      *
      * @param int $currentstatus
-     * @param comment|null $comment
      * @return bool
      */
-    abstract public function can_modify_subscription_status(int $currentstatus, ?comment $comment = null) : bool;
+    abstract public function can_modify_subscription_status(int $currentstatus) : bool;
 
     /**
      * The user has to post the comment under this pseudonym.

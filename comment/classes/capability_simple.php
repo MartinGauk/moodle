@@ -87,14 +87,14 @@ class capability_simple extends capability {
         return $this->canview;
     }
 
-    public function can_post_realname(?comment $comment = null) : bool {
+    public function can_post_realname(?comment $replyto = null) : bool {
         return $this->canview && $this->allowrealname &&
-            ($comment === null || ($this->allowreplies && $comment->get_replytoid() === null));
+            ($replyto === null || ($this->allowreplies && $replyto->get_replytoid() === null));
     }
 
-    public function can_post_pseudonym(?comment $comment = null) : bool {
+    public function can_post_pseudonym(?comment $replyto = null) : bool {
         return $this->canview && $this->allowpseudonym &&
-            ($comment === null || ($this->allowreplies && $comment->get_replytoid() === null));
+            ($replyto === null || ($this->allowreplies && $replyto->get_replytoid() === null));
     }
 
     public function can_edit(comment $comment = null) : bool {
@@ -115,13 +115,12 @@ class capability_simple extends capability {
     }
 
     /**
-     * Can the user (un)subscribe to the comment section or a specific comment?
+     * Can the user (un)subscribe to the comment section?
      *
      * @param int $currentstatus
-     * @param comment|null $comment
      * @return bool
      */
-    public function can_modify_subscription_status(int $currentstatus, ?comment $comment = null) : bool {
+    public function can_modify_subscription_status(int $currentstatus) : bool {
         return $this->canview && $this->allowsubscriptions;
     }
 }
