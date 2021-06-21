@@ -143,10 +143,10 @@ class area {
      * @param string $sortdirection ASC or DESC (comments are ordered by timecreated)
      * @param bool $includechildcontexts also fetch comments from child contexts (only if the context is a \course_context)
      * @param \stdClass|null $user
-     * @return comments_found
+     * @return comment_search
      */
     public function get_comments_in_area(?int $timefrom, ?int $timeto, int $page, int $pagesize, string $sortdirection,
-            bool $includechildcontexts, ?\stdClass $user) : comments_found {
+            bool $includechildcontexts, ?\stdClass $user) : comment_search {
         // TODO
     }
 
@@ -224,6 +224,19 @@ class area {
     }
 
     /**
+     * Get the renderer for this comment area.
+     *
+     * @param string $subtype
+     * @param string $target one of rendering target constants
+     * @return \renderer_base the requested renderer.
+     */
+    public function get_renderer(?string $subtype = null, ?string $target = null) : \renderer_base {
+        global $PAGE;
+        return $PAGE->get_renderer('core_comment', $subtype, $target);
+        // TODO implement a \core_comment\output\renderer class extending \plugin_renderer_base?
+    }
+
+    /**
      * Show the most recent comments within a comment area.
      *
      *
@@ -232,6 +245,6 @@ class area {
      * @return string HTML to display
      */
     public function output_recent_comments(int $pagesize, bool $includechildcontexts) : string {
-        // TODO
+        // TODO move to renderer
     }
 }
