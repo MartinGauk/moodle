@@ -233,7 +233,6 @@ class area {
     public function get_renderer(?string $subtype = null, ?string $target = null) : \renderer_base {
         global $PAGE;
         return $PAGE->get_renderer('core_comment', $subtype, $target);
-        // TODO implement a \core_comment\output\renderer class extending \plugin_renderer_base?
     }
 
     /**
