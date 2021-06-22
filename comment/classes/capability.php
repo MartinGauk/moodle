@@ -36,6 +36,10 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 abstract class capability {
+    /** @var int bitmask that defines the comment post modes */
+    const POST_REALNAME = 0x01;
+    const POST_PSEUDONYM = 0x02;
+
     /** @var section comment section that these capabilities refer to */
     protected $section;
 
@@ -55,8 +59,7 @@ abstract class capability {
 
     // TODO add phpdocs
     abstract public function can_view() : bool;
-    abstract public function can_post_realname(?comment $replyto = null) : bool;
-    abstract public function can_post_pseudonym(?comment $replyto = null) : bool;
+    abstract public function can_post(int $postmode, ?comment $replyto = null) : bool;
     abstract public function can_edit(comment $comment = null) : bool;
     abstract public function can_delete(comment $comment = null) : bool;
     abstract public function can_upvote(comment $comment = null) : bool;
