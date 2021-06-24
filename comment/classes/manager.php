@@ -34,6 +34,19 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class manager {
+    const DEFAULT_OPTIONS = [
+        'areaclass' => '\\core_comment\\area',
+        'sectionclass' => '\\core_comment\\section',
+        'votes' => true,
+        'subscriptions' => true,
+        'replies' => false,
+        'postrealname' => true,
+        'postpseudonym' => false,
+    ];
+
+    static private $cachedareas = [];
+
+
     /**
      * Get a comment area object.
      *

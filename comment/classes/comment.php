@@ -86,8 +86,9 @@ class comment {
      *
      * @param section $section
      * @param \stdClass $record db data
+     * @return comment
      */
-    static public function construct_from_db(section $section, \stdClass $record) {
+    static public function construct_from_db(section $section, \stdClass $record) : comment {
         $comment = new comment($section);
         $comment->id = $record->id;
         // TODO
@@ -101,11 +102,12 @@ class comment {
      * @param int $format
      * @param int $usercreated
      * @param string $pseudonym
-     * @param int $replytoid
+     * @param int|null $replytoid
      * @param array $customdata
+     * @return comment
      */
     static public function construct_new(section $section, string $content, int $format, int $usercreated, string $pseudonym,
-            int $replytoid, array $customdata) {
+            ?int $replytoid, array $customdata) : comment {
         $comment = new comment($section);
         $comment->id = null;
         // TODO

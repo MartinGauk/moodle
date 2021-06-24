@@ -242,6 +242,34 @@ abstract class section {
     }
 
     /**
+     * Construct a new comment.
+     *
+     * This only creates the comment object in memory. You need to call ->save() to store the comment in the database.
+     *
+     * @param string $content
+     * @param int $format
+     * @param int $usercreated
+     * @param string $pseudonym
+     * @param int|null $replytoid
+     * @param array $customdata
+     * @return comment
+     */
+    public function construct_new_comment(string $content, int $format, int $usercreated, string $pseudonym, ?int $replytoid,
+            array $customdata) : comment {
+        return comment::construct_new($this, $content, $format, $usercreated, $pseudonym, $replytoid, $customdata);
+    }
+
+    /**
+     * Construct a comment object from database data.
+     *
+     * @param \stdClass $record db data
+     * @return comment
+     */
+    public function construct_comment_from_db(\stdClass $record) {
+        return comment::construct_from_db($this, $record);
+    }
+
+    /**
      * Get a title that shortly describes the item belonging to the item id.
      *
      * This title is displayed in notifications and the list of recent comments.
