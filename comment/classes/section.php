@@ -81,6 +81,8 @@ abstract class section {
      */
     public function output(int $pagesize) : string {
         // TODO move to renderer
+        global $PAGE;
+        return $PAGE->get_renderer('core_comment')->render(new output\section($this));
     }
 
     /**
@@ -115,16 +117,28 @@ abstract class section {
     public function get_comments(?int $replytoid, ?int $timefrom, ?int $timeto, int $page, int $pagesize, string $sortdirection,
             ?\stdClass $user) : comment_search {
         // TODO
+        return new comment_search($this->get_area(), $this, $replytoid, $timefrom, $timeto, $page, $pagesize, $sortdirection, false, false, $user);
     }
 
     /**
      * Get a comment by its id.
      *
      * @param int $commentid
-     * @return comments_found
+     * @return comment|null
      */
-    public function get_comment(int $commentid) : comments_found {
-        // TODO
+    public function get_comment(int $commentid) : ?comment {
+        global $DB;
+        $record = $DB->get_record('comments', [
+            'component' => $this->get_area()->get_component(),
+            'commentarea' => $this->get_area()->get_area(),
+            'contextid' => $this->get_context()->id,
+            'itemid' => $this->get_item_id(),
+            'id' => $commentid
+        ]);
+        if (!$record) {
+            return null;
+        }
+        return $this->construct_comment_from_db($record);
     }
 
     /**
@@ -150,15 +164,40 @@ abstract class section {
     }
 
     /**
-     * Validate the custom data of a comment.
+     * Validate the content of a comment.
      *
      * @param comment $comment
-     * @param array $customdata
      * @param capability $capability capability manager of the user who wants to save the comment
      * @return bool|\lang_string[] true when the validation passed or an array of properties with errors (property => lang_string).
      */
-    public function validate_comment_custom_data(comment $comment, array $customdata, capability $capability) {
+    public function validate_comment_content(comment $comment, capability $capability) {
         // TODO
+        return true;
+    }
+
+    /**
+     * Validate the pseudonym of a comment. This is only called if a pseudonym was set. Use the capability manager to
+     * ensure that all comments use a pseudonym.
+     *
+     * @param comment $comment
+     * @param capability $capability capability manager of the user who wants to save the comment
+     * @return bool|\lang_string[] true when the validation passed or an array of properties with errors (property => lang_string).
+     */
+    public function validate_comment_pseudonym(comment $comment, capability $capability) {
+        // TODO
+        return true;
+    }
+
+    /**
+     * Validate the custom data of a comment.
+     *
+     * @param comment $comment
+     * @param capability $capability capability manager of the user who wants to save the comment
+     * @return bool|\lang_string[] true when the validation passed or an array of properties with errors (property => lang_string).
+     */
+    public function validate_comment_custom_data(comment $comment, capability $capability) {
+        // TODO
+        return true;
     }
 
     /**
@@ -182,13 +221,22 @@ abstract class section {
         // TODO check default and export only non-internal properties.
     }
 
+    public static function make_unique_key(string $component, string $commentarea, int $contextid, int $itemid) {
+        return $component . '_' . $commentarea . '_' . $contextid . '_' . $itemid;
+    }
+
+    public function get_unique_key() : string {
+        return self::make_unique_key($this->get_area()->get_component(), $this->get_area()->get_area(), $this->get_context()->id, $this->get_item_id());
+    }
+
     /**
      * Get the capability manager for a user in the section.
      *
-     * @param \stdClass $user
+     * @param \stdClass|null $user
      * @return capability
      */
-    public function get_capability(\stdClass $user) : capability {
+    public function get_capability(?\stdClass $user = null) : capability {
+        return new capability_simple($this, $user, true);
         // TODO
     }
 
@@ -201,6 +249,7 @@ abstract class section {
      * @return int one of the \core_comment\subscription::NOTIFICATION_* constants
      */
     public function get_default_subscription_status(\stdClass $user) : int {
+        // TODO
         return subscription::NOTIFICATION_OFF;
     }
 
@@ -223,13 +272,14 @@ abstract class section {
     }
 
     /**
-     * Get some custom data of the section.
+     * Get render options for this section.
      *
-     * This might be used to pass arbitrary data to the JavaScript code that displays the comment section.
+     * This may be used to pass arbitrary data to the JavaScript code that displays the comment section.
      *
-     * @return array
+     * @return array An array with string keys and string values.
      */
-    public function get_section_custom_data(): array {
+    public function get_section_render_options(): array {
+        // TODO
         return [];
     }
 
@@ -251,22 +301,23 @@ abstract class section {
      * @param int $usercreated
      * @param string $pseudonym
      * @param int|null $replytoid
-     * @param array $customdata
+     * @param string $customdatajson
      * @return comment
      */
-    public function construct_new_comment(string $content, int $format, int $usercreated, string $pseudonym, ?int $replytoid,
-            array $customdata) : comment {
-        return comment::construct_new($this, $content, $format, $usercreated, $pseudonym, $replytoid, $customdata);
+    public function construct_new_comment(string $content, int $format, int $usercreated, string $pseudonym,
+            ?int $replytoid, string $customdatajson) : comment {
+        return comment::construct_new($this, $content, $format, $usercreated, $pseudonym, $replytoid, $customdatajson);
     }
 
     /**
      * Construct a comment object from database data.
      *
      * @param \stdClass $record db data
+     * @param comment_search|null $search the search this comment
      * @return comment
      */
-    public function construct_comment_from_db(\stdClass $record) {
-        return comment::construct_from_db($this, $record);
+    public function construct_comment_from_db(\stdClass $record, ?comment_search $search = null) {
+        return comment::construct_from_db($this, $record, $search);
     }
 
     /**

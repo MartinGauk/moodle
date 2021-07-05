@@ -124,9 +124,13 @@ class capability_simple extends capability {
      * Can the user (un)subscribe to the comment section?
      *
      * @param int $currentstatus
+     * @param int $newstatus
+     * @param comment|null $comment comment thread
      * @return bool
      */
-    public function can_modify_subscription_status(int $currentstatus) : bool {
+    public function can_modify_subscription_status(int $currentstatus, int $newstatus, comment $comment = null) : bool {
+        if ($newstatus == subscription::NOTIFICATION_OFF)
+            return true; // Unsubscribing is always possible.
         return $this->canview && $this->allowsubscriptions;
     }
 }

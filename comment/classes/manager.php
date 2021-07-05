@@ -58,16 +58,45 @@ class manager {
      */
     static public function get_comment_area(string $component, string $area, \context $context, \stdClass $course) : area {
         // TODO
+        return new area($component, $area, $context, $course, []);
+    }
+
+    /**
+     * Get a comment section object.
+     *
+     * @param string $component component name
+     * @param string $area comment area name
+     * @param \context $context context that this area belongs to
+     * @param \stdClass $course course object
+     * @param int $itemid
+     * @param mixed|null $item
+     * @return section
+     */
+    static public function get_comment_section(string $component, string $area, \context $context, \stdClass $course, int $itemid, $item = null) : section {
+        return self::get_comment_area($component, $area, $context, $course)->get_section($itemid, $item);
     }
 
     /**
      * Get a comment by its id.
      *
      * @param int $commentid
-     * @return comment
+     * @return comment|null
      */
-    static public function get_comment(int $commentid) : comments_found {
-        // TODO
+    static public function get_comment(int $commentid) : ?comment {
+        global $DB, $SITE;
+        $record = $DB->get_record('comments', ['id' => $commentid]);
+        if (!$record) {
+            return null;
+        }
+
+        list($context, $course, $cm) = get_context_info_array($record->contextid);
+        if ($context->id == SYSCONTEXTID) {
+            $course = $SITE;
+        }
+
+        $area = self::get_comment_area($record->component, $record->commentarea, $context, $course);
+        $section = $area->get_section($record->itemid);
+        return $section->construct_comment_from_db($record);
     }
 
     /**

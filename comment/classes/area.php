@@ -147,7 +147,7 @@ class area {
      */
     public function get_comments_in_area(?int $timefrom, ?int $timeto, int $page, int $pagesize, string $sortdirection,
             bool $includechildcontexts, ?\stdClass $user) : comment_search {
-        // TODO
+        return new comment_search($this, null, null, $timefrom, $timeto, $page, $pagesize, $sortdirection, $includechildcontexts, true, $user);
     }
 
     /**
@@ -221,6 +221,20 @@ class area {
      */
     public function get_section(int $itemid, $item = null) : section {
         // TODO
+        return new class($this, $itemid, $item) extends section {
+
+            public function get_item_title(): string {
+                return 'changeme';
+            }
+
+            public function get_item_url(): \moodle_url {
+                return new \moodle_url('changeme');
+            }
+
+            public function get_comment_url(int $commentid): \moodle_url {
+                return new \moodle_url('changeme');
+            }
+        };
     }
 
     /**

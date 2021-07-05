@@ -34,13 +34,23 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class section implements \renderable, \templatable {
+
+    // TODO docs
+    public $contextid;
+    public $component;
+    public $commentarea;
+    public $itemid;
+
     /**
      * Comment section renderable constructor.
      *
      * @param \core_comment\section $section
      */
     public function __construct(\core_comment\section $section) {
-        // TODO
+        $this->contextid = $section->get_context()->id;
+        $this->component = $section->get_area()->get_component();
+        $this->commentarea = $section->get_area()->get_area();
+        $this->itemid = $section->get_item_id();
     }
 
     /**

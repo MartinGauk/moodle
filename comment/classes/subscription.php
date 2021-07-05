@@ -55,6 +55,7 @@ class subscription {
     static public function get_subscription_status(\stdClass $user, section $section, ?comment $comment = null) : int {
         // TODO
         // TODO For the external services it would be better to return the final status, what the section says and what the database stored?
+        return self::NOTIFICATION_OFF;
     }
 
     /**
