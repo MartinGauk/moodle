@@ -56,21 +56,16 @@ class assign_submission_comments extends assign_submission_plugin {
 
         // Never show a link to view full submission.
         $showviewlink = false;
-        // Need to used this init() otherwise it does not have the javascript includes.
-        comment::init();
 
-        $options = new stdClass();
-        $options->area    = 'submission_comments';
-        $options->course    = $this->assignment->get_course();
-        $options->context = $this->assignment->get_context();
-        $options->itemid  = $submission->id;
-        $options->component = 'assignsubmission_comments';
-        $options->showcount = true;
-        $options->displaycancel = true;
+        $section = \core_comment\manager::get_comment_section(
+            'assignsubmission_comments',
+            'submission_comments',
+            $this->assignment->get_context(),
+            $this->assignment->get_course(),
+            $submission->id
+        );
 
-        $comment = new comment($options);
-
-        $o = $this->assignment->get_renderer()->container($comment->output(true), 'commentscontainer');
+        $o = $this->assignment->get_renderer()->container($section->output(10), 'commentscontainer');
         return $o;
     }
 
