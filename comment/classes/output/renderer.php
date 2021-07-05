@@ -41,7 +41,14 @@ class renderer extends \plugin_renderer_base {
      * @return string HTML
      */
     public function render_section(\core_comment\output\section $section) : string {
-        // TODO
+        global $PAGE;
+        $PAGE->requires->js_call_amd('core_comment/comments', 'init');
+        return "<div 
+                    class='js-comment-section'
+                    data-contextid='{$section->contextid}' 
+                    data-component='{$section->component}'
+                    data-commentarea='{$section->commentarea}'
+                    data-itemid='{$section->itemid}'></div>";
     }
 
     /**

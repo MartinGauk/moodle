@@ -39,6 +39,7 @@ abstract class capability {
     /** @var int bitmask that defines the comment post modes */
     const POST_REALNAME = 0x01;
     const POST_PSEUDONYM = 0x02;
+    const POST_BOTH = self::POST_REALNAME | self::POST_PSEUDONYM;
 
     /** @var section comment section that these capabilities refer to */
     protected $section;
@@ -65,12 +66,14 @@ abstract class capability {
     abstract public function can_upvote(comment $comment = null) : bool;
 
     /**
-     * Can the user (un)subscribe to the comment section?
+     * Can the user (un)subscribe to the comment thread/comment section?
      *
      * @param int $currentstatus
+     * @param int $newstatus
+     * @param comment|null $comment comment thread
      * @return bool
      */
-    abstract public function can_modify_subscription_status(int $currentstatus) : bool;
+    abstract public function can_modify_subscription_status(int $currentstatus, int $newstatus, comment $comment = null) : bool;
 
     /**
      * The user has to post the comment under this pseudonym.
