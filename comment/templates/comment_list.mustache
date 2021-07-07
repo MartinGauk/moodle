@@ -19,6 +19,7 @@
         <div class="core_comment_comment_container">
             <div class="core_comment_comment_header">
                 <b>{{ fullname }}</b> {{ timecreatedtext }}
+                {{# candelete }}<a href="#" class="js-delete-comment" data-id="{{id}}">delete</a>{{/candelete}}
             </div>
             <div class="core_comment_comment_body">
                 <div style="white-space: pre-wrap;">{{ content }}</div>

@@ -90,9 +90,9 @@ class comment_exporter extends \core\external\exporter {
             'content' => array(
                 'type' => PARAM_RAW,
             ),
-            'contentformat' => array( //TODO do we need to keep the original "format" field? The exporter code automatically removes it.
+            'contentformat' => array(
                 'type' => PARAM_INT,
-                'default' => FORMAT_PLAIN,
+                'default' => FORMAT_MOODLE,
             ),
             'customdata' => array(
                 'type' => PARAM_RAW,
@@ -191,9 +191,15 @@ class comment_exporter extends \core\external\exporter {
             ),
             'delete' => array( // deprecated
                 'type' => PARAM_BOOL,
+                'description' => 'deprecated, replaced by candelete',
             ),
             'time' => array( // deprecated
                 'type' => PARAM_RAW,
+                'description' => 'deprecated, replaced by timecreatedtext',
+            ),
+            'format' => array( // deprecated
+                'type' => PARAM_INT,
+                'description' => 'deprecated, replaced by contentformat',
             ),
         );
     }
@@ -257,6 +263,7 @@ class comment_exporter extends \core\external\exporter {
         $values['subscription'] = core_comment_external::format_subscription($subscription);
         $subscriptiondefault = subscription::NOTIFICATION_OFF; //TODO where should default come from?
         $values['subscriptiondefault'] = core_comment_external::format_subscription($subscriptiondefault);
+        $values['format'] = $this->comment->get_content_format();
         return $values;
     }
 }

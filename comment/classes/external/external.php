@@ -92,12 +92,13 @@ class core_comment_external extends external_api {
 
         return new external_function_parameters(
             array(
-                'contextlevel'  => new external_value(PARAM_ALPHA, 'contextlevel system, course, user...', VALUE_DEFAULT, null, NULL_ALLOWED),
-                'instanceid'    => new external_value(PARAM_INT, 'the Instance id of item associated with the context level', VALUE_DEFAULT, null, NULL_ALLOWED),
+                'contextlevel'  => new external_value(PARAM_ALPHA, 'deprecated, replaced by contextid', VALUE_DEFAULT, null, NULL_ALLOWED),
+                'instanceid'    => new external_value(PARAM_INT, 'deprecated, replaced by contextid', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'contextid'     => new external_value(PARAM_INT, 'the context id', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'component'     => new external_value(PARAM_COMPONENT, 'component', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'itemid'        => new external_value(PARAM_INT, 'associated id', VALUE_DEFAULT, null, NULL_ALLOWED),
-                'area'          => new external_value(PARAM_AREA, 'string comment area', VALUE_DEFAULT, null, NULL_ALLOWED),
+                'area'          => new external_value(PARAM_AREA, 'deprecated, replaced by commentarea', VALUE_DEFAULT, null, NULL_ALLOWED),
+                'commentarea'   => new external_value(PARAM_AREA, 'string comment area', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'replytoid'     => new external_value(PARAM_INT, 'get replies to comment', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'commentid'     => new external_value(PARAM_INT, 'get one comment by id', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'page'          => new external_value(PARAM_INT, 'page number (0 based)', VALUE_DEFAULT, 0),
@@ -112,12 +113,13 @@ class core_comment_external extends external_api {
     /**
      * Return a list of comments
      *
-     * @param string|null $contextlevel ('system, course, user', etc..)
-     * @param int|null $instanceid
+     * @param string|null $contextlevel 'system, course, user', etc.. (deprecated, use $contextid instead)
+     * @param int|null $instanceid (deprecated, use $contextid instead)
      * @param int|null $contextid the context id
      * @param string|null $component the name of the component
      * @param int|null $itemid the item id
-     * @param string|null $area comment area
+     * @param string|null $area comment area (deprecated, use $commentarea instead)
+     * @param string|null $commentarea comment area
      * @param int|null $replytoid get replies to comment
      * @param int|null $commentid get one comment by id
      * @param int $page page number (0 based)
@@ -129,8 +131,9 @@ class core_comment_external extends external_api {
      * @since Moodle 2.9
      */
     public static function get_comments(?string $contextlevel, ?int $instanceid, ?int $contextid, ?string $component,
-            ?int $itemid, ?string $area = null, ?int $replytoid = null, ?int $commentid = null, int $page = 0,
-            int $pagesize = -1, ?int $timefrom = null, ?int $timeto = null, string $sortdirection = 'DESC') {
+            ?int $itemid, ?string $area = null, ?string $commentarea = null, ?int $replytoid = null,
+            ?int $commentid = null, int $page = 0, int $pagesize = -1, ?int $timefrom = null, ?int $timeto = null,
+            string $sortdirection = 'DESC') {
         global $CFG, $SITE, $USER, $PAGE;
 
         $warnings = array();
@@ -141,6 +144,7 @@ class core_comment_external extends external_api {
             'component'     => $component,
             'itemid'        => $itemid,
             'area'          => $area,
+            'commentarea'   => $commentarea,
             'replytoid'     => $replytoid,
             'commentid'     => $commentid,
             'page'          => $page,
@@ -181,7 +185,7 @@ class core_comment_external extends external_api {
             }
 
             // Initialising comment object.
-            $area = manager::get_comment_area($params['component'], $params['area'], $context, $course);
+            $area = manager::get_comment_area($params['component'], $params['commentarea'] ?? $params['area'], $context, $course);
             if (!is_null($params['itemid'])) {
                 $section = $area->get_section($params['itemid']);
                 $cap = $section->get_capability($USER);
