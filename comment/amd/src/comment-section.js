@@ -40,6 +40,17 @@ const createComment = async(content, options) => {
     ])[0];
 };
 
+const deleteComment = async(id) => {
+    await Ajax.call([
+        {methodname: 'core_comment_delete_comments', args: {comments: [id]}},
+    ])[0];
+};
+
+const onDeleteCommentClicked = async(id, el, options) => {
+    await deleteComment(id);
+    await loadComments(el, options);
+};
+
 const onCommentFormSubmit = async(content, el, options) => {
     await createComment(content, options);
     await loadComments(el, options);
@@ -57,13 +68,20 @@ const renderCommentForm = async(el, options) => {
     };
 };
 
-const renderCommentList = async(el, comments) => {
+const renderCommentList = async(comments, el, options) => {
     const context = {
         comments: comments
     };
     const html = await templates.render('core_comment/comment_list', context);
     const commentListContainer = el.querySelector('.js-comment-list-container');
     templates.replaceNodeContents(commentListContainer, html, '');
+    commentListContainer.querySelectorAll(".js-delete-comment").forEach(button =>
+        button.addEventListener('click', (e) => {
+            onDeleteCommentClicked(button.dataset.id, el, options);
+            e.preventDefault();
+            return false;
+        })
+    );
 };
 
 const loadComments = async(el, options) => {
@@ -71,11 +89,11 @@ const loadComments = async(el, options) => {
         {methodname: 'core_comment_get_comments', args: {
             contextid: options.contextid,
             component: options.component,
-            area: options.commentarea,
+            commentarea: options.commentarea,
             itemid: options.itemid
         }},
     ])[0];
-    await renderCommentList(el, response.comments);
+    await renderCommentList(response.comments, el, options);
 };
 
 const renderCommentSection = async(el, options) => {

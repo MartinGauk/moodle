@@ -143,15 +143,38 @@ class comment {
     /**
      * Delete comment.
      */
-    public function delete() {
-        // TODO
+    public function delete() : bool {
+        global $DB;
+        if (is_null($this->id)) {
+            return false;
+        }
+        try {
+            $transaction = $DB->start_delegated_transaction();
+
+            // Delete record and replies and decrement reply counter in a transaction.
+            // TODO delete replies recursively
+            $DB->delete_records('comments', ['replytoid' => $this->id]);
+            $DB->delete_records('comments', ['id' => $this->id]);
+            if (!is_null($this->replytoid)) {
+                $DB->execute('UPDATE {comments} SET replies = replies - 1 WHERE id = :replytoid', [
+                    'replytoid' => $this->replytoid
+                ]);
+            }
+
+            $transaction->allow_commit();
+        } catch (\Exception $e) {
+            if (!empty($transaction) && !$transaction->is_disposed()) {
+                $transaction->rollback($e);
+            }
+            throw $e;
+        }
+        return true;
     }
 
     /**
      * Save data to the database.
      */
     public function save() {
-        // TODO If a db record already exists, only update content, format, usermodified, pseudonym, timemodified, customdata.
         global $DB;
         $data = new \stdClass();
         $data->content = $this->content;
@@ -160,9 +183,6 @@ class comment {
         $data->usermodified = $this->usermodified;
         $data->timemodified = $this->timemodified;
         $data->customdata = $this->customdatajson;
-        // TODO update replies and upvotes here?
-        $data->replies = $this->replies;
-        $data->upvotes = $this->upvotes;
 
         if (!is_null($this->id)) {
             $data->id = $this->id;
@@ -175,7 +195,27 @@ class comment {
             $data->replytoid = $this->replytoid;
             $data->userid = $this->usercreated;
             $data->timecreated = $this->timecreated;
-            $this->id = $DB->insert_record('comments', $data);
+            $data->replies = $this->replies;
+            $data->upvotes = $this->upvotes;
+
+            try {
+                $transaction = $DB->start_delegated_transaction();
+
+                // Create record and increment reply counter in a transaction.
+                $this->id = $DB->insert_record('comments', $data);
+                if (!is_null($this->replytoid)) {
+                    $DB->execute('UPDATE {comments} SET replies = replies + 1 WHERE id = :replytoid', [
+                        'replytoid' => $this->replytoid
+                    ]);
+                }
+
+                $transaction->allow_commit();
+            } catch (\Exception $e) {
+                if (!empty($transaction) && !$transaction->is_disposed()) {
+                    $transaction->rollback($e);
+                }
+                throw $e;
+            }
         }
     }
 
