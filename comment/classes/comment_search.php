@@ -132,6 +132,8 @@ class comment_search implements \IteratorAggregate {
             $params['timeto'] = $this->timeto;
         }
 
+        // TODO use area::get_comments_sql_where
+
         if ($count) {
             $sql = 'SELECT COUNT(*) FROM {comments} WHERE ' . $where;
         } else {
@@ -197,19 +199,6 @@ class comment_search implements \IteratorAggregate {
     }
 
     /**
-     * Get the first comment in this collection.
-     *
-     * This is a helper to easily get a comment when you know there is only one
-     * (as it is when you fetch one comment by its id).
-     *
-     * @return comment|null
-     */
-    public function get_first() : ?comment {
-        $all = $this->get_all();
-        return sizeof($all) > 0 ? $all[0] : null;
-    }
-
-    /**
      * Get a user by their id.
      *
      * When first called, it fetches the user data from all users in the search results.
@@ -251,7 +240,8 @@ class comment_search implements \IteratorAggregate {
             return sizeof($this->results);
         } else {
             $totalcount = $this->count_total($this->includereplies);
-            return max(0, $totalcount - $this->page * max(0, $this->pagesize));
+            $offset = min($totalcount, $this->page * max(0, $this->pagesize));
+            return $this->pagesize > 0 ? min($this->pagesize, $totalcount - $offset) : $totalcount - $offset;
         }
     }
 
