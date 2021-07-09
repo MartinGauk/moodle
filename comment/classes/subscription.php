@@ -34,6 +34,9 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class subscription {
+    /** @var int Setting will be inherited by parent contexts or component decides notification status. */
+    const NOTIFICATION_DEFAULT = -1;
+
     /** @var int Do not send any notifications. */
     const NOTIFICATION_OFF = 0;
 

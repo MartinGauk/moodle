@@ -184,7 +184,7 @@ class comment_search implements \IteratorAggregate {
                         $sections[$sectionkey] = $section;
                     }
                 } else {
-                    $section = $sections[$record->itemid];
+                    $section = $sections[$sectionkey];
                 }
             }
 

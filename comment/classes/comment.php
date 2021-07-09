@@ -328,7 +328,7 @@ class comment {
     }
 
     /**
-     * Get the timestamp when this comment was last created.
+     * Get the timestamp when this comment was created.
      *
      * @return int
      */

@@ -22,12 +22,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace core_comment\external;
+
 defined('MOODLE_INTERNAL') || die();
 
 use core_comment\capability;
 use core_comment\section;
 use core_comment\subscription;
-use core_comment_external;
 use renderer_base;
 use stdClass;
 
@@ -109,8 +109,8 @@ class comment_section_exporter extends \core\external\exporter {
         $values['allowpseudonym'] = $cap->can_post(capability::POST_PSEUDONYM);
         $values['allowrealname'] = $cap->can_post(capability::POST_REALNAME);
         $values['canpost'] = $values['allowpseudonym'] || $values['allowrealname'];
-        $values['subscription'] = core_comment_external::format_subscription(subscription::get_subscription_status($USER, $this->section));
-        $values['subscriptiondefault'] = core_comment_external::format_subscription($this->section->get_default_subscription_status($USER));
+        $values['subscription'] = external::format_subscription(subscription::get_subscription_status($USER, $this->section));
+        $values['subscriptiondefault'] = external::format_subscription($this->section->get_default_subscription_status($USER));
         $values['itemtitle'] = $this->section->get_item_title();
         $values['itemurl'] = $this->section->get_item_url()->out(false);
         $renderoptions = $this->section->get_section_render_options();
