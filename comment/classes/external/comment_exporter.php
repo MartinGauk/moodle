@@ -22,12 +22,12 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 namespace core_comment\external;
+
 defined('MOODLE_INTERNAL') || die();
 
 use core_comment\capability;
 use core_comment\comment;
 use core_comment\subscription;
-use core_comment_external;
 use renderer_base;
 use stdClass;
 
@@ -260,9 +260,9 @@ class comment_exporter extends \core\external\exporter {
         );
         $values['canedit'] = $cap->can_edit($this->comment);
         $values['delete'] = $values['candelete'] = $cap->can_delete($this->comment);
-        $values['subscription'] = core_comment_external::format_subscription($subscription);
+        $values['subscription'] = external::format_subscription($subscription);
         $subscriptiondefault = subscription::NOTIFICATION_OFF; //TODO where should default come from?
-        $values['subscriptiondefault'] = core_comment_external::format_subscription($subscriptiondefault);
+        $values['subscriptiondefault'] = external::format_subscription($subscriptiondefault);
         $values['format'] = $this->comment->get_content_format();
         return $values;
     }

@@ -24,16 +24,21 @@
  * @since      Moodle 2.9
  */
 
-use core_comment\capability;
-use core_comment\external\comment_exporter;
-use core_comment\external\comment_section_exporter;
-use core_comment\manager;
-use core_comment\subscription;
+namespace core_comment\external;
 
 defined('MOODLE_INTERNAL') || die();
 
 require_once("$CFG->libdir/externallib.php");
 require_once("$CFG->dirroot/comment/lib.php");
+
+use comment_exception;
+use core_comment\capability;
+use core_comment\manager;
+use core_comment\subscription;
+use external_function_parameters;
+use external_multiple_structure;
+use external_single_structure;
+use external_value;
 
 /**
  * External comment API functions
@@ -44,16 +49,18 @@ require_once("$CFG->dirroot/comment/lib.php");
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @since      Moodle 2.9
  */
-class core_comment_external extends external_api {
+class external extends \external_api {
 
     /**
      * Parse a subscription string and return the integer constant or null if invalid.
      *
-     * @param string $subscription One of 'off', 'digests' and 'immediate'.
+     * @param string $subscription One of 'default', 'off', 'digests' and 'immediate'.
      * @return int|null The subscription constant.
      */
     public static function parse_subscription(string $subscription) : ?int {
         switch ($subscription) {
+            case 'default':
+                return subscription::NOTIFICATION_DEFAULT;
             case 'off':
                 return subscription::NOTIFICATION_OFF;
             case 'digests':
@@ -68,10 +75,12 @@ class core_comment_external extends external_api {
      * Format a subscription constant as a string or null if invalid.
      *
      * @param int $subscription The subscription constant.
-     * @return string|null One of 'off', 'digests' and 'immediate'.
+     * @return string|null One of 'default', 'off', 'digests' and 'immediate'.
      */
     public static function format_subscription(int $subscription) : ?string {
         switch ($subscription) {
+            case subscription::NOTIFICATION_DEFAULT:
+                return 'default';
             case subscription::NOTIFICATION_OFF:
                 return 'off';
             case subscription::NOTIFICATION_DAILY_DIGEST:
@@ -102,7 +111,7 @@ class core_comment_external extends external_api {
                 'replytoid'     => new external_value(PARAM_INT, 'get replies to comment', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'commentid'     => new external_value(PARAM_INT, 'get one comment by id', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'page'          => new external_value(PARAM_INT, 'page number (0 based)', VALUE_DEFAULT, 0),
-                'pagesize'      => new external_value(PARAM_INT, 'page size', VALUE_DEFAULT, -1),
+                'pagesize'      => new external_value(PARAM_INT, 'page size', VALUE_DEFAULT, 50),
                 'timefrom'      => new external_value(PARAM_INT, 'filter comments by timecreated', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'timeto'        => new external_value(PARAM_INT, 'filter comments by timecreated', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'sortdirection' => new external_value(PARAM_ALPHA, 'Sort direction: ASC or DESC', VALUE_DEFAULT, 'DESC'),
@@ -123,7 +132,7 @@ class core_comment_external extends external_api {
      * @param int|null $replytoid get replies to comment
      * @param int|null $commentid get one comment by id
      * @param int $page page number (0 based)
-     * @param int $pagesize page size (defaults to unlimited)
+     * @param int $pagesize page size (maximum 200, defaults to 50)
      * @param int|null $timefrom filter comments by timecreated
      * @param int|null $timeto filter comments by timecreated
      * @param string $sortdirection sort direction
@@ -132,7 +141,7 @@ class core_comment_external extends external_api {
      */
     public static function get_comments(?string $contextlevel, ?int $instanceid, ?int $contextid, ?string $component,
             ?int $itemid, ?string $area = null, ?string $commentarea = null, ?int $replytoid = null,
-            ?int $commentid = null, int $page = 0, int $pagesize = -1, ?int $timefrom = null, ?int $timeto = null,
+            ?int $commentid = null, int $page = 0, int $pagesize = 50, ?int $timefrom = null, ?int $timeto = null,
             string $sortdirection = 'DESC') {
         global $CFG, $SITE, $USER, $PAGE;
 
@@ -158,8 +167,13 @@ class core_comment_external extends external_api {
         $sortdirection = strtoupper($params['sortdirection']);
         $directionallowedvalues = array('ASC', 'DESC');
         if (!in_array($sortdirection, $directionallowedvalues)) {
-            throw new invalid_parameter_exception('Invalid value for sortdirection parameter (value: ' . $sortdirection . '),' .
+            throw new \invalid_parameter_exception('Invalid value for sortdirection parameter (value: ' . $sortdirection . '),' .
                 'allowed values are: ' . implode(',', $directionallowedvalues));
+        }
+
+        if ($params['pagesize'] > 200) {
+            throw new \invalid_parameter_exception('Invalid value for pagesize parameter (value: ' .
+                $params['pagesize'] . ', maximum 200 allowed)');
         }
 
         $comments = [];
@@ -229,7 +243,7 @@ class core_comment_external extends external_api {
     /**
      * Returns description of method result value
      *
-     * @return external_description
+     * @return \external_description
      * @since Moodle 2.9
      */
     public static function get_comments_returns() {
@@ -243,8 +257,8 @@ class core_comment_external extends external_api {
                     comment_section_exporter::get_read_structure(), 'List of all comment sections referenced in the comments list'
                 ),
                 'perpage' => new external_value(PARAM_INT,  'Number of comments per page.', VALUE_OPTIONAL),
-                'canpost' => new external_value(PARAM_BOOL, 'Whether the user can post in this comment area.', VALUE_OPTIONAL),
-                'warnings' => new external_warnings()
+                'canpost' => new external_value(PARAM_BOOL, 'deprecated, replaced by commentsections.canpost', VALUE_OPTIONAL),
+                'warnings' => new \external_warnings()
             )
         );
     }
@@ -276,15 +290,26 @@ class core_comment_external extends external_api {
     }
 
     /**
+     * Mark the add_comments web service as deprecated.
+     *
+     * @return  bool
+     */
+    public static function add_comments_is_deprecated() {
+        return true;
+    }
+
+    /**
      * Add a comment or comments.
      *
      * @param array $comments the array of comments to create.
      * @return array the array containing those comments created.
      * @throws comment_exception
-     * @deprecated Use create_comments instead.
+     * @deprecated since Moodle 4.0 MDL-71935 - Use create_comments instead.
      * @since Moodle 3.8
      */
     public static function add_comments($comments) {
+        debugging('add_comments() is deprecated. Please use external::create_comments() instead.', DEBUG_DEVELOPER);
+
         return self::create_comments(array_map(function($comment) {
             return array(
                 'contextid'     => self::get_context_from_params($comment)->id,
@@ -300,7 +325,7 @@ class core_comment_external extends external_api {
     /**
      * Returns description of method result value for the add_comments method.
      *
-     * @return external_description
+     * @return \external_description
      * @deprecated Use create_comments instead.
      * @since Moodle 3.8
      */
@@ -359,7 +384,7 @@ class core_comment_external extends external_api {
             if ($comment['replytoid'] !== null) {
                 $replyto = $section->get_comment($comment['replytoid']);
                 if (!$replyto) {
-                    throw new invalid_parameter_exception('Invalid value for replytoid (value: ' .
+                    throw new \invalid_parameter_exception('Invalid value for replytoid (value: ' .
                         $comment['replytoid'] . '), no comment found with that id');
                 }
             }
@@ -406,7 +431,7 @@ class core_comment_external extends external_api {
     /**
      * Returns description of method result value for the create_comments method.
      *
-     * @return external_description
+     * @return \external_description
      * @since Moodle 4.0
      */
     public static function create_comments_returns() {
@@ -462,7 +487,7 @@ class core_comment_external extends external_api {
             $section = $area->get_section($comment['itemid']);
             $commentobj = $section->get_comment($comment['id']);
             if (!$commentobj) {
-                throw new invalid_parameter_exception('Cannot update comment, comment not found.');
+                throw new \invalid_parameter_exception('Cannot update comment, comment not found.');
             }
 
             $cap = $section->get_capability($USER);
@@ -495,7 +520,7 @@ class core_comment_external extends external_api {
     /**
      * Returns description of method result value for the create_comments method.
      *
-     * @return external_description
+     * @return \external_description
      * @since Moodle 4.0
      */
     public static function update_comments_returns() {
@@ -585,11 +610,11 @@ class core_comment_external extends external_api {
     /**
      * Returns description of method result value for the delete_comments() method.
      *
-     * @return external_description
+     * @return \external_description
      * @since Moodle 3.8
      */
     public static function delete_comments_returns() {
-        return new external_warnings();
+        return new \external_warnings();
     }
 
     /**
@@ -664,7 +689,7 @@ class core_comment_external extends external_api {
     /**
      * Returns description of method result value for the get_commentsections() method.
      *
-     * @return external_description
+     * @return \external_description
      * @since Moodle 4.0
      */
     public static function get_commentsections_returns() {

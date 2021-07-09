@@ -77,12 +77,11 @@ abstract class section {
      * Show the comments in this section.
      *
      * @param int $pagesize maximum number of comments to show initially (TODO better variable name?)
+     * TODO more options
      * @return string HTML to display
      */
     public function output(int $pagesize) : string {
-        // TODO move to renderer
-        global $PAGE;
-        return $PAGE->get_renderer('core_comment')->render(new output\section($this));
+        return $this->area->get_renderer()->render(new output\section($this));
     }
 
     /**
