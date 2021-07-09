@@ -148,26 +148,19 @@ class comment {
         if (is_null($this->id)) {
             return false;
         }
-        try {
-            $transaction = $DB->start_delegated_transaction();
+        $transaction = $DB->start_delegated_transaction();
 
-            // Delete record and replies and decrement reply counter in a transaction.
-            // TODO delete replies recursively
-            $DB->delete_records('comments', ['replytoid' => $this->id]);
-            $DB->delete_records('comments', ['id' => $this->id]);
-            if (!is_null($this->replytoid)) {
-                $DB->execute('UPDATE {comments} SET replies = replies - 1 WHERE id = :replytoid', [
-                    'replytoid' => $this->replytoid
-                ]);
-            }
-
-            $transaction->allow_commit();
-        } catch (\Exception $e) {
-            if (!empty($transaction) && !$transaction->is_disposed()) {
-                $transaction->rollback($e);
-            }
-            throw $e;
+        // Delete record and replies and decrement reply counter in a transaction.
+        // TODO delete replies recursively
+        $DB->delete_records('comments', ['replytoid' => $this->id]);
+        $DB->delete_records('comments', ['id' => $this->id]);
+        if (!is_null($this->replytoid)) {
+            $DB->execute('UPDATE {comments} SET replies = replies - 1 WHERE id = :replytoid', [
+                'replytoid' => $this->replytoid
+            ]);
         }
+
+        $transaction->allow_commit();
         return true;
     }
 
@@ -198,24 +191,17 @@ class comment {
             $data->replies = $this->replies;
             $data->upvotes = $this->upvotes;
 
-            try {
-                $transaction = $DB->start_delegated_transaction();
+            $transaction = $DB->start_delegated_transaction();
 
-                // Create record and increment reply counter in a transaction.
-                $this->id = $DB->insert_record('comments', $data);
-                if (!is_null($this->replytoid)) {
-                    $DB->execute('UPDATE {comments} SET replies = replies + 1 WHERE id = :replytoid', [
-                        'replytoid' => $this->replytoid
-                    ]);
-                }
-
-                $transaction->allow_commit();
-            } catch (\Exception $e) {
-                if (!empty($transaction) && !$transaction->is_disposed()) {
-                    $transaction->rollback($e);
-                }
-                throw $e;
+            // Create record and increment reply counter in a transaction.
+            $this->id = $DB->insert_record('comments', $data);
+            if (!is_null($this->replytoid)) {
+                $DB->execute('UPDATE {comments} SET replies = replies + 1 WHERE id = :replytoid', [
+                    'replytoid' => $this->replytoid
+                ]);
             }
+
+            $transaction->allow_commit();
         }
     }
 

@@ -179,6 +179,7 @@ class external extends \external_api {
         $comments = [];
         $count = 0;
         $canpost = false;
+        $exportsections = [];
         if (!is_null($params['commentid'])) {
             // Select a single comment by id.
             $comment = manager::get_comment($params['commentid']);
@@ -202,6 +203,10 @@ class external extends \external_api {
             $area = manager::get_comment_area($params['component'], $params['commentarea'] ?? $params['area'], $context, $course);
             if (!is_null($params['itemid'])) {
                 $section = $area->get_section($params['itemid']);
+
+                // Always export section, even if no comments are returned.
+                $exportsections[$section->get_unique_key()] = $section;
+
                 $cap = $section->get_capability($USER);
                 if ($cap->can_view()) {
                     $comments = $section->get_comments($params['replytoid'], $params['timefrom'], $params['timeto'],
@@ -217,23 +222,28 @@ class external extends \external_api {
         }
 
         // Export comments and sections.
-        $exportedcomments = [];
-        $exportedsections = [];
         $renderer = $PAGE->get_renderer('core');
+
+        $exportedcomments = [];
         foreach ($comments as $comment) {
             $commentexporter = new comment_exporter($comment);
             $exportedcomments[] = $commentexporter->export($renderer);
             $sectionkey = $comment->get_section()->get_unique_key();
-            if (!array_key_exists($sectionkey, $exportedsections)) {
-                $sectionexporter = new comment_section_exporter($comment->get_section());
-                $exportedsections[$sectionkey] = $sectionexporter->export($renderer);
+            if (!array_key_exists($sectionkey, $exportsections)) {
+                $exportsections[$sectionkey] = $comment->get_section();
             }
+        }
+
+        $exportedsections = [];
+        foreach ($exportsections as $section) {
+            $sectionexporter = new comment_section_exporter($section);
+            $exportedsections[] = $sectionexporter->export($renderer);
         }
 
         return array(
             'comments' => $exportedcomments,
             'count' => $count,
-            'commentsections' => array_values($exportedsections),
+            'commentsections' => $exportedsections,
             'perpage' => $params['pagesize'],
             'canpost'  => $canpost,
             'warnings' => $warnings
