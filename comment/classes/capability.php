@@ -58,6 +58,15 @@ abstract class capability {
         $this->user = $user;
     }
 
+    /**
+     * Get user.
+     *
+     * @return \stdClass
+     */
+    public function get_user() : \stdClass {
+        return $this->user;
+    }
+
     // TODO add phpdocs
     abstract public function can_view() : bool;
     abstract public function can_post(int $postmode, ?comment $replyto = null) : bool;
@@ -74,13 +83,4 @@ abstract class capability {
      * @return bool
      */
     abstract public function can_modify_subscription_status(int $currentstatus, int $newstatus, comment $comment = null) : bool;
-
-    /**
-     * The user has to post the comment under this pseudonym.
-     *
-     * @return string|null
-     */
-    public function enforce_pseudonym() : ?string {
-        return null;
-    }
 }
