@@ -163,50 +163,55 @@ abstract class section {
     }
 
     /**
-     * Validate the content of a comment.
-     *
-     * @param comment $comment
-     * @param capability $capability capability manager of the user who wants to save the comment
-     * @return bool|\lang_string[] true when the validation passed or an array of properties with errors (property => lang_string).
-     */
-    public function validate_comment_content(comment $comment, capability $capability) {
-        // TODO
-        return true;
-    }
-
-    /**
-     * Validate the pseudonym of a comment. This is only called if a pseudonym was set. Use the capability manager to
-     * ensure that all comments use a pseudonym.
-     *
-     * @param comment $comment
-     * @param capability $capability capability manager of the user who wants to save the comment
-     * @return bool|\lang_string[] true when the validation passed or an array of properties with errors (property => lang_string).
-     */
-    public function validate_comment_pseudonym(comment $comment, capability $capability) {
-        // TODO
-        return true;
-    }
-
-    /**
      * Validate the custom data of a comment.
      *
      * @param comment $comment
      * @param capability $capability capability manager of the user who wants to save the comment
-     * @return bool|\lang_string[] true when the validation passed or an array of properties with errors (property => lang_string).
+     * @return string[] empty array when the validation passed or an array of properties with errors (property => error message).
      */
-    public function validate_comment_custom_data(comment $comment, capability $capability) {
+    protected function validate_comment_custom_data(comment $comment, capability $capability) {
         // TODO
-        return true;
+        return [];
+    }
+
+    /**
+     * Validate a comment.
+     *
+     * A subclass may add more validations, e.g. validate/restrict the pseudonym or content.
+     *
+     * @param comment $comment
+     * @param capability $capability capability manager of the user who wants to save the comment
+     * @return string[] empty array when the validation passed or an array of properties with errors (property => error message).
+     */
+    public function validate_comment(comment $comment, capability $capability) {
+        return $this->validate_comment_custom_data($comment, $capability);
     }
 
     /**
      * A subclass may modify the comment before it is saved.
      *
+     * This can be used to add internal custom data.
+     *
      * @param comment $comment
      * @param capability $capability capability manager of the user who wants to save the comment
      */
     public function modify_comment_before_save(comment $comment, capability $capability) {
-        // Do nothing by default. TODO Or enforce pseudonym as given by capability manager?
+        // Do nothing by default.
+    }
+
+    /**
+     * Validate a new or updated comment and modify it if necessary.
+     *
+     * @param comment $comment
+     * @param capability $capability capability manager of the user who wants to save the comment
+     * @return string[] empty array when the validation passed or an array of properties with errors (property => error message).
+     */
+    public function validate_and_modify_comment(comment $comment, capability $capability) {
+        $errors = $this->validate_comment($comment, $capability);
+        if (count($errors) == 0) {
+            $this->modify_comment_before_save($comment, $capability);
+        }
+        return $errors;
     }
 
     /**

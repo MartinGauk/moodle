@@ -419,7 +419,9 @@ class external extends \external_api {
                 $comment['customdata']
             );
 
-            self::validate_and_modify_comment($commentobj, $cap);
+            if ($section->validate_and_modify_comment($commentobj, $cap)) {
+                throw new comment_exception();
+            }
 
             // TODO: Increase reply count in parent comment
 
@@ -510,7 +512,9 @@ class external extends \external_api {
             $commentobj->set_custom_data_json(trim($comment['customdata']));
             $commentobj->update_time_user($USER->id);
 
-            self::validate_and_modify_comment($commentobj, $cap);
+            if ($section->validate_and_modify_comment($commentobj, $cap)) {
+                throw new comment_exception();
+            }
 
             $updatedcomments[] = $commentobj;
         }
@@ -710,33 +714,6 @@ class external extends \external_api {
                 ),
             )
         );
-    }
-
-    /**
-     * Validate a new or updated comment and modify it if necessary.
-     *
-     * @param \core_comment\comment $comment
-     * @param capability $cap
-     */
-    protected static function validate_and_modify_comment(\core_comment\comment $comment, capability $cap) {
-        $section = $comment->get_section();
-
-        //TODO maybe move validation functions to capability class? seems related
-        if ($comment->is_pseudonymous_author()
-            && ($errors = $section->validate_comment_pseudonym($comment, $cap)) !== true) {
-            //TODO handle errors
-            throw new comment_exception();
-        }
-        if (($errors = $section->validate_comment_content($comment, $cap)) !== true) {
-            //TODO handle errors
-            throw new comment_exception();
-        }
-        if (($errors = $section->validate_comment_custom_data($comment, $cap)) !== true) {
-            //TODO handle errors
-            throw new comment_exception();
-        }
-
-        $section->modify_comment_before_save($comment, $cap);
     }
 
 }
