@@ -15,29 +15,28 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template core_comment/comment_section
+    @template core_comment/comment_header
 
-    Moodle comment section template.
+    Moodle comment header template.
 
-    The purpose of this template is to render the structure of a comment section, i.e. the location of the comment form
-    and comment list.
+    The purpose of this template is to render the header of a single comment, containing its author, the time it was
+    posted, and other information.
 
     Classes required for JS:
     * none
 
     Data attributes required for JS:
-    * data-commentlist
-    * data-commentform
+    * none
 
     Context variables required for this template:
-    * Comment section as exported by core_comment\external\comment_section_exporter.php
+    * Comment as exported by core_comment\external\comment_exporter.php
 
     Example context (json):
     {
-        // TODO fill with example section
+        // TODO fill with example comment
     }
 }}
-<div class="core_comment_comment_section">
-    <div data-commentform></div>
-    <div data-commentlist></div>
+<div class="core_comment_comment_header">
+    <b>{{fullname}}</b> {{timecreatedtext}}
+    {{#candelete}}<a href="#" class="js-delete-comment" data-id="{{id}}">delete</a>{{/candelete}}{{! TODO localize }}
 </div>

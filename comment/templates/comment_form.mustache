@@ -14,6 +14,33 @@
     You should have received a copy of the GNU General Public License
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
+{{!
+    @template core_comment/comment_form
+
+    Moodle comment form template.
+
+    The purpose of this template is to render a form for creating or updating a comment or reply.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * comment Comment to be edited as exported by core_comment\external\comment_exporter.php (optional)
+    * replyto Comment that this is a reply to as exported by core_comment\external\comment_exporter.php (optional)
+
+    Example context (json):
+    {
+        "comment": {
+            // TODO fill with example comment
+        },
+        "replyto": {
+            // TODO fill with example comment
+        }
+    }
+}}
 <div class="core_comment_comment_form">
     <form>
         <textarea name="content"></textarea>
