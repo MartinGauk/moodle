@@ -14,15 +14,27 @@
     You should have received a copy of the GNU General Public License
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
-{{< core/modal }}
-    {{$title}}delete comment{{/title}}
-    {{$body}}
-        <div class="container">
-            Are you sure you want to delete this comment?
-        </div>
-    {{/body}}
-    {{$footer}}
-        <button type="button" class="btn btn-warning" data-action="delete">delete</button>
-        <button type="button" class="btn btn-secondary" data-action="cancel">{{#str}} cancel {{/str}}</button>
-    {{/footer}}
-{{/ core/modal }}
+{{!
+    @template core_comment/comment_body
+
+    Moodle comment body template.
+
+    The purpose of this template is to render the body of a single comment, containing its content.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * Comment as exported by core_comment\external\comment_exporter.php
+
+    Example context (json):
+    {
+        // TODO fill with example comment
+    }
+}}
+<div class="core_comment_comment_body">
+    <div style="white-space: pre-wrap;">{{ content }}</div>
+</div>

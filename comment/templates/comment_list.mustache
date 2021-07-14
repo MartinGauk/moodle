@@ -14,21 +14,48 @@
     You should have received a copy of the GNU General Public License
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
-<div class="core_comment_comment_list">
-    {{# comments }}
-        <div class="core_comment_comment_container">
-            <div class="core_comment_comment_header">
-                <b>{{ fullname }}</b> {{ timecreatedtext }}
-                {{# candelete }}<a href="#" class="js-delete-comment" data-id="{{id}}">delete</a>{{/candelete}}
-            </div>
-            <div class="core_comment_comment_body">
-                <div style="white-space: pre-wrap;">{{ content }}</div>
-            </div>
-            <div class="core_comment_comment_footer">
-                <span>{{ replies }} replies</span>
-            </div>
-        </div>
-        <div class="core_comment_comment_replies">
+{{!
+    @template core_comment/comment_list
+
+    Moodle comment list template.
+
+    The purpose of this template is to render a list of comments and their replies.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * data-comment Specifies the id of the comment to be inserted in the element
+    * data-loadmorebefore
+    * data-loadmoreafter
+
+    Context variables required for this template:
+    * replyto Comment that these are replies to as exported by core_comment\external\comment_exporter.php (optional)
+    * comments Array of comments as exported by core_comment\external\comment_exporter.php
+    * count Size of comments array
+    * moreavailablebefore Boolean specifying whether there are more comments available in this list before the first
+    * moreavailableafter Boolean specifying whether there are more comments available in this list after the last
+
+    Example context (json):
+    {
+        "replyto": // TODO fill with example comment
+        "comments": [
+            // TODO fill with example comments
+        ],
+        "count": 1,
+        "moreavailablebefore": false,
+        "moreavailableafter": true,
+    }
+}}
+<div class="core_comment_comment_list {{#replyto}}core_comment_comment_replies{{/replyto}}">
+    {{#moreavailablebefore}}
+        <a href="#" data-loadmorebefore>Load more...</a>{{! TODO localize }}
+    {{/moreavailablebefore}}
+    {{#comments}}
+        <div data-comment="{{id}}">
         </div>
     {{/comments}}
+    {{#moreavailableafter}}
+        <a href="#" data-loadmoreafter>Load more...</a>{{! TODO localize }}
+    {{/moreavailableafter}}
 </div>

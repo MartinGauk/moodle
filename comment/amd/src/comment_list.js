@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
- * Comments module.
+ * Comment list module.
  *
  * @module     core_comment/comments
  * @package    core_comment
@@ -21,16 +21,13 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import * as CommentSection from 'core_comment/comment_section';
+import Component from 'core_comment/component';
 
-export const init = () => {
-    document.querySelectorAll('.js-comment-section').forEach((el) => {
-        const options = {
-            contextid: el.dataset.contextid,
-            component: el.dataset.component,
-            commentarea: el.dataset.commentarea,
-            itemid: el.dataset.itemid,
-        };
-        CommentSection.init(el, options);
-    });
-};
+class CommentList extends Component {
+
+    constructor(el, commentSection) {
+        super(el);
+        this.commentSection = commentSection;
+    }
+
+}

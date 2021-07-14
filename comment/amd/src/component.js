@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
- * Comments module.
+ * Comment component module.
  *
  * @module     core_comment/comments
  * @package    core_comment
@@ -21,16 +21,36 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import * as CommentSection from 'core_comment/comment_section';
+import * as templates from 'core/templates';
 
-export const init = () => {
-    document.querySelectorAll('.js-comment-section').forEach((el) => {
-        const options = {
-            contextid: el.dataset.contextid,
-            component: el.dataset.component,
-            commentarea: el.dataset.commentarea,
-            itemid: el.dataset.itemid,
-        };
-        CommentSection.init(el, options);
-    });
-};
+export class Component {
+    constructor(el) {
+        this.el = el;
+        this.children = [];
+    }
+
+    async preRender(template, context) {
+        return context;
+    }
+
+    async postRender() {
+        // Nop.
+    }
+
+    async render(template, context) {
+        context = this.preRender(template, context);
+        const html = await templates.render(template, context);
+        await this.disposeChildren();
+        templates.replaceNodeContents(this.el, html, '');
+        await this.postRender();
+    }
+
+    async disposeChildren() {
+        await Promise.all(this.children.map((child) => child.dispose()));
+        this.children = [];
+    }
+
+    async dispose() {
+        await this.disposeChildren();
+    }
+}
