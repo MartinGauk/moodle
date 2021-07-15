@@ -145,6 +145,8 @@ class external extends \external_api {
             string $sortdirection = 'DESC') {
         global $CFG, $SITE, $USER, $PAGE;
 
+        // TODO check $CFG->usecomments and return empty result?
+
         $warnings = array();
         $arrayparams = array(
             'contextlevel'  => $contextlevel,
@@ -314,22 +316,27 @@ class external extends \external_api {
      * @param array $comments the array of comments to create.
      * @return array the array containing those comments created.
      * @throws comment_exception
-     * @deprecated since Moodle 4.0 MDL-71935 - Use create_comments instead.
+     * @deprecated since Moodle 4.0 MDL-71935 - Use create_comment instead.
      * @since Moodle 3.8
      */
     public static function add_comments($comments) {
-        debugging('add_comments() is deprecated. Please use external::create_comments() instead.', DEBUG_DEVELOPER);
+        debugging('add_comments() is deprecated. Please use external::create_comment() instead.', DEBUG_DEVELOPER);
 
-        return self::create_comments(array_map(function($comment) {
-            return array(
-                'contextid'     => self::get_context_from_params($comment)->id,
-                'component'     => $comment['component'],
-                'itemid'        => $comment['itemid'],
-                'commentarea'   => $comment['area'],
-                'content'       => $comment['content'],
-                'contentformat' => FORMAT_MOODLE,
-            );
-        }, $comments));
+        $params = self::validate_parameters(self::add_comments_parameters(), ['comments' => $comments]);
+        $createdcomments = [];
+        foreach ($params['comments'] as $comment) {
+            $createdcomments[] = self::create_comment([
+                'comment' => [
+                    'contextid'     => self::get_context_from_params($comment)->id,
+                    'component'     => $comment['component'],
+                    'itemid'        => $comment['itemid'],
+                    'commentarea'   => $comment['area'],
+                    'content'       => $comment['content'],
+                    'contentformat' => FORMAT_MOODLE,
+                ],
+            ]);
+        }
+        return $createdcomments;
     }
 
     /**
@@ -346,201 +353,165 @@ class external extends \external_api {
     }
 
     /**
-     * Returns description of method parameters for the create_comments method.
+     * Returns description of method parameters for the create_comment method.
      *
      * @return external_function_parameters
      * @since Moodle 4.0
      */
-    public static function create_comments_parameters() {
-        return new external_function_parameters(
-            [
-                'comments' => new external_multiple_structure(
-                    comment_exporter::get_create_structure()
-                )
-            ]
-        );
+    public static function create_comment_parameters() {
+        return new external_function_parameters([
+            'comment' => comment_exporter::get_create_structure(),
+        ]);
     }
 
     /**
      * Create a comment or comments.
      *
-     * @param array $comments the array of comments to create.
-     * @return array the array containing those comments created.
+     * @param array $comment comment data.
+     * @return \stdClass data of the created comment.
      * @throws comment_exception
      * @since Moodle 4.0
      */
-    public static function create_comments($comments) {
+    public static function create_comment($comment) {
         global $CFG, $SITE, $USER, $PAGE;
 
         if (empty($CFG->usecomments)) {
             throw new comment_exception('commentsnotenabled', 'moodle');
         }
 
-        $params = self::validate_parameters(self::create_comments_parameters(), ['comments' => $comments]);
+        $params = self::validate_parameters(self::create_comment_parameters(), ['comment' => $comment]);
+        $comment = $params['comment'];
+        list($context, $course, $cm) = get_context_info_array($comment['contextid']);
+        if ($context->id == SYSCONTEXTID) {
+            $course = $SITE;
+        }
+        self::validate_context($context);
 
-        // Validate every intended comment before creating anything, storing the validated comment for use below.
-        $createdcomments = [];
-        foreach ($params['comments'] as $comment) {
-            list($context, $course, $cm) = get_context_info_array($comment['contextid']);
-            if ($context->id == SYSCONTEXTID) {
-                $course = $SITE;
+        // Initialising comment object.
+        $area = manager::get_comment_area($comment['component'], $comment['commentarea'], $context, $course);
+        $section = $area->get_section($comment['itemid']);
+        $replyto = null;
+        if ($comment['replytoid'] !== null) {
+            // Fetching the replyto comment through the section object ensures that both comments belong to the same section.
+            $replyto = $section->get_comment($comment['replytoid']);
+            if (!$replyto) {
+                throw new \invalid_parameter_exception('Invalid value for replytoid (value: ' .
+                    $comment['replytoid'] . '), no comment found with that id');
             }
-            self::validate_context($context);
-
-            // Initialising comment object.
-            $area = manager::get_comment_area($comment['component'], $comment['commentarea'], $context, $course);
-            $section = $area->get_section($comment['itemid']);
-            $replyto = null;
-            if ($comment['replytoid'] !== null) {
-                $replyto = $section->get_comment($comment['replytoid']);
-                if (!$replyto) {
-                    throw new \invalid_parameter_exception('Invalid value for replytoid (value: ' .
-                        $comment['replytoid'] . '), no comment found with that id');
-                }
-            }
-
-            // Trim strings.
-            $comment['content'] = trim($comment['content']);
-            $comment['pseudonym'] = trim($comment['pseudonym']);
-            $comment['customdata'] = trim($comment['customdata']);
-
-            $cap = $section->get_capability($USER);
-            $postmode = $comment['pseudonym'] != '' ? capability::POST_PSEUDONYM : capability::POST_REALNAME;
-            if (!$cap->can_post($postmode, $replyto)) {
-                throw new comment_exception('nopermissiontocomment');
-            }
-
-            $commentobj = $section->construct_new_comment(
-                $comment['content'],
-                $comment['contentformat'],
-                $USER->id,
-                $comment['pseudonym'],
-                $comment['replytoid'],
-                $comment['customdata']
-            );
-
-            if ($section->validate_and_modify_comment($commentobj, $cap)) {
-                throw new comment_exception();
-            }
-
-            // TODO: Increase reply count in parent comment
-
-            $createdcomments[] = $commentobj;
         }
 
-        // Create the comments.
-        $results = [];
+        // Trim strings.
+        $comment['content'] = trim($comment['content']);
+        $comment['pseudonym'] = trim($comment['pseudonym']);
+        $comment['customdata'] = trim($comment['customdata']);
+
+        $cap = $section->get_capability($USER);
+        $postmode = ($comment['pseudonym'] != '') ? capability::POST_PSEUDONYM : capability::POST_REALNAME;
+        if (!$cap->can_post($postmode, $replyto)) {
+            throw new comment_exception('nopermissiontocomment');
+        }
+
+        $commentobj = $section->construct_new_comment(
+            $comment['content'],
+            $comment['contentformat'],
+            $USER->id,
+            $comment['pseudonym'],
+            $comment['replytoid'],
+            $comment['customdata']
+        );
+
+        if ($section->validate_and_modify_comment($commentobj, $cap)) {
+            throw new comment_exception(); // TODO, maybe throw invalid_parameter_exception?
+        }
+
+        $commentobj->save();
+        $exporter = new comment_exporter($commentobj);
         $renderer = $PAGE->get_renderer('core');
-        foreach ($createdcomments as $commentobj) {
-            $commentobj->save();
-            $exporter = new comment_exporter($commentobj);
-            $results[] = $exporter->export($renderer);
-        }
-
-        return $results;
+        return $exporter->export($renderer);
     }
 
     /**
-     * Returns description of method result value for the create_comments method.
+     * Returns description of method result value for the create_comment method.
      *
      * @return \external_description
      * @since Moodle 4.0
      */
-    public static function create_comments_returns() {
-        return new external_multiple_structure(
-            comment_exporter::get_read_structure()
-        );
+    public static function create_comment_returns() {
+        return comment_exporter::get_read_structure();
     }
 
     /**
-     * Returns description of method parameters for the update_comments method.
+     * Returns description of method parameters for the update_comment method.
      *
      * @return external_function_parameters
      * @since Moodle 4.0
      */
-    public static function update_comments_parameters() {
-        return new external_function_parameters(
-            [
-                'comments' => new external_multiple_structure(
-                    comment_exporter::get_update_structure()
-                )
-            ]
-        );
+    public static function update_comment_parameters() {
+        return new external_function_parameters([
+            'comment' => comment_exporter::get_update_structure(),
+        ]);
     }
 
     /**
-     * Update a comment or comments.
+     * Update a comment.
      *
-     * @param array $comments the array of comments to update.
-     * @return array the array containing those comments updated (after any changes by the server).
+     * @param array $comment data of the comment to update.
+     * @return \stdClass data of the updated comment.
      * @throws comment_exception
      * @since Moodle 4.0
      */
-    public static function update_comments($comments) {
+    public static function update_comment($comment) {
         global $CFG, $SITE, $USER, $PAGE;
 
         if (empty($CFG->usecomments)) {
             throw new comment_exception('commentsnotenabled', 'moodle');
         }
 
-        $params = self::validate_parameters(self::update_comments_parameters(), ['comments' => $comments]);
+        $params = self::validate_parameters(self::update_comment_parameters(), ['comment' => $comment]);
+        $comment = $params['comment'];
 
-        // Validate every intended comment before updating anything, storing the validated comment for use below.
-        $updatedcomments = [];
-        foreach ($params['comments'] as $comment) {
-            list($context, $course, $cm) = get_context_info_array($comment['contextid']);
-            if ($context->id == SYSCONTEXTID) {
-                $course = $SITE;
-            }
-            self::validate_context($context);
+        list($context, $course, $cm) = get_context_info_array($comment['contextid']);
+        if ($context->id == SYSCONTEXTID) {
+            $course = $SITE;
+        }
+        self::validate_context($context);
 
-            // Find and update comment.
-            $area = manager::get_comment_area($comment['component'], $comment['commentarea'], $context, $course);
-            $section = $area->get_section($comment['itemid']);
-            $commentobj = $section->get_comment($comment['id']);
-            if (!$commentobj) {
-                throw new \invalid_parameter_exception('Cannot update comment, comment not found.');
-            }
-
-            $cap = $section->get_capability($USER);
-            if (!$cap->can_edit($commentobj)) {
-                throw new comment_exception('nopermissiontoedit');
-            }
-
-            $commentobj->set_content(trim($comment['content']), $comment['contentformat']);
-            $commentobj->set_pseudonym(trim($comment['pseudonym']));
-            $commentobj->set_custom_data_json(trim($comment['customdata']));
-            $commentobj->update_time_user($USER->id);
-
-            if ($section->validate_and_modify_comment($commentobj, $cap)) {
-                throw new comment_exception();
-            }
-
-            $updatedcomments[] = $commentobj;
+        // Find and update comment.
+        $area = manager::get_comment_area($comment['component'], $comment['commentarea'], $context, $course);
+        $section = $area->get_section($comment['itemid']);
+        $commentobj = $section->get_comment($comment['id']);
+        if (!$commentobj) {
+            throw new \invalid_parameter_exception('Cannot update comment, comment not found.');
         }
 
-        // Update the comments.
-        $results = [];
+        $cap = $section->get_capability($USER);
+        if (!$cap->can_edit($commentobj)) {
+            throw new comment_exception('nopermissiontoedit');
+        }
+
+        $commentobj->set_content(trim($comment['content']), $comment['contentformat']);
+        $commentobj->set_pseudonym(trim($comment['pseudonym']));
+        $commentobj->set_custom_data_json(trim($comment['customdata']));
+        $commentobj->update_time_user($USER->id);
+
+        if ($section->validate_and_modify_comment($commentobj, $cap)) {
+            throw new comment_exception();
+        }
+
+        $commentobj->save();
+        $exporter = new comment_exporter($commentobj);
         $renderer = $PAGE->get_renderer('core');
-        foreach ($updatedcomments as $commentobj) {
-            $commentobj->save();
-            $exporter = new comment_exporter($commentobj);
-            $results[] = $exporter->export($renderer);
-        }
-
-        return $results;
+        return $exporter->export($renderer);
     }
 
     /**
-     * Returns description of method result value for the create_comments method.
+     * Returns description of method result value for the update_comment method.
      *
      * @return \external_description
      * @since Moodle 4.0
      */
-    public static function update_comments_returns() {
-        return new external_multiple_structure(
-            comment_exporter::get_read_structure()
-        );
+    public static function update_comment_returns() {
+        return comment_exporter::get_read_structure();
     }
 
     /**

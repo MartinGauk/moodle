@@ -380,10 +380,18 @@ $functions = array(
         'type' => 'write',
         'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
     ),
-    'core_comment_create_comments' => array(
+    'core_comment_create_comment' => array(
         'classname' => 'core_comment\external\external',
-        'methodname' => 'create_comments',
-        'description' => 'Adds a comment or comments.',
+        'methodname' => 'create_comment',
+        'description' => 'Adds a comment.',
+        'type' => 'write',
+        'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
+        'ajax' => true,
+    ),
+    'core_comment_update_comment' => array(
+        'classname' => 'core_comment\external\external',
+        'methodname' => 'update_comment',
+        'description' => 'Update a comment.',
         'type' => 'write',
         'services' => array(MOODLE_OFFICIAL_MOBILE_SERVICE),
         'ajax' => true,
