@@ -304,13 +304,13 @@ abstract class section {
      * @param int $format
      * @param int $usercreated
      * @param string $pseudonym
-     * @param int|null $replytoid
+     * @param comment|null $replytoid
      * @param string $customdatajson
      * @return comment
      */
     public function construct_new_comment(string $content, int $format, int $usercreated, string $pseudonym,
-            ?int $replytoid, string $customdatajson) : comment {
-        return comment::construct_new($this, $content, $format, $usercreated, $pseudonym, $replytoid, $customdatajson);
+            ?comment $replyto, string $customdatajson) : comment {
+        return comment::construct_new($this, $content, $format, $usercreated, $pseudonym, $replyto, $customdatajson);
     }
 
     /**
@@ -322,6 +322,24 @@ abstract class section {
      */
     public function construct_comment_from_db(\stdClass $record, ?comment_search $search = null) {
         return comment::construct_from_db($this, $record, $search);
+    }
+
+    /**
+     * Checks whether another section object actually represents the same section.
+     *
+     * @param section $other
+     * @return bool
+     */
+    public function is_equal(section $other) : bool {
+        if ($this === $other) {
+            return true;
+        }
+
+        $thisarea = $this->area;
+        $otherarea = $other->area;
+        return $thisarea->get_component() === $otherarea->get_component() && $thisarea->get_area() === $otherarea->get_area() &&
+            $thisarea->get_context()->id === $otherarea->get_context()->id &&
+            $this->itemid === $other->itemid;
     }
 
     /**

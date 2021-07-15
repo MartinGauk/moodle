@@ -64,8 +64,11 @@ class comment {
     /** @var int time when this comment was last modified */
     protected $timemodified;
 
-    /** @var int id of the comment this is a reply to */
+    /** @var int|null id of the comment that this is a reply to */
     protected $replytoid;
+
+    /** @var comment|null replyto cached object */
+    private $replyto = null;
 
     /** @var int number of replies to this comment */
     protected $replies;
@@ -120,12 +123,12 @@ class comment {
      * @param int $format
      * @param int $usercreated
      * @param string $pseudonym
-     * @param int|null $replytoid
+     * @param comment|null $replyto
      * @param string $customdatajson
      * @return comment
      */
     static public function construct_new(section $section, string $content, int $format, int $usercreated,
-            string $pseudonym, ?int $replytoid, string $customdatajson) : comment {
+            string $pseudonym, ?comment $replyto, string $customdatajson) : comment {
         $comment = new comment($section);
         $comment->id = null;
         $comment->content = $content;
@@ -133,7 +136,8 @@ class comment {
         $comment->usermodified = $comment->usercreated = $usercreated;
         $comment->timemodified = $comment->timecreated = time();
         $comment->pseudonym = $pseudonym;
-        $comment->replytoid = $replytoid;
+        $comment->replytoid = ($replyto) ? $replyto->get_id() : null;
+        $comment->replyto = $replyto;
         $comment->customdatajson = $customdatajson;
         $comment->replies = 0;
         $comment->upvotes = 0;
@@ -181,6 +185,16 @@ class comment {
             $data->id = $this->id;
             $DB->update_record('comments', $data);
         } else {
+            $replyto = $this->get_replyto();
+            if ($replyto) {
+                if (!$this->section->is_equal($replyto->section)) {
+                    throw new \comment_exception('invalidreplytoidcomment');
+                }
+                if ($replyto->replytoid !== null) {
+                    throw new \comment_exception('noreplytoreplyallowed');
+                }
+            }
+
             $data->contextid = $this->get_section()->get_context()->id;
             $data->component = $this->get_section()->get_area()->get_component();
             $data->commentarea = $this->get_section()->get_area()->get_area();
@@ -349,7 +363,11 @@ class comment {
         if (is_null($this->replytoid)) {
             return null;
         }
-        return $this->get_section()->get_comment($this->replytoid);
+        if ($this->replyto) {
+            return $this->replyto;
+        }
+        $this->replyto = $this->get_section()->get_comment($this->replytoid);
+        return $this->replyto;
     }
 
     /**

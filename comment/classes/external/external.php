@@ -416,7 +416,7 @@ class external extends \external_api {
             $comment['contentformat'],
             $USER->id,
             $comment['pseudonym'],
-            $comment['replytoid'],
+            $replyto,
             $comment['customdata']
         );
 
