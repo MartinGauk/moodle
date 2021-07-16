@@ -37,6 +37,14 @@
     }
 }}
 <div class="core_comment_comment_header">
-    <b>{{fullname}}</b> {{timecreatedtext}}
-    {{#candelete}}<a href="#" class="js-delete-comment" data-id="{{id}}">delete</a>{{/candelete}}{{! TODO localize }}
+    {{#profileurl}}
+        <a href="{{profileurl}}">
+            <b>{{fullname}}</b>
+        </a>
+    {{/profileurl}}
+    {{^profileurl}}
+        <b>{{fullname}}</b>
+    {{/profileurl}}
+    {{timecreatedtext}}
+    {{#candelete}}<a href="#" data-deletecomment="{{id}}">delete</a>{{/candelete}}{{! TODO localize }}
 </div>

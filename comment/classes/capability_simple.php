@@ -74,7 +74,7 @@ class capability_simple extends capability {
      * @param bool $allowsubscriptions Is the user allowed to change the subscription to the section?
      * @throws \coding_exception
      */
-    public function __construct(section $section, \stdClass $user, bool $canview, bool $allowreplies = false,
+    public function __construct(section $section, \stdClass $user, bool $canview, bool $allowreplies = true,
             bool $allowupvotes = true, int $allowedpostmodes = self::POST_REALNAME, bool $allowsubscriptions = true) {
         parent::__construct($section, $user);
         $this->context = $section->get_context();

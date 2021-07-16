@@ -23,10 +23,19 @@
 
 import * as templates from 'core/templates';
 
-export class Component {
+export default class Component {
+
     constructor(el) {
         this.el = el;
-        this.children = [];
+        this.children = {};
+    }
+
+    async getTemplate() {
+        throw new Error('Not implemented.');
+    }
+
+    async getContext() {
+        return {};
     }
 
     async preRender(template, context) {
@@ -37,17 +46,59 @@ export class Component {
         // Nop.
     }
 
-    async render(template, context) {
-        context = this.preRender(template, context);
+    async render() {
+        const template = await this.getTemplate();
+        const context = await this.preRender(template, await this.getContext());
+        // eslint-disable-next-line no-console
+        console.log('rendering template ' + template + ' with context ', context);
         const html = await templates.render(template, context);
-        await this.disposeChildren();
+        this.detachChildren();
         templates.replaceNodeContents(this.el, html, '');
         await this.postRender();
     }
 
+    getChildren() {
+        return Object.values(this.children);
+    }
+
+    detachChildren() {
+        this.getChildren().forEach((child) => child.el.parentElement.removeChild(child.el));
+    }
+
+    addChild(selector, childCallback) {
+        const childEl = this.el.querySelector(selector);
+        if (childEl) {
+            if (this.children[selector]) {
+                const child = this.children[selector];
+                childEl.replaceWith(child.el);
+                return child;
+            } else {
+                const child = childCallback(childEl);
+                this.children[selector] = child;
+                return child;
+            }
+        }
+        return null;
+    }
+
+    removeChild(child) {
+        Object.entries(this.children)
+            // eslint-disable-next-line no-unused-vars
+            .filter(([key, value]) => value === child)
+            // eslint-disable-next-line no-unused-vars
+            .forEach(([key, value]) => delete this.children[key]);
+    }
+
+    addListener(selector, event, callback) {
+        const targetEl = this.el.querySelector(selector);
+        if (targetEl) {
+            targetEl.addEventListener(event, callback);
+        }
+    }
+
     async disposeChildren() {
-        await Promise.all(this.children.map((child) => child.dispose()));
-        this.children = [];
+        await Promise.all(this.getChildren().map((child) => child.dispose()));
+        this.children = {};
     }
 
     async dispose() {

@@ -38,11 +38,15 @@
     }
 }}
 <div class="core_comment_comment_footer">
-    <a href="#" data-showreplyform>Reply</a>{{! TODO localize }}
-    {{^showreplies}}
-        <a href="#" data-showreplies>▼ {{ replies }} replies</a>{{! TODO localize }}
-    {{/showreplies}}
-    {{#showreplies}}
-        <a href="#" data-hidereplies>▲ {{ replies }} replies</a>{{! TODO localize }}
-    {{/showreplies}}
+    {{#canreply}}
+        <a href="#" data-showreplyform>Reply</a>{{! TODO localize }}
+    {{/canreply}}
+    {{#replies}}
+        {{^showreplies}}
+            <a href="#" data-showreplies>▼ {{ replies }} replies</a>{{! TODO localize }}
+        {{/showreplies}}
+        {{#showreplies}}
+            <a href="#" data-hidereplies>▲ {{ replies }} replies</a>{{! TODO localize }}
+        {{/showreplies}}
+    {{/replies}}
 </div>

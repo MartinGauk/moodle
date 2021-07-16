@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
- * Comments module.
+ * Comment body module.
  *
  * @module     core_comment/comments
  * @package    core_comment
@@ -21,18 +21,22 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import CommentSection from 'core_comment/comment_section';
+import Component from 'core_comment/component';
 
-export const init = () => {
-    document.querySelectorAll('.js-comment-section').forEach((el) => {
-        if (!el.commentSection) {
-            const options = {
-                contextid: el.dataset.contextid,
-                component: el.dataset.component,
-                commentarea: el.dataset.commentarea,
-                itemid: el.dataset.itemid,
-            };
-            el.commentSection = new CommentSection(el, options);
-        }
-    });
-};
+export default class CommentBody extends Component {
+
+    constructor(el, comment) {
+        super(el);
+        this.comment = comment;
+        this.renderOptions = comment.renderOptions;
+        window.setTimeout(() => this.render());
+    }
+
+    async getTemplate() {
+        return this.renderOptions.commentbodytemplate;
+    }
+
+    async getContext() {
+        return await this.comment.getContext();
+    }
+}

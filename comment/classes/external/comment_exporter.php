@@ -90,6 +90,10 @@ class comment_exporter extends \core\external\exporter {
             'content' => array(
                 'type' => PARAM_RAW,
             ),
+            'pseudonym' => array(
+                'type' => PARAM_RAW,
+                'null' => NULL_ALLOWED,
+            ),
             'contentformat' => array(
                 'type' => PARAM_INT,
                 'default' => FORMAT_MOODLE,
@@ -124,10 +128,6 @@ class comment_exporter extends \core\external\exporter {
             ),
             'fullname' => array(
                 'type' => PARAM_RAW,
-            ),
-            'pseudonym' => array(
-                'type' => PARAM_RAW,
-                'null' => NULL_ALLOWED,
             ),
             'avatar' => array(
                 'type' => PARAM_RAW,

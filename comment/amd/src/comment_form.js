@@ -23,11 +23,50 @@
 
 import Component from 'core_comment/component';
 
-class CommentForm extends Component {
+export default class CommentForm extends Component {
 
-    constructor(el, commentSection) {
+    constructor(el, commentSection, comment = null, replyTo = null) {
         super(el);
         this.commentSection = commentSection;
+        this.renderOptions = commentSection.renderOptions;
+        this.comment = comment;
+        this.replyTo = replyTo;
+        window.setTimeout(() => this.render());
     }
 
+    async getTemplate() {
+        return this.renderOptions.commentformtemplate;
+    }
+
+    async getContext() {
+        return {
+            comment: this.comment ? await this.comment.getContext() : null,
+            replyto: this.replyTo ? await this.replyTo.getContext() : null
+        };
+    }
+
+    async submitForm(form) {
+        if (!this.comment) {
+            const newComment = await this.commentSection.createComment(form.content.value, null, null, this.replyTo);
+            if (!this.replyTo) {
+                await this.commentSection.commentList.insertComment(newComment);
+            } else {
+                if (!this.replyTo.showReplies) {
+                    await this.replyTo.toggleReplies();
+                }
+                await this.replyTo.commentReplies.insertComment(newComment);
+            }
+            form.reset();
+        } else {
+            // TODO update
+        }
+    }
+
+    async postRender() {
+        const form = this.el.querySelector('form');
+        form.onsubmit = () => {
+            this.submitForm(form);
+            return false;
+        };
+    }
 }

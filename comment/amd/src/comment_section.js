@@ -25,8 +25,9 @@ import Ajax from 'core/ajax';
 import Component from 'core_comment/component';
 import CommentForm from 'core_comment/comment_form';
 import CommentList from 'core_comment/comment_list';
+import * as templates from 'core/templates';
 
-class CommentSection extends Component {
+export default class CommentSection extends Component {
 
     constructor(el, options) {
         super(el);
@@ -34,50 +35,90 @@ class CommentSection extends Component {
         this.component = options.component;
         this.commentArea = options.commentarea;
         this.itemId = options.itemid;
+        this.pageSize = options.pageSize || 10;
         this.context = options.commentSection || null;
         this.comments = null;
         if (this.context) {
-            this.renderOptions = this.context.renderoptions;
-            window.setTimeout(() => this.load());
+            this.applyRenderOptions(this.context.renderoptions);
+            window.setTimeout(() => this.render());
         } else {
             this.renderOptions = null;
-            this.fetchContext().then(() => this.load());
+            this.fetchContext().then(() => this.render());
         }
     }
 
-    async load() {
-        const template = this.renderOptions.commentsectiontemplate || 'core_comment/comment_section';
-        await this.render(template, this.context);
-        this.initChildren();
+    applyRenderOptions(renderOptions) {
+        this.renderOptions = Object.assign({
+            commentsectiontemplate: 'core_comment/comment_section',
+            commentlisttemplate: 'core_comment/comment_list',
+            commentformtemplate: 'core_comment/comment_form',
+            commenttemplate: 'core_comment/comment',
+            commentheadertemplate: 'core_comment/comment_header',
+            commentbodytemplate: 'core_comment/comment_body',
+            commentfootertemplate: 'core_comment/comment_footer'
+        }, Object.fromEntries(renderOptions));
+
+        templates.prefetchTemplates(
+            Object.entries(this.renderOptions)
+                // eslint-disable-next-line no-unused-vars
+                .filter(([key, value]) => key.endsWith('template'))
+                // eslint-disable-next-line no-unused-vars
+                .map(([key, value]) => value)
+        );
     }
 
-    initChildren() {
-        this.commentForm = new CommentForm(this.el.querySelector('[data-commentform]'), this);
-        this.commentList = new CommentForm(this.el.querySelector('[data-commentlist]'), this);
-        this.children.push(this.commentForm, this.commentList);
+    async getTemplate() {
+        return this.renderOptions.commentsectiontemplate;
+    }
+
+    async getContext() {
+        return this.context;
+    }
+
+    async postRender() {
+        this.commentForm = this.addChild('[data-commentform]', (el) => new CommentForm(el, this));
+        this.commentList = this.addChild('[data-commentlist]', (el) => new CommentList(el, this, null, this.pageSize, 'DESC'));
+        if (this.comments !== null) {
+            this.commentList.comments = this.comments.slice(0, this.pageSize);
+            this.commentList.moreAvailableAfter = this.comments.length > this.pageSize;
+        }
     }
 
     async fetchContext() {
         const response = await Ajax.call([
             {
                 methodname: 'core_comment_get_comments', args: {
-                    contextid: this.contextid,
+                    contextid: this.contextId,
                     component: this.component,
-                    commentarea: this.commentarea,
-                    itemid: this.itemid
+                    commentarea: this.commentArea,
+                    itemid: this.itemId,
+                    pagesize: this.pageSize + 1,
                 }
             },
         ])[0];
         this.context = response.commentsections[0];
-        this.renderOptions = this.context.renderOptions;
+        this.applyRenderOptions(this.context.renderoptions);
+        // TODO prefetch templates
         this.comments = response.comments;
     }
 
-}
-
-export const init = async(el, options) => {
-    if (!el.commentSection) {
-        el.commentSection = new CommentSection(el, options);
+    async createComment(content, pseudonym = null, customData = null, replyTo = null) {
+        const newComment = await Ajax.call([
+            {methodname: 'core_comment_create_comment', args: {
+                    comment: {
+                        contextid: this.contextId,
+                        component: this.component,
+                        commentarea: this.commentArea,
+                        itemid: this.itemId,
+                        replytoid: replyTo ? replyTo.comment.id : undefined,
+                        content: content,
+                        pseudonym: pseudonym,
+                        customdata: customData || '',
+                    }
+                }},
+        ])[0];
+        replyTo.comment.replies++;
+        replyTo.commentFooter.render();
+        return newComment;
     }
-    return el.commentSection;
-};
+}
