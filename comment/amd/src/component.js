@@ -62,7 +62,11 @@ export default class Component {
     }
 
     detachChildren() {
-        this.getChildren().forEach((child) => child.el.parentElement.removeChild(child.el));
+        this.getChildren().forEach((child) => {
+            if (child.el.parentElement) {
+                child.el.parentElement.removeChild(child.el);
+            }
+        });
     }
 
     addChild(selector, childCallback) {
@@ -86,7 +90,10 @@ export default class Component {
             // eslint-disable-next-line no-unused-vars
             .filter(([key, value]) => value === child)
             // eslint-disable-next-line no-unused-vars
-            .forEach(([key, value]) => delete this.children[key]);
+            .forEach(([key, value]) => {
+                this.children[key].dispose();
+                delete this.children[key];
+            });
     }
 
     addListener(selector, event, callback) {
@@ -94,6 +101,10 @@ export default class Component {
         if (targetEl) {
             targetEl.addEventListener(event, callback);
         }
+    }
+
+    focus() {
+        this.el.focus();
     }
 
     async disposeChildren() {

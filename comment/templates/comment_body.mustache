@@ -19,7 +19,8 @@
 
     Moodle comment body template.
 
-    The purpose of this template is to render the body of a single comment, containing its content.
+    The purpose of this template is to render the body of a single comment, containing its content. It may also be used
+    to display a preview of the content while it's being written.
 
     Classes required for JS:
     * none
@@ -36,5 +37,5 @@
     }
 }}
 <div class="core_comment_comment_body">
-    <div style="white-space: pre-wrap;">{{ content }}</div>
+    <div style="white-space: pre-wrap;">{{{content}}}</div>
 </div>

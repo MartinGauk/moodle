@@ -232,7 +232,10 @@ class comment_exporter extends \core\external\exporter {
         $values['usermodifiedfullname'] = $this->comment->get_usermodified_fullname();
         $values['pseudonym'] = $this->comment->get_pseudonym();
         $values['fullname'] = $this->comment->get_usercreated_fullname();
-        $values['avatar'] = $OUTPUT->user_picture($usercreated, array('size'=>18));
+        $values['avatar'] = $OUTPUT->user_picture($usercreated, array(
+            'size' => 35,
+            'link' => !$this->comment->is_pseudonymous_author()
+        ));
         $values['replies'] = $this->comment->get_replies();
         $values['upvotes'] = $this->comment->get_upvotes();
         $values['vote'] = 0; //TODO get this from somewhere

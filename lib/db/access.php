@@ -1895,6 +1895,29 @@ $capabilities = array(
             'manager' => CAP_ALLOW
         )
     ),
+    'moodle/comment:postpseudonym' => array(
+
+        'riskbitmask' => RISK_SPAM | RISK_PERSONAL,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'user' => CAP_ALLOW,
+            'student' => CAP_ALLOW,
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
+    'moodle/comment:editany' => array(
+
+        'riskbitmask' => RISK_DATALOSS | RISK_SPAM | RISK_PERSONAL,
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        )
+    ),
     'moodle/comment:delete' => array(
 
         'riskbitmask' => RISK_DATALOSS,

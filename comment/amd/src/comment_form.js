@@ -25,12 +25,16 @@ import Component from 'core_comment/component';
 
 export default class CommentForm extends Component {
 
-    constructor(el, commentSection, comment = null, replyTo = null) {
+    constructor(el, commentSection, replyTo = null, comment = null) {
         super(el);
         this.commentSection = commentSection;
         this.renderOptions = commentSection.renderOptions;
         this.comment = comment;
-        this.replyTo = replyTo;
+        if (comment) {
+            this.replyTo = comment.commentList.replyTo;
+        } else {
+            this.replyTo = replyTo;
+        }
         window.setTimeout(() => this.render());
     }
 
@@ -40,33 +44,59 @@ export default class CommentForm extends Component {
 
     async getContext() {
         return {
+            canpost: this.commentSection.context.canpost,
+            allowpseudonym: this.commentSection.context.allowpseudonym,
+            allowrealname: this.commentSection.context.allowrealname,
             comment: this.comment ? await this.comment.getContext() : null,
             replyto: this.replyTo ? await this.replyTo.getContext() : null
         };
     }
 
     async submitForm(form) {
-        if (!this.comment) {
-            const newComment = await this.commentSection.createComment(form.content.value, null, null, this.replyTo);
-            if (!this.replyTo) {
-                await this.commentSection.commentList.insertComment(newComment);
-            } else {
-                if (!this.replyTo.showReplies) {
-                    await this.replyTo.toggleReplies();
-                }
-                await this.replyTo.commentReplies.insertComment(newComment);
-            }
-            form.reset();
+        const savedComment = await this.commentSection.saveComment(
+            form.content.value,
+            form.pseudonym ? form.pseudonym.value : null,
+            null,
+            this.replyTo,
+            this.comment
+        );
+        if (this.comment) {
+            await this.comment.onUpdated(savedComment);
+        } else if (this.replyTo) {
+            await this.replyTo.onReplyPosted(savedComment);
         } else {
-            // TODO update
+            await this.commentSection.commentList.onCommentPosted(savedComment);
+        }
+        form.reset();
+    }
+
+    focus() {
+        const input = this.el.querySelector('form [name="content"]');
+        if (input) {
+            input.focus();
+        } else {
+            this.el.focus();
         }
     }
 
     async postRender() {
         const form = this.el.querySelector('form');
-        form.onsubmit = () => {
-            this.submitForm(form);
+        if (form) {
+            form.onsubmit = () => {
+                this.submitForm(form);
+                return false;
+            };
+        }
+        this.addListener('[data-cancelcommentform]', 'click', (e) => {
+            const form = this.el.querySelector('form');
+            form.reset();
+            if (this.comment) {
+                this.comment.cancelEditing();
+            } else if (this.replyTo && this.replyTo.showReplyForm) {
+                this.replyTo.toggleReplyForm();
+            }
+            e.preventDefault();
             return false;
-        };
+        });
     }
 }

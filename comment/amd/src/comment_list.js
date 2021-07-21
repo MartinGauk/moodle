@@ -32,7 +32,7 @@ export default class CommentList extends Component {
         this.commentSection = commentSection;
         this.renderOptions = commentSection.renderOptions;
         this.replyTo = replyTo;
-        this.sortDirection = sortDirection;
+        this.sortDirection = sortDirection.toUpperCase();
         this.comments = [];
         this.moreAvailableBefore = false;
         this.moreAvailableAfter = true;
@@ -58,7 +58,7 @@ export default class CommentList extends Component {
         };
     }
 
-    async loadComments(pageSize, timeFrom = null, timeTo = null) {
+    async getComments(pageSize, sortDirection, timeFrom = null, timeTo = null) {
         const response = await Ajax.call([
             {
                 methodname: 'core_comment_get_comments', args: {
@@ -70,7 +70,7 @@ export default class CommentList extends Component {
                     timefrom: timeFrom,
                     timeto: timeTo,
                     pagesize: pageSize,
-                    sortdirection: this.sortDirection
+                    sortdirection: sortDirection
                 }
             },
         ])[0];
@@ -79,7 +79,7 @@ export default class CommentList extends Component {
 
     async loadMore(before = false) {
         if (!this.comments || !this.comments.length) {
-            const newComments = await this.loadComments(this.pageSize + 1);
+            const newComments = await this.getComments(this.pageSize + 1, this.sortDirection);
             this.moreAvailableBefore = false;
             this.moreAvailableAfter = newComments.length > this.pageSize;
             this.comments = newComments.slice(0, this.pageSize);
@@ -91,29 +91,33 @@ export default class CommentList extends Component {
         let overlap = 0;
         if (before) {
             time = this.comments[0].timecreated;
-            while (this.comments[overlap].timecreated === time) {
+            while (overlap < this.comments.length && this.comments[overlap].timecreated === time) {
                 overlap++;
             }
         } else {
             time = this.comments[this.comments.length - 1].timecreated;
-            while (this.comments[this.comments.length - 1 - overlap].timecreated === time) {
+            while (overlap < this.comments.length && this.comments[this.comments.length - 1 - overlap].timecreated === time) {
                 overlap++;
             }
         }
 
         let timeFrom = null;
         let timeTo = null;
-        if ((this.sortDirection.toUpperCase() === 'DESC') !== before) {
+        if ((this.sortDirection === 'DESC') !== before) {
             timeTo = time;
         } else {
             timeFrom = time;
         }
         let pageSize = this.pageSize + overlap + 1;
-        const newComments = await this.loadComments(pageSize, timeFrom, timeTo);
+        let sortDirection = this.sortDirection;
+        if (before) {
+            sortDirection = (sortDirection === 'DESC') ? 'ASC' : 'DESC';
+        }
+        const newComments = await this.getComments(pageSize, sortDirection, timeFrom, timeTo);
         const moreAvailable = newComments.length === pageSize;
         if (before) {
             this.moreAvailableBefore = moreAvailable;
-            this.comments.unshift(...newComments.slice(-this.pageSize - overlap, -overlap));
+            this.comments.unshift(...newComments.reverse().slice(-this.pageSize - overlap, -overlap));
         } else {
             this.moreAvailableAfter = moreAvailable;
             this.comments.push(...newComments.slice(overlap, this.pageSize + overlap));
@@ -122,7 +126,7 @@ export default class CommentList extends Component {
         await this.render();
     }
 
-    async removeComment(id) {
+    async onCommentDeleted(id) {
         for (let i = 0; i < this.comments.length; i++) {
             if (this.comments[i].id === id) {
                 this.comments.splice(i, 1);
@@ -131,18 +135,30 @@ export default class CommentList extends Component {
         }
         await this.render();
         this.getChildren().filter((child) => child instanceof Comment && child.comment.id === id).forEach((child) => {
-            child.dispose();
             this.removeChild(child);
         });
     }
 
-    async insertComment(comment) {
+    async onCommentPosted(comment) {
         if (this.sortDirection === 'DESC') {
-            this.comments.unshift(comment);
+            if (this.moreAvailableBefore) {
+                this.comments = [comment];
+                this.moreAvailableBefore = false;
+                await this.loadMore(false);
+            } else {
+                this.comments.unshift(comment);
+                await this.render();
+            }
         } else {
-            this.comments.push(comment);
+            if (this.moreAvailableAfter) {
+                this.comments = [comment];
+                this.moreAvailableAfter = false;
+                await this.loadMore(true);
+            } else {
+                this.comments.push(comment);
+                await this.render();
+            }
         }
-        await this.render();
     }
 
     async postRender() {

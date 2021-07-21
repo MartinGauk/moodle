@@ -28,11 +28,17 @@
     * none
 
     Context variables required for this template:
+    * canpost Boolean specifying whether the user can post comments here
+    * allowpseudonym Boolean specifying whether the user may use a pseudonym
+    * allowrealname Boolean specifying whether the user may use their real name
     * comment Comment to be edited as exported by core_comment\external\comment_exporter.php (optional)
     * replyto Comment that this is a reply to as exported by core_comment\external\comment_exporter.php (optional)
 
     Example context (json):
     {
+        "canpost": true,
+        "allowpseudonym": true,
+        "allowrealname": true,
         "comment": {
             // TODO fill with example comment
         },
@@ -42,8 +48,19 @@
     }
 }}
 <div class="core_comment_comment_form">
-    <form>
-        <textarea name="content"></textarea>
-        <input type="submit">
-    </form>
+    {{#canpost}}
+        <form>
+            {{#allowpseudonym}}
+                <div>
+                    <input type="text" name="pseudonym" {{^allowrealname}}required{{/allowrealname}}
+                        {{#comment}}value="{{pseudonym}}"{{/comment}}/>
+                </div>
+            {{/allowpseudonym}}
+            <div>
+                <textarea name="content">{{#comment}}{{content}}{{/comment}}</textarea>
+            </div>
+            <input type="submit">
+            <input type="button" data-cancelcommentform value="Cancel">{{! TODO localize }}
+        </form>
+    {{/canpost}}
 </div>

@@ -58,6 +58,7 @@ export default class CommentSection extends Component {
             commentfootertemplate: 'core_comment/comment_footer'
         }, Object.fromEntries(renderOptions));
 
+        // Prefetch all templates (i.e. the values of all render options with keys ending in "template").
         templates.prefetchTemplates(
             Object.entries(this.renderOptions)
                 // eslint-disable-next-line no-unused-vars
@@ -98,18 +99,18 @@ export default class CommentSection extends Component {
         ])[0];
         this.context = response.commentsections[0];
         this.applyRenderOptions(this.context.renderoptions);
-        // TODO prefetch templates
         this.comments = response.comments;
     }
 
-    async createComment(content, pseudonym = null, customData = null, replyTo = null) {
-        const newComment = await Ajax.call([
-            {methodname: 'core_comment_create_comment', args: {
+    async saveComment(content, pseudonym = null, customData = null, replyTo = null, comment = null) {
+        return await Ajax.call([
+            {methodname: comment ? 'core_comment_update_comment' : 'core_comment_create_comment', args: {
                     comment: {
                         contextid: this.contextId,
                         component: this.component,
                         commentarea: this.commentArea,
                         itemid: this.itemId,
+                        id: comment ? comment.comment.id : undefined,
                         replytoid: replyTo ? replyTo.comment.id : undefined,
                         content: content,
                         pseudonym: pseudonym,
@@ -117,8 +118,11 @@ export default class CommentSection extends Component {
                     }
                 }},
         ])[0];
-        replyTo.comment.replies++;
-        replyTo.commentFooter.render();
-        return newComment;
+    }
+
+    async deleteComment(id) {
+        await Ajax.call([
+            {methodname: 'core_comment_delete_comments', args: {comments: [id]}},
+        ])[0];
     }
 }

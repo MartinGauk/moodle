@@ -49,13 +49,17 @@
 }}
 <div class="core_comment_comment_list {{#replyto}}core_comment_comment_replies{{/replyto}}">
     {{#moreavailablebefore}}
-        <a href="#" data-loadmorebefore>Load more...</a>{{! TODO localize }}
+        <div class="my-3">
+            <a href="#" data-loadmorebefore>Load more...</a>{{! TODO localize }}
+        </div>
     {{/moreavailablebefore}}
     {{#comments}}
-        <div class="mt-3" data-comment="{{id}}">
+        <div class="my-3" data-comment="{{id}}">
         </div>
     {{/comments}}
     {{#moreavailableafter}}
-        <a href="#" data-loadmoreafter>Load more...</a>{{! TODO localize }}
+        <div class="my-3">
+            <a href="#" data-loadmoreafter>Load more...</a>{{! TODO localize }}
+        </div>
     {{/moreavailableafter}}
 </div>

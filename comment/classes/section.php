@@ -184,6 +184,9 @@ abstract class section {
      * @return string[] empty array when the validation passed or an array of properties with errors (property => error message).
      */
     public function validate_comment(comment $comment, capability $capability) {
+        if (!strlen($comment->get_content())) {
+            throw new \comment_exception(); //TODO error message
+        }
         return $this->validate_comment_custom_data($comment, $capability);
     }
 
@@ -240,7 +243,7 @@ abstract class section {
      * @return capability
      */
     public function get_capability(?\stdClass $user = null) : capability {
-        return new capability_simple($this, $user, true);
+        return new capability_simple($this, $user, true, true, true, capability::POST_BOTH);
         // TODO
     }
 

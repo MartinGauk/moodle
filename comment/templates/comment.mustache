@@ -25,29 +25,93 @@
     * none
 
     Data attributes required for JS:
-    * data-commentheader
     * data-commentbody
-    * data-commentfooter
     * data-commentreplies
     * data-commentreplyform
 
     Context variables required for this template:
+    * isediting Boolean specifying whether the comment is being edited
+    * showreplies Boolean specifing whether replies are displayed
+    * showreplyform Boolean specifing whether the reply form is displayed
     * Comment as exported by core_comment\external\comment_exporter.php
 
     Example context (json):
     {
+        "isediting": false,
+        "showreplies": false,
+        "showreplyform": false,
         // TODO fill with example comment
     }
 }}
-<div class="core_comment_comment d-flex flex-md-row">
-    <div>
+<div class="core_comment_comment {{#pseudonym}}core_comment_comment_pseudonymous{{/pseudonym}} d-flex flex-row">
+    <div class="core_comment_comment_avatar flex-grow-0">
         {{{avatar}}}
     </div>
-    <div>
-        <div data-commentheader="{{id}}"></div>
-        <div data-commentbody="{{id}}"></div>
-        <div data-commentfooter="{{id}}"></div>
-        <div data-commentreplies="{{id}}"></div>
-        <div data-commentreplyform="{{id}}"></div>
+    <div class="flex-grow-1">
+        <div class="core_comment_comment_header d-flex flex-row flex-nowrap">
+            <div class="flex-grow-1">
+                <span class="core_comment_comment_author">
+                    {{#profileurl}}
+                        <a href="{{profileurl}}">
+                            <b>{{fullname}}</b>
+                        </a>
+                    {{/profileurl}}
+                    {{^profileurl}}
+                        <b>{{fullname}}</b>
+                    {{/profileurl}}
+                    {{#pseudonym}}
+                        <span>(pseudonym)</span>{{! TODO localize }}
+                    {{/pseudonym}}
+                </span>
+                <span class="ml-1">
+                    {{timecreatedtext}}
+                </span>
+            </div>
+            <div class="core_comment_comment_settings flex-grow-0 btn-group">
+                <a class="action-icon clickable text-muted" data-toggle="dropdown" role="button">
+                    <i class="icon fa fa-ellipsis-v fa-fw"></i>
+                </a>
+                <div class="dropdown-menu">
+                    {{#canedit}}{{^isediting}}
+                        <a href="#" class="dropdown-item" data-editcomment="{{id}}">
+                            <i class="icon fa fa-pencil fa-fw"></i> Edit{{! TODO localize }}
+                        </a>
+                    {{/isediting}}{{/canedit}}
+                    {{#candelete}}
+                        <a href="#" class="dropdown-item" data-deletecomment="{{id}}">
+                            <i class="icon fa fa-trash fa-fw"></i> Delete{{! TODO localize }}
+                        </a>
+                    {{/candelete}}
+                </div>
+            </div>
+        </div>
+
+        {{#isediting}}
+            <div data-commenteditform="{{id}}"></div>
+        {{/isediting}}
+        {{^isediting}}
+            <div data-commentbody="{{id}}"></div>
+        {{/isediting}}
+
+        <div class="core_comment_comment_footer">
+            {{#canreply}}
+                <a href="#" data-showreplyform="{{id}}">Reply</a>{{! TODO localize }}
+            {{/canreply}}
+            {{#replies}}
+                {{^showreplies}}
+                    <a href="#" data-showreplies="{{id}}">▼ {{ replies }} replies</a>{{! TODO localize }}
+                {{/showreplies}}
+                {{#showreplies}}
+                    <a href="#" data-hidereplies="{{id}}">▲ {{ replies }} replies</a>{{! TODO localize }}
+                {{/showreplies}}
+            {{/replies}}
+        </div>
+
+        {{#showreplies}}
+            <div data-commentreplies="{{id}}"></div>
+        {{/showreplies}}
+        {{#showreplyform}}
+            <div data-commentreplyform="{{id}}"></div>
+        {{/showreplyform}}
     </div>
 </div>

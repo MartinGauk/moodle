@@ -37,6 +37,6 @@ export default class CommentBody extends Component {
     }
 
     async getContext() {
-        return await this.comment.getContext();
+        return this.comment.comment;
     }
 }

@@ -22,21 +22,21 @@
  */
 
 import Component from 'core_comment/component';
-import CommentHeader from 'core_comment/comment_header';
 import CommentBody from 'core_comment/comment_body';
-import CommentFooter from 'core_comment/comment_footer';
 import CommentForm from 'core_comment/comment_form';
-import Ajax from 'core/ajax';
 
 export default class Comment extends Component {
 
     constructor(el, commentList, comment) {
         super(el);
         this.commentList = commentList;
+        this.commentSection = commentList.commentSection;
+        this.replyTo = commentList.replyTo;
         this.renderOptions = commentList.renderOptions;
         this.comment = comment;
         this.showReplies = false;
         this.showReplyForm = false;
+        this.isEditing = false;
         window.setTimeout(() => this.render());
     }
 
@@ -45,60 +45,127 @@ export default class Comment extends Component {
     }
 
     async getContext() {
-        return this.comment;
+        return Object.assign({
+            isediting: this.isEditing,
+            showreplies: this.showReplies,
+            showreplyform: this.showReplyForm
+        }, this.comment);
     }
 
     async delete() {
-        await Ajax.call([
-            {methodname: 'core_comment_delete_comments', args: {comments: [this.comment.id]}},
-        ])[0];
-        if (this.commentList.replyTo) {
-            this.commentList.replyTo.comment.replies--;
-            this.commentList.replyTo.commentFooter.render();
+        await this.commentSection.deleteComment(this.comment.id);
+        await this.onDeleted();
+    }
+
+    async startEditing() {
+        this.isEditing = true;
+        await this.render();
+    }
+
+    async cancelEditing() {
+        if (this.isEditing) {
+            this.isEditing = false;
+            await this.render();
         }
-        await this.commentList.removeComment(this.comment.id);
     }
 
     async toggleReplies() {
+        this.showReplies = !this.showReplies;
+        await this.render();
         if (this.showReplies) {
-            this.showReplies = false;
-            this.commentReplies.el.style.display = 'none';
-            await this.commentFooter.render();
-        } else {
-            if (!this.commentReplies) {
-                const CommentList = require('core_comment/comment_list');
-                this.commentReplies = this.addChild(
-                    `[data-commentreplies="${this.comment.id}"]`,
-                    (el) => new CommentList(el, this.commentList.commentSection, this, 5, 'ASC', true)
-                );
-            }
-            this.showReplies = true;
-            this.commentReplies.el.style.display = 'block';
-            await this.commentFooter.render();
+            await this.commentReplies.loadMore();
         }
     }
 
     async toggleReplyForm() {
-        if (this.showReplyForm) {
-            this.showReplyForm = false;
-            this.commentReplyForm.el.style.display = 'none';
-            await this.commentFooter.render();
-        } else {
-            if (!this.commentReplyForm) {
-                this.commentReplyForm = this.addChild(
-                    `[data-commentreplyform="${this.comment.id}"]`,
-                    (el) => new CommentForm(el, this.commentList.commentSection, null, this)
-                );
-            }
-            this.showReplyForm = true;
-            this.commentReplyForm.el.style.display = 'block';
-            await this.commentFooter.render();
+        this.showReplyForm = !this.showReplyForm;
+        await this.render();
+    }
+
+    async onDeleted() {
+        if (this.replyTo) {
+            this.replyTo.comment.replies--;
+            this.replyTo.render();
         }
+        await this.commentList.onCommentDeleted(this.comment.id);
+    }
+
+    async onUpdated(updatedComment) {
+        this.comment = updatedComment;
+        this.isEditing = false;
+        this.removeChild(this.commentEditForm);
+        await Promise.all([this.render(), this.commentBody.render()]);
+    }
+
+    async onReplyPosted(reply) {
+        this.comment.replies++;
+        this.showReplies = true;
+        await this.render();
+        await this.commentReplies.onCommentPosted(reply);
     }
 
     async postRender() {
-        this.commentHeader = this.addChild(`[data-commentheader="${this.comment.id}"]`, (el) => new CommentHeader(el, this));
-        this.commentBody = this.addChild(`[data-commentbody="${this.comment.id}"]`, (el) => new CommentBody(el, this));
-        this.commentFooter = this.addChild(`[data-commentfooter="${this.comment.id}"]`, (el) => new CommentFooter(el, this));
+        // Render editing form or comment body.
+        if (this.isEditing) {
+            this.commentEditForm = this.addChild(
+                `[data-commenteditform="${this.comment.id}"]`,
+                (el) => new CommentForm(el, this.commentSection, null, this));
+        } else {
+            this.commentBody = this.addChild(`[data-commentbody="${this.comment.id}"]`, (el) => new CommentBody(el, this));
+        }
+        // Render reply form.
+        if (this.showReplyForm) {
+            this.commentReplyForm = this.addChild(
+                `[data-commentreplyform="${this.comment.id}"]`,
+                (el) => new CommentForm(el, this.commentSection, this)
+            );
+        }
+        // Render replies.
+        if (this.showReplies) {
+            const CommentList = require('core_comment/comment_list');
+            this.commentReplies = this.addChild(
+                `[data-commentreplies="${this.comment.id}"]`,
+                (el) => new CommentList(el, this.commentSection, this, 5, 'ASC', false)
+            );
+        }
+
+        this.addListener(`[data-deletecomment="${this.comment.id}"]`, 'click', (e) => {
+            this.delete();
+            e.preventDefault();
+            return false;
+        });
+        this.addListener(`[data-editcomment="${this.comment.id}"]`, 'click', (e) => {
+            this.startEditing();
+            e.preventDefault();
+            return false;
+        });
+        this.addListener(`[data-showreplies="${this.comment.id}"]`, 'click', (e) => {
+            if (!this.showReplies) {
+                this.toggleReplies();
+            }
+            e.preventDefault();
+            return false;
+        });
+        this.addListener(`[data-hidereplies="${this.comment.id}"]`, 'click', (e) => {
+            if (this.showReplies) {
+                this.toggleReplies();
+            }
+            e.preventDefault();
+            return false;
+        });
+        this.addListener(`[data-showreplyform="${this.comment.id}"]`, 'click', (e) => {
+            if (!this.showReplyForm) {
+                this.toggleReplyForm();
+            }
+            e.preventDefault();
+            return false;
+        });
+        this.addListener(`[data-hidereplyform="${this.comment.id}"]`, 'click', (e) => {
+            if (this.showReplyForm) {
+                this.toggleReplyForm();
+            }
+            e.preventDefault();
+            return false;
+        });
     }
 }
