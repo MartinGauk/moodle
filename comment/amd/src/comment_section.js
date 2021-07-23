@@ -25,12 +25,15 @@ import Ajax from 'core/ajax';
 import Component from 'core_comment/component';
 import CommentForm from 'core_comment/comment_form';
 import CommentList from 'core_comment/comment_list';
+import Comment from 'core_comment/comment';
+import CommentBody from 'core_comment/comment_body';
 import * as templates from 'core/templates';
+import Notification from 'core/notification';
 
 export default class CommentSection extends Component {
 
     constructor(el, options) {
-        super(el);
+        super('commentsection', el, null);
         this.contextId = options.contextid;
         this.component = options.component;
         this.commentArea = options.commentarea;
@@ -42,8 +45,7 @@ export default class CommentSection extends Component {
             this.applyRenderOptions(this.context.renderoptions);
             window.setTimeout(() => this.render());
         } else {
-            this.renderOptions = null;
-            this.fetchContext().then(() => this.render());
+            this.loadContext().catch(Notification.exception);
         }
     }
 
@@ -53,9 +55,12 @@ export default class CommentSection extends Component {
             commentlisttemplate: 'core_comment/comment_list',
             commentformtemplate: 'core_comment/comment_form',
             commenttemplate: 'core_comment/comment',
-            commentheadertemplate: 'core_comment/comment_header',
             commentbodytemplate: 'core_comment/comment_body',
-            commentfootertemplate: 'core_comment/comment_footer'
+            commentsectionclass: CommentSection,
+            commentlistclass: CommentList,
+            commentformclass: CommentForm,
+            commentclass: Comment,
+            commentbodyclass: CommentBody,
         }, Object.fromEntries(renderOptions));
 
         // Prefetch all templates (i.e. the values of all render options with keys ending in "template").
@@ -68,24 +73,20 @@ export default class CommentSection extends Component {
         );
     }
 
-    async getTemplate() {
-        return this.renderOptions.commentsectiontemplate;
-    }
-
     async getContext() {
         return this.context;
     }
 
     async postRender() {
-        this.commentForm = this.addChild('[data-commentform]', (el) => new CommentForm(el, this));
-        this.commentList = this.addChild('[data-commentlist]', (el) => new CommentList(el, this, null, this.pageSize, 'DESC'));
+        this.commentForm = this.addChild('[data-commentform]', 'commentform', [this]);
+        this.commentList = this.addChild('[data-commentlist]', 'commentlist', [this, null, this.pageSize, 'DESC']);
         if (this.comments !== null) {
             this.commentList.comments = this.comments.slice(0, this.pageSize);
             this.commentList.moreAvailableAfter = this.comments.length > this.pageSize;
         }
     }
 
-    async fetchContext() {
+    async loadContext() {
         const response = await Ajax.call([
             {
                 methodname: 'core_comment_get_comments', args: {
@@ -100,6 +101,26 @@ export default class CommentSection extends Component {
         this.context = response.commentsections[0];
         this.applyRenderOptions(this.context.renderoptions);
         this.comments = response.comments;
+        await this.render();
+    }
+
+    async getComments(pageSize, sortDirection, replyTo = null, timeFrom = null, timeTo = null) {
+        const response = await Ajax.call([
+            {
+                methodname: 'core_comment_get_comments', args: {
+                    contextid: this.contextId,
+                    component: this.component,
+                    commentarea: this.commentArea,
+                    itemid: this.itemId,
+                    replytoid: replyTo ? replyTo.comment.id : undefined,
+                    timefrom: timeFrom,
+                    timeto: timeTo,
+                    pagesize: pageSize,
+                    sortdirection: sortDirection
+                }
+            },
+        ])[0];
+        return response.comments;
     }
 
     async saveComment(content, pseudonym = null, customData = null, replyTo = null, comment = null) {

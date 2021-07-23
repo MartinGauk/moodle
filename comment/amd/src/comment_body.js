@@ -26,14 +26,10 @@ import Component from 'core_comment/component';
 export default class CommentBody extends Component {
 
     constructor(el, comment) {
-        super(el);
+        super('commentbody', el, comment);
         this.comment = comment;
         this.renderOptions = comment.renderOptions;
         window.setTimeout(() => this.render());
-    }
-
-    async getTemplate() {
-        return this.renderOptions.commentbodytemplate;
     }
 
     async getContext() {

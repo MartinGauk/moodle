@@ -22,16 +22,28 @@
  */
 
 import * as templates from 'core/templates';
+import Notification from 'core/notification';
 
 export default class Component {
 
-    constructor(el) {
+    constructor(name, el, parent) {
+        this.name = name;
         this.el = el;
+        this.parent = parent;
+        if (parent) {
+            this.renderOptions = parent.renderOptions;
+        } else {
+            this.renderOptions = {};
+        }
         this.children = {};
     }
 
     async getTemplate() {
-        throw new Error('Not implemented.');
+        const templateKey = this.name + 'template';
+        if (!(templateKey in this.renderOptions)) {
+            throw new Error('Template key not found in renderoptions: ' + templateKey);
+        }
+        return this.renderOptions[templateKey];
     }
 
     async getContext() {
@@ -42,19 +54,30 @@ export default class Component {
         return context;
     }
 
-    async postRender() {
+    // eslint-disable-next-line no-unused-vars
+    async postRender(template, context) {
         // Nop.
     }
 
     async render() {
-        const template = await this.getTemplate();
-        const context = await this.preRender(template, await this.getContext());
-        // eslint-disable-next-line no-console
-        console.log('rendering template ' + template + ' with context ', context);
-        const html = await templates.render(template, context);
-        this.detachChildren();
-        templates.replaceNodeContents(this.el, html, '');
-        await this.postRender();
+        try {
+            const template = await this.getTemplate();
+            let context = await this.preRender(template, await this.getContext());
+            context = this.callback('prerender', [template, context], context);
+
+            // TODO remove logging
+            // eslint-disable-next-line no-console
+            console.log('rendering template ' + template + ' with context ', context);
+            const html = await templates.render(template, context);
+
+            this.detachChildren();
+            templates.replaceNodeContents(this.el, html, '');
+
+            await this.postRender(template, context);
+            this.callback('postrender', [template, context, this.el]);
+        } catch (e) {
+            Notification.exception(e);
+        }
     }
 
     getChildren() {
@@ -69,7 +92,7 @@ export default class Component {
         });
     }
 
-    addChild(selector, childCallback) {
+    addChild(selector, childName, args) {
         const childEl = this.el.querySelector(selector);
         if (childEl) {
             if (this.children[selector]) {
@@ -77,7 +100,11 @@ export default class Component {
                 childEl.replaceWith(child.el);
                 return child;
             } else {
-                const child = childCallback(childEl);
+                const childClassKey = childName + 'class';
+                if (!(childClassKey in this.renderOptions)) {
+                    throw new Error('Component class key not found in renderoptions: ' + childClassKey);
+                }
+                const child = new this.renderOptions[childClassKey](childEl, ...args);
                 this.children[selector] = child;
                 return child;
             }
@@ -105,6 +132,22 @@ export default class Component {
 
     focus() {
         this.el.focus();
+    }
+
+    callback(callbackName, args, defaultValue = undefined) {
+        const callbackKey = this.name + callbackName;
+        if (this.renderOptions[callbackKey]) {
+            const type = typeof this.renderOptions[callbackKey];
+            if (type !== 'function') {
+                throw new Error("Expected callback function to be of type 'function', got '" + type + "' instead.");
+            }
+            try {
+                return this.renderOptions[callbackKey](...args);
+            } catch (e) {
+                Notification.exception(e);
+            }
+        }
+        return defaultValue;
     }
 
     async disposeChildren() {

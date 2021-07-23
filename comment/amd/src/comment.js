@@ -22,13 +22,12 @@
  */
 
 import Component from 'core_comment/component';
-import CommentBody from 'core_comment/comment_body';
-import CommentForm from 'core_comment/comment_form';
+import Notification from 'core/notification';
 
 export default class Comment extends Component {
 
     constructor(el, commentList, comment) {
-        super(el);
+        super('comment', el, commentList);
         this.commentList = commentList;
         this.commentSection = commentList.commentSection;
         this.replyTo = commentList.replyTo;
@@ -38,10 +37,6 @@ export default class Comment extends Component {
         this.showReplyForm = false;
         this.isEditing = false;
         window.setTimeout(() => this.render());
-    }
-
-    async getTemplate() {
-        return this.renderOptions.commenttemplate;
     }
 
     async getContext() {
@@ -73,7 +68,7 @@ export default class Comment extends Component {
         this.showReplies = !this.showReplies;
         await this.render();
         if (this.showReplies) {
-            await this.commentReplies.loadMore();
+            await this.commentReplies.loadMore().catch(Notification.exception);
         }
     }
 
@@ -108,29 +103,26 @@ export default class Comment extends Component {
         // Render editing form or comment body.
         if (this.isEditing) {
             this.commentEditForm = this.addChild(
-                `[data-commenteditform="${this.comment.id}"]`,
-                (el) => new CommentForm(el, this.commentSection, null, this));
+                `[data-commenteditform="${this.comment.id}"]`, 'commentform', [this.commentSection, null, this]
+            );
         } else {
-            this.commentBody = this.addChild(`[data-commentbody="${this.comment.id}"]`, (el) => new CommentBody(el, this));
+            this.commentBody = this.addChild(`[data-commentbody="${this.comment.id}"]`, 'commentbody', [this]);
         }
         // Render reply form.
         if (this.showReplyForm) {
             this.commentReplyForm = this.addChild(
-                `[data-commentreplyform="${this.comment.id}"]`,
-                (el) => new CommentForm(el, this.commentSection, this)
+                `[data-commentreplyform="${this.comment.id}"]`, 'commentform', [this.commentSection, this]
             );
         }
         // Render replies.
         if (this.showReplies) {
-            const CommentList = require('core_comment/comment_list');
             this.commentReplies = this.addChild(
-                `[data-commentreplies="${this.comment.id}"]`,
-                (el) => new CommentList(el, this.commentSection, this, 5, 'ASC', false)
+                `[data-commentreplies="${this.comment.id}"]`, 'commentlist', [this.commentSection, this, 5, 'ASC', false]
             );
         }
 
         this.addListener(`[data-deletecomment="${this.comment.id}"]`, 'click', (e) => {
-            this.delete();
+            this.delete().catch(Notification.exception);
             e.preventDefault();
             return false;
         });

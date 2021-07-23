@@ -22,11 +22,12 @@
  */
 
 import Component from 'core_comment/component';
+import Notification from 'core/notification';
 
 export default class CommentForm extends Component {
 
     constructor(el, commentSection, replyTo = null, comment = null) {
-        super(el);
+        super('commentform', el, replyTo || commentSection);
         this.commentSection = commentSection;
         this.renderOptions = commentSection.renderOptions;
         this.comment = comment;
@@ -38,17 +39,13 @@ export default class CommentForm extends Component {
         window.setTimeout(() => this.render());
     }
 
-    async getTemplate() {
-        return this.renderOptions.commentformtemplate;
-    }
-
     async getContext() {
         return {
             canpost: this.commentSection.context.canpost,
             allowpseudonym: this.commentSection.context.allowpseudonym,
             allowrealname: this.commentSection.context.allowrealname,
-            comment: this.comment ? await this.comment.getContext() : null,
-            replyto: this.replyTo ? await this.replyTo.getContext() : null
+            comment: this.comment ? await this.comment.comment : null,
+            replyto: this.replyTo ? await this.replyTo.comment : null
         };
     }
 
@@ -83,7 +80,7 @@ export default class CommentForm extends Component {
         const form = this.el.querySelector('form');
         if (form) {
             form.onsubmit = () => {
-                this.submitForm(form);
+                this.submitForm(form).catch(Notification.exception);
                 return false;
             };
         }

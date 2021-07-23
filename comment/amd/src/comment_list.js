@@ -23,12 +23,12 @@
 
 import Component from 'core_comment/component';
 import Comment from 'core_comment/comment';
-import Ajax from 'core/ajax';
+import Notification from 'core/notification';
 
 export default class CommentList extends Component {
 
     constructor(el, commentSection, replyTo = null, pageSize = 10, sortDirection = 'DESC', autoload = false) {
-        super(el);
+        super('commentlist', el, replyTo || commentSection);
         this.commentSection = commentSection;
         this.renderOptions = commentSection.renderOptions;
         this.replyTo = replyTo;
@@ -38,14 +38,10 @@ export default class CommentList extends Component {
         this.moreAvailableAfter = true;
         this.pageSize = pageSize;
         if (autoload) {
-            this.loadMore();
+            this.loadMore().catch(Notification.exception);
         } else {
             window.setTimeout(() => this.render());
         }
-    }
-
-    async getTemplate() {
-        return this.renderOptions.commentlisttemplate;
     }
 
     async getContext() {
@@ -58,28 +54,9 @@ export default class CommentList extends Component {
         };
     }
 
-    async getComments(pageSize, sortDirection, timeFrom = null, timeTo = null) {
-        const response = await Ajax.call([
-            {
-                methodname: 'core_comment_get_comments', args: {
-                    contextid: this.commentSection.contextId,
-                    component: this.commentSection.component,
-                    commentarea: this.commentSection.commentArea,
-                    itemid: this.commentSection.itemId,
-                    replytoid: this.replyTo ? this.replyTo.comment.id : undefined,
-                    timefrom: timeFrom,
-                    timeto: timeTo,
-                    pagesize: pageSize,
-                    sortdirection: sortDirection
-                }
-            },
-        ])[0];
-        return response.comments;
-    }
-
     async loadMore(before = false) {
         if (!this.comments || !this.comments.length) {
-            const newComments = await this.getComments(this.pageSize + 1, this.sortDirection);
+            const newComments = await this.commentSection.getComments(this.pageSize + 1, this.sortDirection, this.replyTo);
             this.moreAvailableBefore = false;
             this.moreAvailableAfter = newComments.length > this.pageSize;
             this.comments = newComments.slice(0, this.pageSize);
@@ -113,7 +90,7 @@ export default class CommentList extends Component {
         if (before) {
             sortDirection = (sortDirection === 'DESC') ? 'ASC' : 'DESC';
         }
-        const newComments = await this.getComments(pageSize, sortDirection, timeFrom, timeTo);
+        const newComments = await this.commentSection.getComments(pageSize, sortDirection, this.replyTo, timeFrom, timeTo);
         const moreAvailable = newComments.length === pageSize;
         if (before) {
             this.moreAvailableBefore = moreAvailable;
@@ -163,18 +140,25 @@ export default class CommentList extends Component {
 
     async postRender() {
         this.comments.forEach((comment) => {
-            this.addChild(`[data-comment="${comment.id}"]`, (el) => new Comment(el, this, comment));
+            this.addChild(`[data-comment="${comment.id}"]`, 'comment', [this, comment]);
         });
         this.addListener('[data-loadmorebefore]', 'click', (e) => {
-            this.loadMore(true);
+            this.loadMore(true).catch(Notification.exception);
             e.preventDefault();
             return false;
         });
         this.addListener('[data-loadmoreafter]', 'click', (e) => {
-            this.loadMore(false);
+            this.loadMore(false).catch(Notification.exception);
             e.preventDefault();
             return false;
         });
+        if (this.renderOptions.commentlistpostrender) {
+            try {
+                this.renderOptions.commentlistpostrender();
+            } catch (e) {
+                Notification.exception(e);
+            }
+        }
     }
 
 }
