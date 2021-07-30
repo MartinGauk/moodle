@@ -216,7 +216,7 @@ class area {
      * You may pass an item object that belongs to the item id.
      *
      * @param int $itemid
-     * @param mixed $item
+     * @param mixed|null $item
      * @return section
      */
     public function get_section(int $itemid, $item = null) : section {

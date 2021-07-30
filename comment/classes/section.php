@@ -243,8 +243,10 @@ abstract class section {
      * @return capability
      */
     public function get_capability(?\stdClass $user = null) : capability {
-        return new capability_simple($this, $user, true, true, true, capability::POST_BOTH);
-        // TODO
+        $options = $this->area->get_options();
+        $postmodes = ($options['postrealname']) ? capability::POST_REALNAME : 0;
+        $postmodes |=  ($options['postpseudonym']) ? capability::POST_PSEUDONYM : 0;
+        return new capability_simple($this, $user, true, $options['replies'], $options['votes'], $postmodes);
     }
 
     /**
@@ -295,7 +297,7 @@ abstract class section {
     }
 
     public function enable_votes() : bool {
-        // TODO take value from options in db/?
+        return $this->area->get_options()['votes'];
     }
 
     /**

@@ -34,6 +34,7 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class manager {
+    /** @var array defaults for the comment areas options in component's db/comments.php file */
     const DEFAULT_OPTIONS = [
         'areaclass' => '\\core_comment\\area',
         'sectionclass' => '\\core_comment\\section',
@@ -44,6 +45,7 @@ class manager {
         'postpseudonym' => false,
     ];
 
+    /** @var array cached comment area definitions (component name => area name => area options) */
     static private $cachedareas = [];
 
 
@@ -57,8 +59,40 @@ class manager {
      * @return area
      */
     static public function get_comment_area(string $component, string $area, \context $context, \stdClass $course) : area {
-        // TODO
-        return new area($component, $area, $context, $course, []);
+        $areas = self::get_component_comment_area_definitions($component);
+        if (isset($areas[$area])) {
+            $class = $areas[$area]['areaclass'];
+            return new $class($component, $area, $context, $course, $areas[$area]);
+        }
+
+        throw new \coding_exception("Component {$component} has no comment area with the name {$area}.");
+    }
+
+    /**
+     * Get definitions of component's comment areas.
+     *
+     * @param string $component
+     * @return array comment area name => options
+     */
+    static private function get_component_comment_area_definitions(string $component) {
+        if (isset(self::$cachedareas[$component])) {
+            return self::$cachedareas[$component];
+        }
+
+        $file = \core_component::get_component_directory($component) . '/db/comments.php';
+        if (file_exists($file)) {
+            $commentareas = [];
+            include($file);
+
+            foreach ($commentareas as $area => $options) {
+                $commentareas[$area] = array_merge(self::DEFAULT_OPTIONS, $options);
+            }
+
+            self::$cachedareas[$component] = $commentareas;
+            return self::$cachedareas[$component];
+        } else {
+            return [];
+        }
     }
 
     /**
@@ -106,7 +140,7 @@ class manager {
      * @return array names of comment areas
      */
     static public function get_comment_areas_in_component(string $component) : array {
-        // TODO
+        return array_keys(self::get_component_comment_area_definitions($component));
     }
 
     /**
