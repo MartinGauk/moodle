@@ -60,11 +60,11 @@
                         <b>{{fullname}}</b>
                     {{/profileurl}}
                     {{#pseudonym}}
-                        <span>(pseudonym)</span>{{! TODO localize }}
+                        <span>{{# str }} pseudonymhint, core_comment {{/ str }}</span>
                     {{/pseudonym}}
                 </span>
-                <span class="ml-1">
-                    {{timecreatedtext}}
+                <span>
+                    - {{timecreatedtext}}
                 </span>
             </div>
             <div class="core_comment_comment_settings flex-grow-0 btn-group">
@@ -74,12 +74,12 @@
                 <div class="dropdown-menu">
                     {{#canedit}}{{^isediting}}
                         <a href="#" class="dropdown-item" data-editcomment="{{id}}">
-                            <i class="icon fa fa-pencil fa-fw"></i> Edit{{! TODO localize }}
+                            <i class="icon fa fa-pencil fa-fw"></i> {{# str }} edit, core_comment {{/ str }}
                         </a>
                     {{/isediting}}{{/canedit}}
                     {{#candelete}}
                         <a href="#" class="dropdown-item" data-deletecomment="{{id}}">
-                            <i class="icon fa fa-trash fa-fw"></i> Delete{{! TODO localize }}
+                            <i class="icon fa fa-trash fa-fw"></i> {{# str }} delete, core_comment {{/ str }}
                         </a>
                     {{/candelete}}
                 </div>
@@ -95,14 +95,14 @@
 
         <div class="core_comment_comment_footer">
             {{#canreply}}
-                <a href="#" data-showreplyform="{{id}}">Reply</a>{{! TODO localize }}
+                <a href="#" data-showreplyform="{{id}}">{{# str }} reply, core_comment {{/ str }}</a>
             {{/canreply}}
             {{#replies}}
                 {{^showreplies}}
-                    <a href="#" data-showreplies="{{id}}">▼ {{ replies }} replies</a>{{! TODO localize }}
+                    <a href="#" data-showreplies="{{id}}">▼ {{ replies }} {{# str }} nreplies, core_comment {{/ str }}</a>
                 {{/showreplies}}
                 {{#showreplies}}
-                    <a href="#" data-hidereplies="{{id}}">▲ {{ replies }} replies</a>{{! TODO localize }}
+                    <a href="#" data-hidereplies="{{id}}">▲ {{ replies }} {{# str }} nreplies, core_comment {{/ str }}</a>
                 {{/showreplies}}
             {{/replies}}
         </div>

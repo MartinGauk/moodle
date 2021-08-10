@@ -62,7 +62,10 @@ export default class Component {
     async render() {
         try {
             const template = await this.getTemplate();
-            let context = await this.preRender(template, await this.getContext());
+            let context = await this.getContext();
+            // Copy context to prevent accidental modification of the original object.
+            context = Object.assign({}, context);
+            context = await this.preRender(template, context);
             context = this.callback('prerender', [template, context], context);
 
             // TODO remove logging

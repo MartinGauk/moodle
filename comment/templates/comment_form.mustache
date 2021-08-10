@@ -49,18 +49,37 @@
 }}
 <div class="core_comment_comment_form">
     {{#canpost}}
-        <form>
+        <form class="mform">
             {{#allowpseudonym}}
-                <div>
-                    <input type="text" name="pseudonym" {{^allowrealname}}required{{/allowrealname}}
-                        {{#comment}}value="{{pseudonym}}"{{/comment}}/>
+                <div class="form-check">
+                    <input id="pseudonymToggle{{uniqid}}" type="checkbox" {{#comment.pseudonym}}checked{{/comment.pseudonym}}
+                           data-toggle="collapse" data-target="#pseudonymContainer{{uniqid}}" class="form-check-input">
+                    <label for="pseudonymToggle{{uniqid}}"> {{# str }} useapseudonym, core_comment {{/ str }}</label>
+                </div>
+                <div id="pseudonymContainer{{uniqid}}"
+                     class="collapse {{#comment.pseudonym}}show{{/comment.pseudonym}}">
+                    <div class="form-group">
+                        <label for="pseudonymInput{{uniqid}}" class="sr-only">{{# str }} pseudonym, core_comment {{/ str }}</label>
+                        <div class="form-inline">
+                            <input id="pseudonymInput{{uniqid}}" type="text" name="pseudonym" placeholder="{{# str }} pseudonym, core_comment {{/ str }}"
+                                   class="form-control" {{^allowrealname}}required{{/allowrealname}}
+                                {{#comment}}value="{{pseudonym}}"{{/comment}}/>
+                        </div>
+                    </div>
                 </div>
             {{/allowpseudonym}}
-            <div>
-                <textarea name="content">{{#comment}}{{content}}{{/comment}}</textarea>
+            <div class="form-group">
+                <label for="contentInput{{uniqid}}" class="sr-only">{{# str }} content, core_comment {{/ str }}</label>
+                <div class="form-inline">
+                    <textarea id="contentInput{{uniqid}}" placeholder="{{# str }} writeacomment, core_comment {{/ str }}"
+                              class="form-control w-100"
+                              name="content">{{#comment}}{{content}}{{/comment}}</textarea>
+                </div>
             </div>
-            <input type="submit">
-            <input type="button" data-cancelcommentform value="Cancel">{{! TODO localize }}
+            <div class="form-group">
+                <input type="submit" class="btn btn-primary" value="{{#comment}}{{# str }} updatecomment, core_comment {{/ str }}{{/comment}}{{^comment}}{{# str }} postcomment, core_comment {{/ str }}{{/comment}}">
+                <input type="button" data-cancelcommentform class="btn btn-secondary" value="{{# str }} cancel, core {{/ str }}">
+            </div>
         </form>
     {{/canpost}}
 </div>

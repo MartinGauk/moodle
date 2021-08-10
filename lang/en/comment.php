@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Strings for component 'moodle', language 'en', branch 'MOODLE_20_STABLE'
+ * Strings for comments API
  *
  * @package   core
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
@@ -23,7 +23,19 @@
  */
 
 $string['commentsubcontext'] = 'Comments';
+$string['content'] = 'Content';
+$string['delete'] = 'Delete';
+$string['edit'] = 'Edit';
+$string['loadmore'] = 'Load more...';
+$string['nreplies'] = 'replies';
+$string['postcomment'] = 'Post comment';
 $string['privacy:metadata:comment'] = 'Stores comments of users.';
 $string['privacy:metadata:comment:content'] = 'Stores the text of the comment.';
 $string['privacy:metadata:comment:timecreated'] = 'Time a comment was created.';
 $string['privacy:metadata:comment:userid'] = 'The user who made the comment.';
+$string['pseudonym'] = 'Pseudonym';
+$string['pseudonymhint'] = '(pseudonym)';
+$string['reply'] = 'Reply';
+$string['updatecomment'] = 'Update comment';
+$string['useapseudonym'] = 'Use a pseudonym';
+$string['writeacomment'] = 'Write a comment.';

@@ -84,6 +84,12 @@ export default class CommentForm extends Component {
                 return false;
             };
         }
+        this.addListener('form textarea[name="content"]', 'keydown', (e) => {
+            if (e.which === 13 && e.ctrlKey) {
+                e.preventDefault();
+                this.submitForm(form).catch(Notification.exception);
+            }
+        });
         this.addListener('[data-cancelcommentform]', 'click', (e) => {
             const form = this.el.querySelector('form');
             form.reset();
