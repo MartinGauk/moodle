@@ -616,6 +616,29 @@ class assign {
             $this->process_reveal_identities();
             $action = 'redirect';
             $nextpageparams['action'] = 'grading';
+        } else if ($action == 'viewsubmission') {
+            $submissionid = required_param('sid', PARAM_INT);
+            $action = 'redirect';
+            if ($this->can_view_grades()) {
+                $action = 'redirect';
+                $nextpageparams['action'] = 'grader';
+                $submission = $this->get_submission($submissionid);
+                if (empty($submission->userid)) {
+                    $members = $this->get_submission_group_members($submission->groupid, true, true);
+                    if (empty($members)) {
+                        throw new moodle_exception('invaliduser');
+                    }
+                    $userid = $members[0]->id;
+                } else {
+                    $userid = $submission->userid;
+                }
+
+                if ($this->is_blind_marking()) {
+                    $nextpageparams['blindid'] = $this->get_uniqueid_for_user($userid);
+                } else {
+                    $nextpageparams['userid'] = $userid;
+                }
+            }
         }
 
         $returnparams = array('rownum'=>optional_param('rownum', 0, PARAM_INT),

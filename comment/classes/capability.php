@@ -75,6 +75,18 @@ abstract class capability {
     abstract public function can_upvote(comment $comment = null) : bool;
 
     /**
+     * Can the user view the comment author's real identity even though a pseudonym was set?
+     *
+     * Use this with caution as the user might not expect that his identity can be unveiled under certain conditions!
+     *
+     * @param comment $comment
+     * @return bool
+     */
+    public function can_view_real_identity(comment $comment) : bool {
+        return false;
+    }
+
+    /**
      * Can the user (un)subscribe to the comment thread/comment section?
      *
      * @param int $currentstatus

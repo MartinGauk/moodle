@@ -58,6 +58,9 @@ class comment {
     /** @var string|null pseudonym specified when the comment was posted */
     protected $pseudonym;
 
+    /** @var string|null temporary pseudonym */
+    protected $temporarypseudonym = null;
+
     /** @var int time when this comment was posted */
     protected $timecreated;
 
@@ -95,6 +98,7 @@ class comment {
      *
      * @param section $section
      * @param \stdClass $record db data
+     * @param comment_search|null $search
      * @return comment
      */
     static public function construct_from_db(section $section, \stdClass $record, ?comment_search $search = null) : comment {
@@ -219,21 +223,12 @@ class comment {
         }
     }
 
-    /**
-     * Format the comment text for output. TODO Probably the caller has to format the text accordingly (format_text vs external_format_text)...
-     *
-     * @return string
-     */
-    public function format_text() : string {
-        // TODO
-    }
-
     protected function get_user(int $id) : \stdClass {
         if ($this->search) {
             return $this->search->get_user($id);
         }
         global $DB;
-        return $DB->get_record('user', array('id' => $this->usermodified), '*', MUST_EXIST);
+        return $DB->get_record('user', array('id' => $id), '*', MUST_EXIST);
     }
 
     /**
@@ -267,11 +262,20 @@ class comment {
     /**
      * Get the full name of the user who posted the comment or the pseudonym, if set.
      *
+     * @param bool $revealidentity return real user fullname (together with the pseudonym)
+     *     even though the comment was posted under a pseudonym
      * @return string full user name or pseudonym
      */
-    public function get_usercreated_fullname() : string {
+    public function get_usercreated_fullname(bool $revealidentity = false) : string {
         if ($this->is_pseudonymous_author()) {
-            return $this->pseudonym;
+            if ($revealidentity) {
+                $a = new \stdClass();
+                $a->pseudonym = $this->get_pseudonym();
+                $a->realname = fullname($this->get_usercreated(true));
+                return get_string('pseudonymwithrealname', 'core_comment', $a);
+            } else {
+                return $this->get_pseudonym();
+            }
         } else {
             return fullname($this->get_usercreated());
         }
@@ -308,23 +312,32 @@ class comment {
     /**
      * Get the full name of the user who last modified the comment or the pseudonym, if set.
      *
+     * @param bool $revealidentity return real user fullname (together with the pseudonym)
+     *     even though the comment was posted under a pseudonym
      * @return string full user name or pseudonym
      */
-    public function get_usermodified_fullname() : string {
+    public function get_usermodified_fullname(bool $revealidentity = false) : string {
         if ($this->is_pseudonymous_author() && $this->usermodified == $this->usercreated) {
-            return $this->pseudonym;
+            if ($revealidentity) {
+                $a = new \stdClass();
+                $a->pseudonym = $this->get_pseudonym();
+                $a->realname = fullname($this->get_usercreated(true));
+                return get_string('pseudonymwithrealname', 'core_comment', $a);
+            } else {
+                return $this->get_pseudonym();
+            }
         } else {
             return fullname($this->get_usermodified());
         }
     }
 
     /**
-     * Get the pseudonym set by the author or null, if none was set.
+     * Get the pseudonym or null, if none was set.
      *
      * @return string|null
      */
     public function get_pseudonym() : ?string {
-        return $this->pseudonym;
+        return $this->temporarypseudonym ?? $this->pseudonym;
     }
 
     /**
@@ -479,6 +492,17 @@ class comment {
     }
 
     /**
+     * Set a temporary pseudonym that will not be stored in the database.
+     *
+     * This allows the comment section to dynamically set/override a pseudonym, e.g. in order to hide an identity temporarily.
+     *
+     * @param string|null $temporarypseudonym
+     */
+    public function set_temporary_pseudonym(?string $temporarypseudonym) {
+        $this->temporarypseudonym = $temporarypseudonym;
+    }
+
+    /**
      * Set the custom data to the given JSON encoded array.
      *
      * @param string $customdatajson
@@ -516,7 +540,7 @@ class comment {
      * @return bool
      */
     public function is_owned_by_user(int $userid) : bool {
-        return $this->usercreated === $userid;
+        return $this->usercreated == $userid;
     }
 
     /**
@@ -529,12 +553,12 @@ class comment {
     }
 
     /**
-     * Did the author post the comment under a pseudonym?
+     * Should the the comment be shown under a pseudonym?
      *
      * @return bool
      */
     public function is_pseudonymous_author() : bool {
-        return !empty($this->pseudonym);
+        return !empty($this->pseudonym) || !empty($this->temporarypseudonym);
     }
 
     /**

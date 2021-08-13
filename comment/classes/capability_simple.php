@@ -117,7 +117,7 @@ class capability_simple extends capability {
     }
 
     public function can_upvote(comment $comment = null) : bool {
-        return $this->canview && $this->allowupvotes && $comment->get_usercreated(true) !== $this->user->id;
+        return $this->canview && $this->allowupvotes && $comment->get_usercreated_id(true) !== $this->user->id;
     }
 
     /**

@@ -62,7 +62,8 @@ class assign_submission_comments extends assign_submission_plugin {
             'submission_comments',
             $this->assignment->get_context(),
             $this->assignment->get_course(),
-            $submission->id
+            $submission->id,
+            ['submission' => $submission, 'assignment' => $this->assignment]
         );
 
         $o = $this->assignment->get_renderer()->container($section->output(10), 'commentscontainer');

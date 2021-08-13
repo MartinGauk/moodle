@@ -25,9 +25,7 @@
 $commentareas = [
     'submission_comments' => [
         'areaclass' => '\\core_comment\\area',
-        'sectionclass' => '\\core_comment\\section',
+        'sectionclass' => '\\assignsubmission_comments\\section',
         'replies' => true,
-        'postrealname' => true,
-        'postpseudonym' => true,
     ],
 ];

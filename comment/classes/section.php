@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Abstract class that represents a comment section in a plugin.
+ * Abstract class that represents a comment section in a component.
  *
  * @package    core_comment
  * @copyright  2021 TU Berlin
@@ -27,7 +27,7 @@ namespace core_comment;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Abstract class that represents a comment section in a plugin.
+ * Abstract class that represents a comment section in a component.
  *
  * A comment section is a collection of all comments that belong to one itemid within a comment area.
  * Comments always belong to a context, component, comment area and item id.
@@ -239,10 +239,10 @@ abstract class section {
     /**
      * Get the capability manager for a user in the section.
      *
-     * @param \stdClass|null $user
+     * @param \stdClass $user
      * @return capability
      */
-    public function get_capability(?\stdClass $user = null) : capability {
+    public function get_capability(\stdClass $user) : capability {
         $options = $this->area->get_options();
         $postmodes = ($options['postrealname']) ? capability::POST_REALNAME : 0;
         $postmodes |=  ($options['postpseudonym']) ? capability::POST_PSEUDONYM : 0;
@@ -372,5 +372,9 @@ abstract class section {
      * @param int $commentid
      * @return \moodle_url
      */
-    abstract public function get_comment_url(int $commentid): \moodle_url;  // TODO take item_url by default and append an anchor?
+    public function get_comment_url(int $commentid): \moodle_url {
+        $url = $this->get_item_url();
+        $url->set_anchor('comment-' . $commentid);
+        return $url;
+    }
 }

@@ -220,21 +220,7 @@ class area {
      * @return section
      */
     public function get_section(int $itemid, $item = null) : section {
-        // TODO
-        return new class($this, $itemid, $item) extends section {
-
-            public function get_item_title(): string {
-                return 'changeme';
-            }
-
-            public function get_item_url(): \moodle_url {
-                return new \moodle_url('changeme');
-            }
-
-            public function get_comment_url(int $commentid): \moodle_url {
-                return new \moodle_url('changeme');
-            }
-        };
+        return new $this->options['sectionclass']($this, $itemid, $item);
     }
 
     /**

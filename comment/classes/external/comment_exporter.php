@@ -39,7 +39,6 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class comment_exporter extends \core\external\exporter {
-
     /** @var comment The comment. */
     protected $comment = null;
 
@@ -205,42 +204,43 @@ class comment_exporter extends \core\external\exporter {
     }
 
     public function get_other_values(renderer_base $output) {
-        global $USER, $OUTPUT;
+        global $USER;
+
+        $cap = $this->comment->get_section()->get_capability($USER);
+        $viewrealidentity = !$this->comment->is_pseudonymous_author() || $cap->can_view_real_identity($this->comment);
         $values = array();
+
         $values['strftimeformat'] = get_string('strftimerecentfull', 'langconfig');
         $values['time'] = $values['timecreated'] = $this->comment->get_timecreated();
         $values['timecreatedtext'] = userdate($values['timecreated'], $values['strftimeformat']);
         $values['timemodified'] = $this->comment->get_timemodified();
         $values['timemodifiedtext'] = userdate($values['timemodified'], $values['strftimeformat']);
-        $usercreated = $this->comment->get_usercreated();
+        $usercreated = $this->comment->get_usercreated($viewrealidentity);
         $values['profileurl'] = null;
-        if (!$this->comment->is_pseudonymous_author()) {
+        $values['userid'] = null;
+        if ($viewrealidentity) {
             $course = $this->comment->get_section()->get_area()->get_course();
             $url = new \moodle_url('/user/view.php', array('id' => $usercreated->id, 'course' => $course->id));
             $values['profileurl'] = $url->out(false);
-        }
-        $values['userid'] = null;
-        if (!$this->comment->is_pseudonymous_author()) {
             $values['userid'] = $usercreated->id;
         }
-        $values['usercreatedfullname'] = $this->comment->get_usercreated_fullname();
+        //$values['usercreatedfullname'] = $this->comment->get_usercreated_fullname(); TODO remove?
         $values['usermodifiedid'] = null;
         $usermodifiedid = $this->comment->get_usermodified_id();
-        if ($usercreated->id != $usermodifiedid || !$this->comment->is_pseudonymous_author()) {
+        if ($usercreated->id != $usermodifiedid || $viewrealidentity) {
             $values['usermodifiedid'] = $usermodifiedid;
         }
-        $values['usermodifiedfullname'] = $this->comment->get_usermodified_fullname();
+        $values['usermodifiedfullname'] = $this->comment->get_usermodified_fullname($viewrealidentity);
         $values['pseudonym'] = $this->comment->get_pseudonym();
-        $values['fullname'] = $this->comment->get_usercreated_fullname();
-        $values['avatar'] = $OUTPUT->user_picture($usercreated, array(
+        $values['fullname'] = $this->comment->get_usercreated_fullname($viewrealidentity);
+        $values['avatar'] = $output->user_picture($usercreated, array(
             'size' => 35,
-            'link' => !$this->comment->is_pseudonymous_author()
+            'link' => $viewrealidentity
         ));
         $values['replies'] = $this->comment->get_replies();
         $values['upvotes'] = $this->comment->get_upvotes();
         $values['vote'] = 0; //TODO get this from somewhere
         $values['isown'] = $this->comment->is_owned_by_user($USER->id);
-        $cap = $this->comment->get_section()->get_capability($USER);
         $values['allowpseudonymreply'] = $cap->can_post(capability::POST_PSEUDONYM, $this->comment);
         $values['allowrealnamereply'] = $cap->can_post(capability::POST_REALNAME, $this->comment);
         $values['canreply'] = $values['allowpseudonymreply'] || $values['allowrealnamereply'];

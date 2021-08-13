@@ -490,7 +490,10 @@ class external extends \external_api {
         }
 
         $commentobj->set_content(trim($comment['content']), $comment['contentformat']);
-        $commentobj->set_pseudonym(trim($comment['pseudonym']));
+        $pseudonym = trim($comment['pseudonym']);
+        if ($pseudonym && $cap->can_post(capability::POST_PSEUDONYM, $commentobj->get_replyto())) {
+            $commentobj->set_pseudonym($pseudonym);
+        }
         $commentobj->set_custom_data_json(trim($comment['customdata']));
         $commentobj->update_time_user($USER->id);
 
