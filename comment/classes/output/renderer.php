@@ -43,12 +43,14 @@ class renderer extends \plugin_renderer_base {
     public function render_section(\core_comment\output\section $section) : string {
         global $PAGE;
         $PAGE->requires->js_call_amd('core_comment/comments', 'init');
-        return "<div 
-                    class='js-comment-section'
+        // TODO use modal?
+        return "<a href='#'
+                    data-commentsection
+                    data-modal
                     data-contextid='{$section->contextid}' 
                     data-component='{$section->component}'
                     data-commentarea='{$section->commentarea}'
-                    data-itemid='{$section->itemid}'></div>";
+                    data-itemid='{$section->itemid}'>Comments</a>"; // TODO localize
     }
 
     /**

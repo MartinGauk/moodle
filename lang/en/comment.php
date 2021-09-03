@@ -23,10 +23,13 @@
  */
 
 $string['commentsubcontext'] = 'Comments';
+$string['confirmdeletecomment'] = 'Do you really want to delete this comment?';
 $string['content'] = 'Content';
 $string['delete'] = 'Delete';
+$string['deletecomment'] = 'Delete comment';
 $string['edit'] = 'Edit';
 $string['loadmore'] = 'Load more...';
+$string['nocomments'] = 'No comments.';
 $string['nreplies'] = 'replies';
 $string['postcomment'] = 'Post comment';
 $string['pseudonymwithrealname'] = '{$a->pseudonym} ({$a->realname})';

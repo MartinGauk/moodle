@@ -25,11 +25,9 @@ import Component from 'core_comment/component';
 
 export default class CommentBody extends Component {
 
-    constructor(el, comment) {
-        super('commentbody', el, comment);
-        this.comment = comment;
-        this.renderOptions = comment.renderOptions;
-        window.setTimeout(() => this.render());
+    constructor(el, parent, options = {}) {
+        super('commentbody', el, parent);
+        this.comment = options.comment;
     }
 
     async getContext() {

@@ -22,17 +22,33 @@
  */
 
 import CommentSection from 'core_comment/comment_section';
+import Notification from 'core/notification';
 
 export const init = () => {
-    document.querySelectorAll('.js-comment-section').forEach((el) => {
-        if (!el.commentSection) {
-            const options = {
-                contextid: el.dataset.contextid,
-                component: el.dataset.component,
-                commentarea: el.dataset.commentarea,
-                itemid: el.dataset.itemid,
-            };
-            el.commentSection = new CommentSection(el, options);
+    document.querySelectorAll('[data-commentsection]').forEach((el) => {
+        const options = {
+            contextid: el.dataset.contextid,
+            component: el.dataset.component,
+            commentarea: el.dataset.commentarea,
+            itemid: el.dataset.itemid,
+            sortDirection: 'ASC',
+            startAtBottom: true
+        };
+        if ('modal' in el.dataset) {
+            require(['jquery', 'core/modal_factory', 'core_comment/modal_comment_section'],
+                function($, ModalFactory, ModalCommentSection) {
+                    ModalFactory.create({type: ModalCommentSection.TYPE, large: true, scrollable: false}, $(el))
+                        .then((modal) => modal.setOptions(options))
+                        .catch(Notification.exception);
+                });
+        } else {
+            initCommentSection(el, options);
         }
     });
+};
+
+export const initCommentSection = (el, options) => {
+    if (!el.commentSection) {
+        el.commentSection = new CommentSection(el, options);
+    }
 };

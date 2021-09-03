@@ -23,20 +23,21 @@
 
 import Component from 'core_comment/component';
 import Notification from 'core/notification';
+import * as ModalFactory from 'core/modal_factory';
+import * as ModalEvents from 'core/modal_events';
+import * as Str from 'core/str';
 
 export default class Comment extends Component {
 
-    constructor(el, commentList, comment) {
-        super('comment', el, commentList);
-        this.commentList = commentList;
-        this.commentSection = commentList.commentSection;
-        this.replyTo = commentList.replyTo;
-        this.renderOptions = commentList.renderOptions;
-        this.comment = comment;
+    constructor(el, parent, options = {}) {
+        super('comment', el, parent);
+        this.commentList = options.commentList;
+        this.commentSection = this.commentList.commentSection;
+        this.replyTo = this.commentList.replyTo;
+        this.comment = options.comment;
         this.showReplies = false;
         this.showReplyForm = false;
         this.isEditing = false;
-        window.setTimeout(() => this.render());
     }
 
     async getContext() {
@@ -45,6 +46,26 @@ export default class Comment extends Component {
             showreplies: this.showReplies,
             showreplyform: this.showReplyForm
         }, this.comment);
+    }
+
+    async showDeleteModal() {
+        let deleteCommentString, confirmDeleteCommentString, deleteString;
+        [deleteCommentString, confirmDeleteCommentString, deleteString] = await Str.get_strings([
+            {key: 'deletecomment', component: 'core_comment'},
+            {key: 'confirmdeletecomment', component: 'core_comment'},
+            {key: 'delete', component: 'core_comment'},
+        ]);
+
+        const modal = await ModalFactory.create({
+            type: ModalFactory.types.SAVE_CANCEL,
+            title: deleteCommentString,
+            body: confirmDeleteCommentString,
+        });
+        modal.setSaveButtonText(deleteString);
+        modal.getRoot().on(ModalEvents.save, () => {
+            this.delete().catch(Notification.exception);
+        });
+        modal.show();
     }
 
     async delete() {
@@ -102,27 +123,32 @@ export default class Comment extends Component {
     async postRender() {
         // Render editing form or comment body.
         if (this.isEditing) {
-            this.commentEditForm = this.addChild(
-                `[data-commenteditform="${this.comment.id}"]`, 'commentform', [this.commentSection, null, this]
-            );
+            this.commentEditForm = this.addChild(`[data-commenteditform="${this.comment.id}"]`, 'commentform', {
+                commentSection: this.commentSection,
+                comment: this
+            });
         } else {
-            this.commentBody = this.addChild(`[data-commentbody="${this.comment.id}"]`, 'commentbody', [this]);
+            this.commentBody = this.addChild(`[data-commentbody="${this.comment.id}"]`, 'commentbody', {comment: this});
         }
         // Render reply form.
         if (this.showReplyForm) {
-            this.commentReplyForm = this.addChild(
-                `[data-commentreplyform="${this.comment.id}"]`, 'commentform', [this.commentSection, this]
-            );
+            this.commentReplyForm = this.addChild(`[data-commentreplyform="${this.comment.id}"]`, 'commentform', {
+                commentSection: this.commentSection,
+                replyTo: this
+            });
         }
         // Render replies.
         if (this.showReplies) {
-            this.commentReplies = this.addChild(
-                `[data-commentreplies="${this.comment.id}"]`, 'commentlist', [this.commentSection, this, 5, 'ASC', false]
-            );
+            this.commentReplies = this.addChild(`[data-commentreplies="${this.comment.id}"]`, 'commentlist', {
+                commentSection: this.commentSection,
+                replyTo: this,
+                pageSize: 5,
+                sortDirection: 'ASC'
+            });
         }
 
         this.addListener(`[data-deletecomment="${this.comment.id}"]`, 'click', (e) => {
-            this.delete().catch(Notification.exception);
+            this.showDeleteModal().catch(Notification.exception);
             e.preventDefault();
             return false;
         });

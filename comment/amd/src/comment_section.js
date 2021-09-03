@@ -32,15 +32,19 @@ import Notification from 'core/notification';
 
 export default class CommentSection extends Component {
 
-    constructor(el, options) {
+    constructor(el, options = {}) {
         super('commentsection', el, null);
         this.contextId = options.contextid;
         this.component = options.component;
         this.commentArea = options.commentarea;
         this.itemId = options.itemid;
+        this.sortDirection = (options.sortDirection || 'DESC').toUpperCase();
+        this.startAtBottom = options.startAtBottom;
         this.pageSize = options.pageSize || 10;
         this.context = options.commentSection || null;
         this.comments = null;
+        this.moreAvailableAbove = false;
+        this.moreAvailableBelow = false;
         if (this.context) {
             this.applyRenderOptions(this.context.renderoptions);
             window.setTimeout(() => this.render());
@@ -50,7 +54,7 @@ export default class CommentSection extends Component {
     }
 
     applyRenderOptions(renderOptions) {
-        this.renderOptions = Object.assign({
+        this.renderOptions = Object.assign(this.renderOptions, {
             commentsectiontemplate: 'core_comment/comment_section',
             commentlisttemplate: 'core_comment/comment_list',
             commentformtemplate: 'core_comment/comment_form',
@@ -74,33 +78,43 @@ export default class CommentSection extends Component {
     }
 
     async getContext() {
-        return this.context;
+        return Object.assign({
+            startatbottom: this.startAtBottom,
+        }, this.context);
     }
 
     async postRender() {
-        this.commentForm = this.addChild('[data-commentform]', 'commentform', [this]);
-        this.commentList = this.addChild('[data-commentlist]', 'commentlist', [this, null, this.pageSize, 'DESC']);
-        if (this.comments !== null) {
-            this.commentList.comments = this.comments.slice(0, this.pageSize);
-            this.commentList.moreAvailableAfter = this.comments.length > this.pageSize;
-        }
+        this.commentForm = this.addChild('[data-commentform]', 'commentform', {
+            commentSection: this
+        });
+        this.commentList = this.addChild('[data-commentlist]', 'commentlist', {
+            commentSection: this,
+            pageSize: this.pageSize,
+            sortDirection: this.sortDirection,
+            startAtBottom: this.startAtBottom,
+            preLoadedComments: this.comments,
+            moreAvailableAbove: this.moreAvailableAbove,
+            moreAvailableBelow: this.moreAvailableBelow
+        });
     }
 
     async loadContext() {
-        const response = await Ajax.call([
-            {
-                methodname: 'core_comment_get_comments', args: {
-                    contextid: this.contextId,
-                    component: this.component,
-                    commentarea: this.commentArea,
-                    itemid: this.itemId,
-                    pagesize: this.pageSize + 1,
-                }
-            },
-        ])[0];
-        this.context = response.commentsections[0];
-        this.applyRenderOptions(this.context.renderoptions);
-        this.comments = response.comments;
+        let sortDirection = this.sortDirection;
+        if (this.startAtBottom) {
+            sortDirection = (sortDirection === 'DESC') ? 'ASC' : 'DESC';
+        }
+        const comments = await this.getComments(this.pageSize + 1, sortDirection);
+        if (comments.length > this.pageSize) {
+            if (this.startAtBottom) {
+                this.moreAvailableAbove = true;
+            } else {
+                this.moreAvailableBelow = true;
+            }
+        }
+        this.comments = comments.slice(0, this.pageSize);
+        if (this.startAtBottom) {
+            this.comments.reverse();
+        }
         await this.render();
     }
 
@@ -120,6 +134,8 @@ export default class CommentSection extends Component {
                 }
             },
         ])[0];
+        this.context = response.commentsections[0];
+        this.applyRenderOptions(this.context.renderoptions);
         return response.comments;
     }
 

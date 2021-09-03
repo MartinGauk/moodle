@@ -95,7 +95,7 @@ export default class Component {
         });
     }
 
-    addChild(selector, childName, args) {
+    addChild(selector, childName, options = {}, render = true) {
         const childEl = this.el.querySelector(selector);
         if (childEl) {
             if (this.children[selector]) {
@@ -107,8 +107,11 @@ export default class Component {
                 if (!(childClassKey in this.renderOptions)) {
                     throw new Error('Component class key not found in renderoptions: ' + childClassKey);
                 }
-                const child = new this.renderOptions[childClassKey](childEl, ...args);
+                const child = new this.renderOptions[childClassKey](childEl, this, options);
                 this.children[selector] = child;
+                if (render) {
+                    window.setTimeout(() => child.render(), 0);
+                }
                 return child;
             }
         }

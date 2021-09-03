@@ -27,21 +27,16 @@ import Notification from 'core/notification';
 
 export default class CommentList extends Component {
 
-    constructor(el, commentSection, replyTo = null, pageSize = 10, sortDirection = 'DESC', autoload = false) {
-        super('commentlist', el, replyTo || commentSection);
-        this.commentSection = commentSection;
-        this.renderOptions = commentSection.renderOptions;
-        this.replyTo = replyTo;
-        this.sortDirection = sortDirection.toUpperCase();
-        this.comments = [];
-        this.moreAvailableBefore = false;
-        this.moreAvailableAfter = true;
-        this.pageSize = pageSize;
-        if (autoload) {
-            this.loadMore().catch(Notification.exception);
-        } else {
-            window.setTimeout(() => this.render());
-        }
+    constructor(el, parent, options = {}) {
+        super('commentlist', el, parent);
+        this.commentSection = options.commentSection;
+        this.replyTo = options.replyTo || null;
+        this.pageSize = options.pageSize || 10;
+        this.sortDirection = (options.sortDirection || 'DESC').toUpperCase();
+        this.startAtBottom = options.startAtBottom;
+        this.moreAvailableAbove = 'moreAvailableAbove' in options ? options.moreAvailableAbove : !!this.startAtBottom;
+        this.moreAvailableBelow = 'moreAvailableBelow' in options ? options.moreAvailableBelow : !this.startAtBottom;
+        this.comments = options.preLoadedComments || [];
     }
 
     async getContext() {
@@ -49,54 +44,51 @@ export default class CommentList extends Component {
             replyto: this.replyTo ? this.replyTo.comment : null,
             comments: this.comments || [],
             count: this.comments ? this.comments.length : 0,
-            moreavailablebefore: this.moreAvailableBefore,
-            moreavailableafter: this.moreAvailableAfter
+            moreavailableabove: this.moreAvailableAbove,
+            moreavailablebelow: this.moreAvailableBelow
         };
     }
 
-    async loadMore(before = false) {
-        if (!this.comments || !this.comments.length) {
-            const newComments = await this.commentSection.getComments(this.pageSize + 1, this.sortDirection, this.replyTo);
-            this.moreAvailableBefore = false;
-            this.moreAvailableAfter = newComments.length > this.pageSize;
-            this.comments = newComments.slice(0, this.pageSize);
-            await this.render();
-            return;
+    async loadMore(above = null) {
+        if (above === null) {
+            above = this.startAtBottom;
         }
 
-        let time;
+        let time = null;
         let overlap = 0;
-        if (before) {
-            time = this.comments[0].timecreated;
-            while (overlap < this.comments.length && this.comments[overlap].timecreated === time) {
-                overlap++;
-            }
-        } else {
-            time = this.comments[this.comments.length - 1].timecreated;
-            while (overlap < this.comments.length && this.comments[this.comments.length - 1 - overlap].timecreated === time) {
-                overlap++;
+        if (this.comments && this.comments.length) {
+            if (above) {
+                time = this.comments[0].timecreated;
+                while (overlap < this.comments.length && this.comments[overlap].timecreated === time) {
+                    overlap++;
+                }
+            } else {
+                time = this.comments[this.comments.length - 1].timecreated;
+                while (overlap < this.comments.length && this.comments[this.comments.length - 1 - overlap].timecreated === time) {
+                    overlap++;
+                }
             }
         }
-
         let timeFrom = null;
         let timeTo = null;
-        if ((this.sortDirection === 'DESC') !== before) {
+        if ((this.sortDirection === 'DESC') !== above) {
             timeTo = time;
         } else {
             timeFrom = time;
         }
+
         let pageSize = this.pageSize + overlap + 1;
         let sortDirection = this.sortDirection;
-        if (before) {
+        if (above) {
             sortDirection = (sortDirection === 'DESC') ? 'ASC' : 'DESC';
         }
         const newComments = await this.commentSection.getComments(pageSize, sortDirection, this.replyTo, timeFrom, timeTo);
         const moreAvailable = newComments.length === pageSize;
-        if (before) {
-            this.moreAvailableBefore = moreAvailable;
+        if (above) {
+            this.moreAvailableAbove = moreAvailable;
             this.comments.unshift(...newComments.reverse().slice(-this.pageSize - overlap, -overlap));
         } else {
-            this.moreAvailableAfter = moreAvailable;
+            this.moreAvailableBelow = moreAvailable;
             this.comments.push(...newComments.slice(overlap, this.pageSize + overlap));
         }
 
@@ -118,18 +110,18 @@ export default class CommentList extends Component {
 
     async onCommentPosted(comment) {
         if (this.sortDirection === 'DESC') {
-            if (this.moreAvailableBefore) {
+            if (this.moreAvailableAbove) {
                 this.comments = [comment];
-                this.moreAvailableBefore = false;
+                this.moreAvailableAbove = false;
                 await this.loadMore(false);
             } else {
                 this.comments.unshift(comment);
                 await this.render();
             }
         } else {
-            if (this.moreAvailableAfter) {
+            if (this.moreAvailableBelow) {
                 this.comments = [comment];
-                this.moreAvailableAfter = false;
+                this.moreAvailableBelow = false;
                 await this.loadMore(true);
             } else {
                 this.comments.push(comment);
@@ -140,25 +132,18 @@ export default class CommentList extends Component {
 
     async postRender() {
         this.comments.forEach((comment) => {
-            this.addChild(`[data-comment="${comment.id}"]`, 'comment', [this, comment]);
+            this.addChild(`[data-comment="${comment.id}"]`, 'comment', {commentList: this, comment: comment});
         });
-        this.addListener('[data-loadmorebefore]', 'click', (e) => {
+        this.addListener('[data-loadmoreabove]', 'click', (e) => {
             this.loadMore(true).catch(Notification.exception);
             e.preventDefault();
             return false;
         });
-        this.addListener('[data-loadmoreafter]', 'click', (e) => {
+        this.addListener('[data-loadmorebelow]', 'click', (e) => {
             this.loadMore(false).catch(Notification.exception);
             e.preventDefault();
             return false;
         });
-        if (this.renderOptions.commentlistpostrender) {
-            try {
-                this.renderOptions.commentlistpostrender();
-            } catch (e) {
-                Notification.exception(e);
-            }
-        }
     }
 
 }

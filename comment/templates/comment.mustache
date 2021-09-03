@@ -47,31 +47,28 @@
     <div class="core_comment_comment_avatar flex-grow-0">
         {{{avatar}}}
     </div>
-    <div class="flex-grow-1">
+    <div class="flex-grow-1" style="overflow-x: hidden;">
         <div class="core_comment_comment_header d-flex flex-row flex-nowrap">
             <div class="flex-grow-1">
                 <span class="core_comment_comment_author">
                     {{#profileurl}}
-                        <a href="{{profileurl}}">
-                            <b>{{fullname}}</b>
-                        </a>
+                        <a href="{{profileurl}}">{{fullname}}</a>
                     {{/profileurl}}
                     {{^profileurl}}
-                        <b>{{fullname}}</b>
+                        <span class="text-danger">{{fullname}}</span>
                     {{/profileurl}}
                     {{#pseudonym}}
-                        <span>{{# str }} pseudonymhint, core_comment {{/ str }}</span>
+                        <span class="small">{{# str }} pseudonymhint, core_comment {{/ str }}</span>
                     {{/pseudonym}}
                 </span>
-                <span>
-                    - {{timecreatedtext}}
-                </span>
+                -
+                <span class="d-inline-block">{{timecreatedtext}}</span>
             </div>
             <div class="core_comment_comment_settings flex-grow-0 btn-group">
                 <a class="action-icon clickable text-muted" data-toggle="dropdown" role="button">
                     <i class="icon fa fa-ellipsis-v fa-fw"></i>
                 </a>
-                <div class="dropdown-menu">
+                <div class="dropdown-menu dropdown-menu-right"> {{! TODO dropdown menu get's cut off because of overflow-x: hidden on row }}
                     {{#canedit}}{{^isediting}}
                         <a href="#" class="dropdown-item" data-editcomment="{{id}}">
                             <i class="icon fa fa-pencil fa-fw"></i> {{# str }} edit, core_comment {{/ str }}
@@ -98,12 +95,14 @@
                 <a href="#" data-showreplyform="{{id}}">{{# str }} reply, core_comment {{/ str }}</a>
             {{/canreply}}
             {{#replies}}
-                {{^showreplies}}
-                    <a href="#" data-showreplies="{{id}}">▼ {{ replies }} {{# str }} nreplies, core_comment {{/ str }}</a>
-                {{/showreplies}}
-                {{#showreplies}}
-                    <a href="#" data-hidereplies="{{id}}">▲ {{ replies }} {{# str }} nreplies, core_comment {{/ str }}</a>
-                {{/showreplies}}
+                <span class="d-inline-block">
+                    {{^showreplies}}
+                        <a href="#" data-showreplies="{{id}}">▼ {{ replies }} {{# str }} nreplies, core_comment {{/ str }}</a>
+                    {{/showreplies}}
+                    {{#showreplies}}
+                        <a href="#" data-hidereplies="{{id}}">▲ {{ replies }} {{# str }} nreplies, core_comment {{/ str }}</a>
+                    {{/showreplies}}
+                </span>
             {{/replies}}
         </div>
 

@@ -246,8 +246,8 @@ class external extends \external_api {
             'comments' => $exportedcomments,
             'count' => $count,
             'commentsections' => $exportedsections,
-            'perpage' => $params['pagesize'],
-            'canpost'  => $canpost,
+            'perpage' => $params['pagesize'], // Deprecated, kept for backwards-compatibility.
+            'canpost'  => $canpost, // Deprecated, kept for backwards-compatibility.
             'warnings' => $warnings
         );
     }

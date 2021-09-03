@@ -47,19 +47,22 @@
         "moreavailableafter": true,
     }
 }}
-<div class="core_comment_comment_list {{#replyto}}core_comment_comment_replies{{/replyto}}">
-    {{#moreavailablebefore}}
+<div class="core_comment_comment_list {{#replyto}}core_comment_comment_replies{{/replyto}}" style="overflow-y: auto">
+    {{#moreavailableabove}}
         <div class="my-3">
-            <a href="#" data-loadmorebefore>{{#str}} loadmore, core_comment {{/str}}</a>
+            <a href="#" data-loadmoreabove>{{#str}} loadmore, core_comment {{/str}}</a>
         </div>
-    {{/moreavailablebefore}}
+    {{/moreavailableabove}}
     {{#comments}}
         <div class="my-3" data-comment="{{id}}">
         </div>
     {{/comments}}
-    {{#moreavailableafter}}
+    {{^comments}}
+        {{#str}} nocomments, core_comment {{/str}}
+    {{/comments}}
+    {{#moreavailablebelow}}
         <div class="my-3">
-            <a href="#" data-loadmoreafter>{{#str}} loadmore, core_comment {{/str}}</a>
+            <a href="#" data-loadmorebelow>{{#str}} loadmore, core_comment {{/str}}</a>
         </div>
-    {{/moreavailableafter}}
+    {{/moreavailablebelow}}
 </div>

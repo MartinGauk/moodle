@@ -26,17 +26,15 @@ import Notification from 'core/notification';
 
 export default class CommentForm extends Component {
 
-    constructor(el, commentSection, replyTo = null, comment = null) {
-        super('commentform', el, replyTo || commentSection);
-        this.commentSection = commentSection;
-        this.renderOptions = commentSection.renderOptions;
-        this.comment = comment;
-        if (comment) {
-            this.replyTo = comment.commentList.replyTo;
+    constructor(el, parent, options = {}) {
+        super('commentform', el, parent);
+        this.commentSection = options.commentSection;
+        this.comment = options.comment;
+        if (this.comment) {
+            this.replyTo = this.comment.commentList.replyTo;
         } else {
-            this.replyTo = replyTo;
+            this.replyTo = options.replyTo;
         }
-        window.setTimeout(() => this.render());
     }
 
     async getContext() {
