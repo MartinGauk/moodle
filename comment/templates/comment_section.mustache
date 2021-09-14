@@ -39,13 +39,14 @@
         // TODO fill with example section
     }
 }}
-<div class="core_comment_comment_section">
+<div class="core_comment_comment_section"
+     {{#fillheight}}style="height: 100%; display: flex; flex-flow: column nowrap;"{{/fillheight}}>
     {{#startatbottom}}
-        <div data-commentlist></div>
-        <div data-commentform></div>
+        <div data-commentlist {{#fillheight}}style="flex: 1 1 1px; overflow-y: auto;"{{/fillheight}}></div>
+        <div data-commentform {{#fillheight}}style="flex: 0 1 auto;"{{/fillheight}}></div>
     {{/startatbottom}}
     {{^startatbottom}}
-        <div data-commentform></div>
-        <div data-commentlist></div>
+        <div data-commentform {{#fillheight}}style="flex: 0 1 auto;"{{/fillheight}}></div>
+        <div data-commentlist {{#fillheight}}style="flex: 1 1 1px; overflow-y: auto;"{{/fillheight}}></div>
     {{/startatbottom}}
 </div>

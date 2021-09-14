@@ -40,6 +40,7 @@ export default class CommentSection extends Component {
         this.itemId = options.itemid;
         this.sortDirection = (options.sortDirection || 'DESC').toUpperCase();
         this.startAtBottom = options.startAtBottom;
+        this.fillHeight = options.fillHeight;
         this.pageSize = options.pageSize || 10;
         this.context = options.commentSection || null;
         this.comments = null;
@@ -80,6 +81,7 @@ export default class CommentSection extends Component {
     async getContext() {
         return Object.assign({
             startatbottom: this.startAtBottom,
+            fillheight: this.fillHeight
         }, this.context);
     }
 
