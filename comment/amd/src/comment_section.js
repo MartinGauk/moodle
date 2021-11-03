@@ -141,7 +141,7 @@ export default class CommentSection extends Component {
         return response.comments;
     }
 
-    async saveComment(content, pseudonym = null, customData = null, replyTo = null, comment = null) {
+    async saveComment(content, pseudonymous = false, customData = null, replyTo = null, comment = null) {
         return await Ajax.call([
             {methodname: comment ? 'core_comment_update_comment' : 'core_comment_create_comment', args: {
                     comment: {
@@ -152,7 +152,7 @@ export default class CommentSection extends Component {
                         id: comment ? comment.comment.id : undefined,
                         replytoid: replyTo ? replyTo.comment.id : undefined,
                         content: content,
-                        pseudonym: pseudonym,
+                        pseudonymous: pseudonymous,
                         customdata: customData || '',
                     }
                 }},

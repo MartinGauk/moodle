@@ -50,7 +50,7 @@ export default class CommentForm extends Component {
     async submitForm(form) {
         const savedComment = await this.commentSection.saveComment(
             form.content.value,
-            form.pseudonym ? form.pseudonym.value : null,
+            form.pseudonymous ? form.pseudonymous.checked : false,
             null,
             this.replyTo,
             this.comment

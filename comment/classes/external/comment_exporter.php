@@ -50,6 +50,7 @@ class comment_exporter extends \core\external\exporter {
         $data->itemid = $comment->get_section()->get_item_id();
         $data->contextid = $comment->get_section()->get_context()->id;
         $data->id = $comment->get_id();
+        $data->pseudonymous = $comment->is_pseudonymous_author();
         $data->replytoid = $comment->get_replytoid();
         $data->content = $comment->get_content();
         $data->contentformat = $comment->get_content_format();
@@ -81,6 +82,9 @@ class comment_exporter extends \core\external\exporter {
             'id' => array(
                 'type' => PARAM_INT,
             ),
+            'pseudonymous' => array(
+                'type' => PARAM_BOOL,
+            ),
             'replytoid' => array(
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
@@ -88,10 +92,6 @@ class comment_exporter extends \core\external\exporter {
             ),
             'content' => array(
                 'type' => PARAM_RAW,
-            ),
-            'pseudonym' => array(
-                'type' => PARAM_RAW,
-                'null' => NULL_ALLOWED,
             ),
             'contentformat' => array(
                 'type' => PARAM_INT,
@@ -231,7 +231,6 @@ class comment_exporter extends \core\external\exporter {
             $values['usermodifiedid'] = $usermodifiedid;
         }
         $values['usermodifiedfullname'] = $this->comment->get_usermodified_fullname($viewrealidentity);
-        $values['pseudonym'] = $this->comment->get_pseudonym();
         $values['fullname'] = $this->comment->get_usercreated_fullname($viewrealidentity);
         $values['avatar'] = $output->user_picture($usercreated, array(
             'size' => 35,

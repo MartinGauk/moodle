@@ -55,7 +55,10 @@ class comment {
     /** @var int id of the user who last modified this comment */
     protected $usermodified;
 
-    /** @var string|null pseudonym specified when the comment was posted */
+    /** @var bool whether this comment is pseudonymous */
+    protected $pseudonymous;
+
+    /** @var int|null pseudonym index calculated when the comment was posted */
     protected $pseudonym;
 
     /** @var string|null temporary pseudonym */
@@ -112,6 +115,9 @@ class comment {
         $comment->usermodified = $record->usermodified;
         $comment->timemodified = $record->timemodified;
         $comment->pseudonym = $record->pseudonym;
+        if (!empty($comment->pseudonym)) {
+            $comment->pseudonymous = true;
+        }
         $comment->replytoid = $record->replytoid;
         $comment->replies = $record->replies;
         $comment->upvotes = $record->upvotes;
@@ -126,20 +132,20 @@ class comment {
      * @param string $content
      * @param int $format
      * @param int $usercreated
-     * @param string $pseudonym
+     * @param bool $pseudonymous
      * @param comment|null $replyto
      * @param string $customdatajson
      * @return comment
      */
     static public function construct_new(section $section, string $content, int $format, int $usercreated,
-            string $pseudonym, ?comment $replyto, string $customdatajson) : comment {
+            bool $pseudonymous, ?comment $replyto, string $customdatajson) : comment {
         $comment = new comment($section);
         $comment->id = null;
         $comment->content = $content;
         $comment->format = $format;
         $comment->usermodified = $comment->usercreated = $usercreated;
         $comment->timemodified = $comment->timecreated = time();
-        $comment->pseudonym = $pseudonym;
+        $comment->pseudonymous = $pseudonymous;
         $comment->replytoid = ($replyto) ? $replyto->get_id() : null;
         $comment->replyto = $replyto;
         $comment->customdatajson = $customdatajson;
@@ -180,7 +186,13 @@ class comment {
         $data = new \stdClass();
         $data->content = $this->content;
         $data->format = $this->format;
-        $data->pseudonym = $this->pseudonym;
+        if ($this->pseudonymous) {
+            if (!$this->pseudonym) {
+                // TODO calculate pseudonym (using lock?)
+                $this->pseudonym = 1;
+            }
+            $data->pseudonym = $this->pseudonym;
+        }
         $data->usermodified = $this->usermodified;
         $data->timemodified = $this->timemodified;
         $data->customdata = $this->customdatajson;
@@ -270,11 +282,11 @@ class comment {
         if ($this->is_pseudonymous_author()) {
             if ($revealidentity) {
                 $a = new \stdClass();
-                $a->pseudonym = $this->get_pseudonym();
+                $a->pseudonym = $this->get_localized_pseudonym();
                 $a->realname = fullname($this->get_usercreated(true));
                 return get_string('pseudonymwithrealname', 'core_comment', $a);
             } else {
-                return $this->get_pseudonym();
+                return $this->get_localized_pseudonym();
             }
         } else {
             return fullname($this->get_usercreated());
@@ -320,11 +332,11 @@ class comment {
         if ($this->is_pseudonymous_author() && $this->usermodified == $this->usercreated) {
             if ($revealidentity) {
                 $a = new \stdClass();
-                $a->pseudonym = $this->get_pseudonym();
+                $a->pseudonym = $this->get_localized_pseudonym();
                 $a->realname = fullname($this->get_usercreated(true));
                 return get_string('pseudonymwithrealname', 'core_comment', $a);
             } else {
-                return $this->get_pseudonym();
+                return $this->get_localized_pseudonym();
             }
         } else {
             return fullname($this->get_usermodified());
@@ -332,12 +344,14 @@ class comment {
     }
 
     /**
-     * Get the pseudonym or null, if none was set.
+     * Get the localized pseudonym or null, if none was set.
      *
      * @return string|null
      */
-    public function get_pseudonym() : ?string {
-        return $this->temporarypseudonym ?? $this->pseudonym;
+    public function get_localized_pseudonym() : ?string {
+        if (!$this->pseudonymous)
+            return null;
+        return $this->temporarypseudonym ?? get_string('pseudonymwithparam', 'core_comment', $this->pseudonym);
     }
 
     /**
@@ -483,12 +497,11 @@ class comment {
      *
      * @param string $pseudonym
      */
-    public function set_pseudonym(string $pseudonym) {
-        $pseudonym = trim($pseudonym);
-        if (strlen($pseudonym) == 0 && $this->is_pseudonymous_author()) {
+    public function set_pseudonymous(bool $pseudonymous) {
+        if (!$pseudonymous && $this->is_pseudonymous_author()) {
             throw new \comment_exception('cannotremovepseudonym'); //TODO add to error.php
         }
-        $this->pseudonym = $pseudonym;
+        $this->pseudonymous = $pseudonymous;
     }
 
     /**
@@ -558,7 +571,7 @@ class comment {
      * @return bool
      */
     public function is_pseudonymous_author() : bool {
-        return !empty($this->pseudonym) || !empty($this->temporarypseudonym);
+        return $this->pseudonymous;
     }
 
     /**

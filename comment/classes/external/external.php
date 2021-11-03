@@ -402,11 +402,10 @@ class external extends \external_api {
 
         // Trim strings.
         $comment['content'] = trim($comment['content']);
-        $comment['pseudonym'] = trim($comment['pseudonym']);
         $comment['customdata'] = trim($comment['customdata']);
 
         $cap = $section->get_capability($USER);
-        $postmode = ($comment['pseudonym'] != '') ? capability::POST_PSEUDONYM : capability::POST_REALNAME;
+        $postmode = $comment['pseudonymous'] ? capability::POST_PSEUDONYM : capability::POST_REALNAME;
         if (!$cap->can_post($postmode, $replyto)) {
             throw new comment_exception('nopermissiontocomment');
         }
@@ -415,7 +414,7 @@ class external extends \external_api {
             $comment['content'],
             $comment['contentformat'],
             $USER->id,
-            $comment['pseudonym'],
+            $comment['pseudonymous'],
             $replyto,
             $comment['customdata']
         );
@@ -490,9 +489,9 @@ class external extends \external_api {
         }
 
         $commentobj->set_content(trim($comment['content']), $comment['contentformat']);
-        $pseudonym = trim($comment['pseudonym']);
-        if ($pseudonym && $cap->can_post(capability::POST_PSEUDONYM, $commentobj->get_replyto())) {
-            $commentobj->set_pseudonym($pseudonym);
+        $pseudonymous = $comment['pseudonymous'];
+        if ($pseudonymous && $cap->can_post(capability::POST_PSEUDONYM, $commentobj->get_replyto())) {
+            $commentobj->set_pseudonymous($pseudonymous);
         }
         $commentobj->set_custom_data_json(trim($comment['customdata']));
         $commentobj->update_time_user($USER->id);

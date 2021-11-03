@@ -52,20 +52,11 @@
         <form class="mform">
             {{#allowpseudonym}}
                 <div class="form-check">
-                    <input id="pseudonymToggle{{uniqid}}" type="checkbox" {{#comment.pseudonym}}checked{{/comment.pseudonym}}
-                           data-toggle="collapse" data-target="#pseudonymContainer{{uniqid}}" class="form-check-input">
+                    <input id="pseudonymToggle{{uniqid}}" type="checkbox"
+                           {{#comment.pseudonymous}}checked disabled{{/comment.pseudonymous}}
+                           {{^comment}}{{^allowrealname}}checked disabled{{/allowrealname}}{{/comment}}
+                           name="pseudonymous" class="form-check-input">
                     <label for="pseudonymToggle{{uniqid}}"> {{# str }} useapseudonym, core_comment {{/ str }}</label>
-                </div>
-                <div id="pseudonymContainer{{uniqid}}"
-                     class="collapse {{#comment.pseudonym}}show{{/comment.pseudonym}}">
-                    <div class="form-group">
-                        <label for="pseudonymInput{{uniqid}}" class="sr-only">{{# str }} pseudonym, core_comment {{/ str }}</label>
-                        <div class="form-inline">
-                            <input id="pseudonymInput{{uniqid}}" type="text" name="pseudonym" placeholder="{{# str }} pseudonym, core_comment {{/ str }}"
-                                   class="form-control" {{^allowrealname}}required{{/allowrealname}}
-                                {{#comment}}value="{{pseudonym}}"{{/comment}}/>
-                        </div>
-                    </div>
                 </div>
             {{/allowpseudonym}}
             <div class="form-group">
