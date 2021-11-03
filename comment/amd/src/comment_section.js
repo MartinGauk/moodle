@@ -81,15 +81,15 @@ export default class CommentSection extends Component {
     async getContext() {
         return Object.assign({
             startatbottom: this.startAtBottom,
-            fillheight: this.fillHeight
+            fillheight: this.fillHeight,
         }, this.context);
     }
 
     async postRender() {
-        this.commentForm = this.addChild('[data-commentform]', 'commentform', {
+        this.commentForm = await this.addChild('[data-commentform]', 'commentform', {
             commentSection: this
         });
-        this.commentList = this.addChild('[data-commentlist]', 'commentlist', {
+        this.commentList = await this.addChild('[data-commentlist]', 'commentlist', {
             commentSection: this,
             pageSize: this.pageSize,
             sortDirection: this.sortDirection,

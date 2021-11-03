@@ -78,6 +78,10 @@ export default class Component {
 
             await this.postRender(template, context);
             this.callback('postrender', [template, context, this.el]);
+
+            // TODO remove logging
+            // eslint-disable-next-line no-console
+            console.log('postrender template ' + template + ' with context ', context);
         } catch (e) {
             Notification.exception(e);
         }
@@ -95,7 +99,7 @@ export default class Component {
         });
     }
 
-    addChild(selector, childName, options = {}, render = true) {
+    async addChild(selector, childName, options = {}, render = true) {
         const childEl = this.el.querySelector(selector);
         if (childEl) {
             if (this.children[selector]) {
@@ -110,7 +114,8 @@ export default class Component {
                 const child = new this.renderOptions[childClassKey](childEl, this, options);
                 this.children[selector] = child;
                 if (render) {
-                    window.setTimeout(() => child.render(), 0);
+                    await child.render();
+                    // window.setTimeout(() => child.render(), 0);
                 }
                 return child;
             }

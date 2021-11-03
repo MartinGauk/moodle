@@ -123,23 +123,23 @@ export default class Comment extends Component {
     async postRender() {
         // Render editing form or comment body.
         if (this.isEditing) {
-            this.commentEditForm = this.addChild(`[data-commenteditform="${this.comment.id}"]`, 'commentform', {
+            this.commentEditForm = await this.addChild(`[data-commenteditform="${this.comment.id}"]`, 'commentform', {
                 commentSection: this.commentSection,
                 comment: this
             });
         } else {
-            this.commentBody = this.addChild(`[data-commentbody="${this.comment.id}"]`, 'commentbody', {comment: this});
+            this.commentBody = await this.addChild(`[data-commentbody="${this.comment.id}"]`, 'commentbody', {comment: this});
         }
         // Render reply form.
         if (this.showReplyForm) {
-            this.commentReplyForm = this.addChild(`[data-commentreplyform="${this.comment.id}"]`, 'commentform', {
+            this.commentReplyForm = await this.addChild(`[data-commentreplyform="${this.comment.id}"]`, 'commentform', {
                 commentSection: this.commentSection,
                 replyTo: this
             });
         }
         // Render replies.
         if (this.showReplies) {
-            this.commentReplies = this.addChild(`[data-commentreplies="${this.comment.id}"]`, 'commentlist', {
+            this.commentReplies = await this.addChild(`[data-commentreplies="${this.comment.id}"]`, 'commentlist', {
                 commentSection: this.commentSection,
                 replyTo: this,
                 pageSize: 5,

@@ -128,12 +128,26 @@ export default class CommentList extends Component {
                 await this.render();
             }
         }
+
+        window.setTimeout(() => this.scrollToComment(comment.id), 0);
+    }
+
+    scrollToComment(id) {
+        const comment = this.children[`[data-comment="${id}"]`];
+        if (!comment) {
+            return false;
+        }
+        this.el.scrollTop = comment.el.offsetTop - 10;
+        // TODO doesnt work
+        // eslint-disable-next-line no-console
+        console.log('scrolled to ' + id);
+        return true;
     }
 
     async postRender() {
-        this.comments.forEach((comment) => {
-            this.addChild(`[data-comment="${comment.id}"]`, 'comment', {commentList: this, comment: comment});
-        });
+        await Promise.all(this.comments.map((comment) => {
+            return this.addChild(`[data-comment="${comment.id}"]`, 'comment', {commentList: this, comment: comment});
+        }));
         this.addListener('[data-loadmoreabove]', 'click', (e) => {
             this.loadMore(true).catch(Notification.exception);
             e.preventDefault();

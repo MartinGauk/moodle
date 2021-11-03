@@ -62,7 +62,7 @@ export default class CommentForm extends Component {
         } else {
             await this.commentSection.commentList.onCommentPosted(savedComment);
         }
-        form.reset();
+        await this.render();
     }
 
     focus() {
