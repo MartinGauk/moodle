@@ -44,7 +44,9 @@ export default class Comment extends Component {
         return Object.assign({
             isediting: this.isEditing,
             showreplies: this.showReplies,
-            showreplyform: this.showReplyForm
+            showreplyform: this.showReplyForm,
+            showsettings: (this.comment.canedit && !this.isEditing) || this.comment.candelete,
+            wasmodified: this.comment.timecreated !== this.comment.timemodified,
         }, this.comment);
     }
 

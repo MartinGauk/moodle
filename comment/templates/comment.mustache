@@ -33,6 +33,8 @@
     * isediting Boolean specifying whether the comment is being edited
     * showreplies Boolean specifing whether replies are displayed
     * showreplyform Boolean specifing whether the reply form is displayed
+    * showsettings Boolean specifying whether the settings menu should be shown
+    * wasmodified Boolean specifying whether this comment was modified
     * Comment as exported by core_comment\external\comment_exporter.php
 
     Example context (json):
@@ -40,6 +42,8 @@
         "isediting": false,
         "showreplies": false,
         "showreplyform": false,
+        "showsettings": true,
+        "wasmodified": false,
         // TODO fill with example comment
     }
 }}
@@ -60,24 +64,35 @@
                 </span>
                 -
                 <span class="d-inline-block">{{timecreatedtext}}</span>
+                {{#wasmodified}}
+                    <span id="editedTooltip{{uniqid}}" data-toggle="tooltip" tabindex="0"
+                          title="{{#str}} editedby, core_comment, {
+                                    "usermodified": {{#quote}}{{usermodifiedfullname}}{{/quote}},
+                                    "timemodified": {{#quote}}{{timemodifiedtext}}{{/quote}}
+                                }{{/str}}">
+                        <i class="fa fa-pencil fa-fw"></i>
+                    </span>
+                {{/wasmodified}}
             </div>
-            <div class="core_comment_comment_settings flex-grow-0 btn-group">
-                <a class="action-icon clickable text-muted" data-toggle="dropdown" role="button">
-                    <i class="icon fa fa-ellipsis-v fa-fw"></i>
-                </a>
-                <div class="dropdown-menu dropdown-menu-right"> {{! TODO dropdown menu get's cut off because of overflow-x: hidden on row }}
-                    {{#canedit}}{{^isediting}}
-                        <a href="#" class="dropdown-item" data-editcomment="{{id}}">
-                            <i class="icon fa fa-pencil fa-fw"></i> {{# str }} edit, core_comment {{/ str }}
-                        </a>
-                    {{/isediting}}{{/canedit}}
-                    {{#candelete}}
-                        <a href="#" class="dropdown-item" data-deletecomment="{{id}}">
-                            <i class="icon fa fa-trash fa-fw"></i> {{# str }} delete, core_comment {{/ str }}
-                        </a>
-                    {{/candelete}}
+            {{#showsettings}}
+                <div class="core_comment_comment_settings flex-grow-0 btn-group">
+                    <a class="action-icon clickable text-muted" data-toggle="dropdown" role="button" data-boundary="window" tabindex="0">
+                        <i class="icon fa fa-ellipsis-v fa-fw"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        {{#canedit}}{{^isediting}}
+                            <a href="#" class="dropdown-item" data-editcomment="{{id}}">
+                                <i class="icon fa fa-pencil fa-fw"></i> {{# str }} edit, core_comment {{/ str }}
+                            </a>
+                        {{/isediting}}{{/canedit}}
+                        {{#candelete}}
+                            <a href="#" class="dropdown-item" data-deletecomment="{{id}}">
+                                <i class="icon fa fa-trash fa-fw"></i> {{# str }} delete, core_comment {{/ str }}
+                            </a>
+                        {{/candelete}}
+                    </div>
                 </div>
-            </div>
+            {{/showsettings}}
         </div>
 
         {{#isediting}}
@@ -111,3 +126,13 @@
         {{/showreplyform}}
     </div>
 </div>
+{{#wasmodified}}
+    {{#js}}
+        require(['jquery'], function($) {
+            $("#editedTooltip{{uniqid}}").tooltip({
+                container: 'body',
+                placement: 'top'
+            });
+        });
+    {{/js}}
+{{/wasmodified}}

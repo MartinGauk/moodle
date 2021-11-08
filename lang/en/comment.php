@@ -28,6 +28,7 @@ $string['content'] = 'Content';
 $string['delete'] = 'Delete';
 $string['deletecomment'] = 'Delete comment';
 $string['edit'] = 'Edit';
+$string['editedby'] = 'Edited by {$a->usermodified} on {$a->timemodified}';
 $string['loadmore'] = 'Load more...';
 $string['nocomments'] = 'No comments.';
 $string['nreplies'] = 'replies';

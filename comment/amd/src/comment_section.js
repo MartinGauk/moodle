@@ -43,6 +43,7 @@ export default class CommentSection extends Component {
         this.fillHeight = options.fillHeight;
         this.pageSize = options.pageSize || 10;
         this.context = options.commentSection || null;
+        this.renderOptions = options.renderOptions || {};
         this.comments = null;
         this.moreAvailableAbove = false;
         this.moreAvailableBelow = false;

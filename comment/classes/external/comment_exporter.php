@@ -106,6 +106,9 @@ class comment_exporter extends \core\external\exporter {
 
     protected static function define_other_properties() {
         return array(
+            'contentraw' => array(
+                'type' => PARAM_RAW,
+            ),
             'timecreated' => array(
                 'type' => PARAM_INT,
             ),
@@ -210,6 +213,7 @@ class comment_exporter extends \core\external\exporter {
         $viewrealidentity = !$this->comment->is_pseudonymous_author() || $cap->can_view_real_identity($this->comment);
         $values = array();
 
+        $values['contentraw'] = $this->comment->get_content();
         $values['strftimeformat'] = get_string('strftimerecentfull', 'langconfig');
         $values['time'] = $values['timecreated'] = $this->comment->get_timecreated();
         $values['timecreatedtext'] = userdate($values['timecreated'], $values['strftimeformat']);

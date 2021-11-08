@@ -66,15 +66,15 @@ export default class Component {
             // Copy context to prevent accidental modification of the original object.
             context = Object.assign({}, context);
             context = await this.preRender(template, context);
-            context = this.callback('prerender', [template, context], context);
+            context = this.callback('prerender', [template, context]) || context;
 
             // TODO remove logging
             // eslint-disable-next-line no-console
             console.log('rendering template ' + template + ' with context ', context);
-            const html = await templates.render(template, context);
+            const {html, js} = await templates.renderForPromise(template, context);
 
             this.detachChildren();
-            templates.replaceNodeContents(this.el, html, '');
+            templates.replaceNodeContents(this.el, html, js);
 
             await this.postRender(template, context);
             this.callback('postrender', [template, context, this.el]);
@@ -115,7 +115,6 @@ export default class Component {
                 this.children[selector] = child;
                 if (render) {
                     await child.render();
-                    // window.setTimeout(() => child.render(), 0);
                 }
                 return child;
             }
