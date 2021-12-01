@@ -2689,7 +2689,7 @@ function xmldb_main_upgrade($oldversion) {
             $dbman->change_field_notnull($table, $field);
         }
         $previous = $field;
-        $field = new xmldb_field('pseudonym', XMLDB_TYPE_INTEGER, '10', null, null, null, null, $previous);
+        $field = new xmldb_field('pseudonym', XMLDB_TYPE_INTEGER, '1', null, null, null, null, $previous);
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }

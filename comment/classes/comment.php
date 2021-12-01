@@ -56,9 +56,6 @@ class comment {
     protected $usermodified;
 
     /** @var bool whether this comment is pseudonymous */
-    protected $pseudonymous;
-
-    /** @var int|null pseudonym index calculated when the comment was posted */
     protected $pseudonym;
 
     /** @var string|null temporary pseudonym */
@@ -115,7 +112,6 @@ class comment {
         $comment->usermodified = $record->usermodified;
         $comment->timemodified = $record->timemodified;
         $comment->pseudonym = $record->pseudonym;
-        $comment->pseudonymous = !empty($comment->pseudonym);
         $comment->replytoid = $record->replytoid;
         $comment->replies = $record->replies;
         $comment->upvotes = $record->upvotes;
@@ -143,7 +139,7 @@ class comment {
         $comment->format = $format;
         $comment->usermodified = $comment->usercreated = $usercreated;
         $comment->timemodified = $comment->timecreated = time();
-        $comment->pseudonymous = $pseudonymous;
+        $comment->pseudonym = $pseudonymous;
         $comment->replytoid = ($replyto) ? $replyto->get_id() : null;
         $comment->replyto = $replyto;
         $comment->customdatajson = $customdatajson;
@@ -176,43 +172,6 @@ class comment {
         return true;
     }
 
-    private static function generate_pseudonym(section $section, int $userid) : string {
-        global $DB;
-        $pseudonym = $DB->get_field_sql('
-            SELECT pseudonym
-            FROM {comments} 
-            WHERE contextid = :contextid 
-              AND component = :component 
-              AND commentarea = :commentarea 
-              AND itemid = :itemid
-              AND userid = :userid
-              AND pseudonym IS NOT NULL
-        ', [
-            'contextid' => $section->get_context()->id,
-            'component' => $section->get_area()->get_component(),
-            'commentarea' => $section->get_area()->get_area(),
-            'itemid' => $section->get_item_id(),
-            'userid' => $userid
-        ]);
-        if (!$pseudonym) {
-            $pseudonym = $DB->get_field_sql('
-                SELECT MAX(pseudonym) + 1
-                FROM {comments} 
-                WHERE contextid = :contextid 
-                  AND component = :component 
-                  AND commentarea = :commentarea 
-                  AND itemid = :itemid
-                  AND pseudonym IS NOT NULL
-            ', [
-                'contextid' => $section->get_context()->id,
-                'component' => $section->get_area()->get_component(),
-                'commentarea' => $section->get_area()->get_area(),
-                'itemid' => $section->get_item_id()
-            ]);
-        }
-        return $pseudonym;
-    }
-
     /**
      * Save data to the database.
      */
@@ -224,16 +183,7 @@ class comment {
             $data = new \stdClass();
             $data->content = $this->content;
             $data->format = $this->format;
-            if ($this->pseudonymous) {
-                if (!$this->pseudonym) {
-                    if ($lock = $lockfactory->get_lock($this->section->get_unique_key(), 5)) {
-                        $this->pseudonym = self::generate_pseudonym($this->section, $this->usercreated);
-                    } else {
-                        throw new \moodle_exception('locktimeout');
-                    }
-                }
-                $data->pseudonym = $this->pseudonym;
-            }
+            $data->pseudonym = $this->pseudonym;
             $data->usermodified = $this->usermodified;
             $data->timemodified = $this->timemodified;
             $data->customdata = $this->customdatajson;
@@ -396,13 +346,11 @@ class comment {
      * @return string|null
      */
     public function get_localized_pseudonym() : ?string {
-        if (!$this->pseudonymous)
-            return null;
         if ($this->temporarypseudonym)
             return $this->temporarypseudonym;
-        // Default to question mark before comment is saved.
-        $pseudonym = $this->pseudonym ?? '?';
-        return get_string('pseudonymwithparam', 'core_comment', $pseudonym);
+        if (!$this->pseudonym)
+            return null;
+        return get_string('pseudonymous', 'core_comment');
     }
 
     /**
@@ -552,7 +500,7 @@ class comment {
         if (!$pseudonymous && $this->is_pseudonymous_author()) {
             throw new \comment_exception('cannotremovepseudonym'); //TODO add to error.php
         }
-        $this->pseudonymous = $pseudonymous;
+        $this->pseudonym = $pseudonymous;
     }
 
     /**
@@ -622,7 +570,7 @@ class comment {
      * @return bool
      */
     public function is_pseudonymous_author() : bool {
-        return !empty($this->temporarypseudonym) || $this->pseudonymous;
+        return !empty($this->temporarypseudonym) || $this->pseudonym;
     }
 
     /**
