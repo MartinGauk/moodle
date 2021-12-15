@@ -43,6 +43,12 @@ class manager {
         'replies' => false,
         'postrealname' => true,
         'postpseudonym' => false,
+
+        // Users can view the (most recent) comments in all comment sections within a context and the area.
+        'viewallcommentsinarea' => false,
+
+        // Users can also view all comments in child contexts.
+        'viewchildcontexts' => false,
     ];
 
     /** @var array cached comment area definitions (component name => area name => area options) */

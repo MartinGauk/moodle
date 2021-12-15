@@ -108,6 +108,7 @@ class external extends \external_api {
                 'itemid'        => new external_value(PARAM_INT, 'associated id', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'area'          => new external_value(PARAM_AREA, 'deprecated, replaced by commentarea', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'commentarea'   => new external_value(PARAM_AREA, 'string comment area', VALUE_DEFAULT, null, NULL_ALLOWED),
+                'includechildcontexts' => new external_value(PARAM_BOOL, 'fetch comments also from child contexts (if a course context was given)', VALUE_DEFAULT, false, NULL_NOT_ALLOWED),
                 'replytoid'     => new external_value(PARAM_INT, 'get replies to comment', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'commentid'     => new external_value(PARAM_INT, 'get one comment by id', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'page'          => new external_value(PARAM_INT, 'page number (0 based)', VALUE_DEFAULT, 0),
@@ -140,9 +141,9 @@ class external extends \external_api {
      * @since Moodle 2.9
      */
     public static function get_comments(?string $contextlevel, ?int $instanceid, ?int $contextid, ?string $component,
-            ?int $itemid, ?string $area = null, ?string $commentarea = null, ?int $replytoid = null,
-            ?int $commentid = null, int $page = 0, int $pagesize = 50, ?int $timefrom = null, ?int $timeto = null,
-            string $sortdirection = 'DESC') {
+            ?int $itemid, ?string $area = null, ?string $commentarea = null, bool $includechildcontexts = false,
+            ?int $replytoid = null, ?int $commentid = null, int $page = 0, int $pagesize = 50, ?int $timefrom = null,
+            ?int $timeto = null, string $sortdirection = 'DESC') {
         global $CFG, $SITE, $USER, $PAGE;
 
         // TODO check $CFG->usecomments and return empty result?
@@ -156,6 +157,7 @@ class external extends \external_api {
             'itemid'        => $itemid,
             'area'          => $area,
             'commentarea'   => $commentarea,
+            'includechildcontexts' => $includechildcontexts,
             'replytoid'     => $replytoid,
             'commentid'     => $commentid,
             'page'          => $page,
@@ -218,7 +220,7 @@ class external extends \external_api {
                 $canpost = $cap->can_post(capability::POST_PSEUDONYM) || $cap->can_post(capability::POST_REALNAME);
             } else {
                 $comments = $area->get_comments_in_area($params['timefrom'], $params['timeto'], $params['page'],
-                    $params['pagesize'], $sortdirection, true, $USER);
+                    $params['pagesize'], $sortdirection, $params['includechildcontexts'], $USER);
                 $count = $comments->count_total();
             }
         }

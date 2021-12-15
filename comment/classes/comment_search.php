@@ -103,41 +103,60 @@ class comment_search implements \IteratorAggregate {
     }
 
     protected function get_sql(bool $count = false, ?bool $includereplies = null) : array {
+        global $DB;
+
         if (!in_array($this->sortdirection, ['ASC', 'DESC'])) {
             throw new \moodle_exception('invalidsortdirection', 'core'); // TODO error message
         }
 
-        $where = 'contextid = :contextid AND component = :component AND commentarea = :commentarea';
+        $joins = '';
+        $where = 'c.component = :component AND c.commentarea = :commentarea';
         $params = [
-            'contextid' => $this->area->get_context()->id,
             'component' => $this->area->get_component(),
             'commentarea' => $this->area->get_area(),
         ];
-        if ($this->section) {
-            $where .= ' AND itemid = :itemid';
+
+        if ($this->section === null && $this->includechildcontexts && $this->area->get_context() instanceof \context_course) {
+            $contextids = $this->area->get_component_course_child_contextids($this->user);
+        } else {
+            $contextids = [$this->area->get_context()->id];
+        }
+
+        [$insql, $inparams] = $DB->get_in_or_equal($contextids, SQL_PARAMS_NAMED, 'contexts');
+        $where .= ' AND c.contextid ' . $insql;
+        $params = array_merge($params, $inparams);
+
+        if ($this->section === null && $this->user) {
+            $itemjoins = $this->area->get_comments_sql_join($this->user, $contextids);
+            $joins = $itemjoins->joins;
+            $where .= ' AND ' . $itemjoins->wheres;
+            $params = array_merge($params, $itemjoins->params);
+        } else if ($this->section) {
+            $where .= ' AND c.itemid = :itemid';
             $params['itemid'] = $this->section->get_item_id();
         }
+
         if ($this->replytoid) {
-            $where .= ' AND replytoid = :replytoid';
+            $where .= ' AND c.replytoid = :replytoid';
             $params['replytoid'] = $this->replytoid;
         } else if ($includereplies === false || (is_null($includereplies) && !$this->includereplies)) {
-            $where .= ' AND replytoid IS NULL';
+            $where .= ' AND c.replytoid IS NULL';
         }
-        if (!is_null($this->timefrom)) {
-            $where .= ' AND timecreated >= :timefrom';
+
+        if ($this->timefrom !== null) {
+            $where .= ' AND c.timecreated >= :timefrom';
             $params['timefrom'] = $this->timefrom;
         }
-        if (!is_null($this->timeto)) {
-            $where .= ' AND timecreated <= :timeto';
+
+        if ($this->timeto !== null) {
+            $where .= ' AND c.timecreated <= :timeto';
             $params['timeto'] = $this->timeto;
         }
 
-        // TODO use area::get_comments_sql_where
-
         if ($count) {
-            $sql = 'SELECT COUNT(*) FROM {comments} WHERE ' . $where;
+            $sql = 'SELECT COUNT(*) FROM {comments} c ' . $joins . ' WHERE ' . $where;
         } else {
-            $sql = 'SELECT * FROM {comments} WHERE ' . $where . ' ORDER BY timecreated ' . $this->sortdirection;
+            $sql = 'SELECT * FROM {comments} c ' . $joins . ' WHERE ' . $where . ' ORDER BY c.timecreated ' . $this->sortdirection;
         }
 
         return array($sql, $params);
@@ -161,7 +180,7 @@ class comment_search implements \IteratorAggregate {
 
         // Fetch comment records.
         global $DB;
-        list($sql, $params) = $this->get_sql();
+        [$sql, $params] = $this->get_sql();
         $limitfrom = 0;
         $limitnum = 0;
         if ($this->pagesize > 0) {
@@ -182,6 +201,7 @@ class comment_search implements \IteratorAggregate {
                     $section = $this->area->get_section($record->itemid);
                     if ($this->user && !$section->get_capability($this->user)->can_view()) {
                         $sections[$sectionkey] = null;
+                        debugging('The query returned comments from a section that the user is not allowed to view.', DEBUG_DEVELOPER);
                     } else {
                         $sections[$sectionkey] = $section;
                     }
@@ -258,7 +278,7 @@ class comment_search implements \IteratorAggregate {
         }
 
         global $DB;
-        list($sql, $params) = $this->get_sql(true, $includingreplies);
+        [$sql, $params] = $this->get_sql(true, $includingreplies);
         $count = $DB->count_records_sql($sql, $params);
 
         if ($includingreplies) {

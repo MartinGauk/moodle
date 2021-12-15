@@ -151,30 +151,33 @@ class area {
     }
 
     /**
-     * Helper function for get_comments_in_area.
+     * This function is called when the (most recent) comments in an area are fetched.
      *
-     * This function should return the SQL clauses in order to limit the query in get_comments_in_area to only fetch
-     * comments that $user is allowed to view.
+     * If users should be able to view comments in all sections withing an area, the option 'viewallcommentsinarea'
+     * in the component's db/comments.php file should be enabled.
      *
-     * A plugin needs to override this method if it wants to display the (most recent) comments in a comment area.
-     * By default, this method ensures that no comments are returned (since the API does not have any knowledge about the
-     * items that a comment refers to).
-     *
-     * TODO maybe move this to section as a static function?
+     * This function should return the SQL clauses in order to limit a query to only fetch
+     * comments from sections (with specific itemids) that $user is allowed to view. By default, this function does not
+     * limit the query.
      *
      * @param \stdClass $user
-     * @return null|array with three elements (joins, where, params)
+     * @param int[] context ids (contains at least $this->context->id and possibly child contexts of that)
+     * @return \core\dml\sql_join with three elements (joins, where, params)
      *     1. joins: any joins with other tables that are needed.
-     *     2. where: WHERE clauses
+     *     2. wheres: WHERE clauses
      *     3. params: array of placeholder values that are needed by the SQL. You must
-     *        used named placeholders, and the placeholder names should start with the
+     *        use named placeholders, and the placeholder names should start with the
      *        plugin name, to avoid collisions.
      */
-    protected function get_comments_sql_where(\stdClass $user) {
-        return null;
+    public function get_comments_sql_join(\stdClass $user, array $contextids) : \core\dml\sql_join {
+        if (!$this->options['viewallcommentsinarea']) {
+            throw new \moodle_exception('viewallcommentsinareadisabled', 'core'); // TODO error message
+        }
+
+        return new \core\dml\sql_join('', '1 = 1');
     }
 
-    /** MIT DER ANDEREN FUNKTION VEREINEN?
+    /**
      * Get child context ids in a course.
      *
      * Helper function for get_comments_in_area when fetching comments in child contexts of a course context.
@@ -183,23 +186,28 @@ class area {
      *
      * A plugin needs to override this method if it is not an activity module.
      *
-     * @param \stdClass $user user object
+     * @param \stdClass|null $user user object
      * @return int[] context ids
      */
-    protected function get_component_course_child_contextids(\stdClass $user) {
+    public function get_component_course_child_contextids(?\stdClass $user) {
+        if (!$this->options['viewchildcontexts']) {
+            throw new \moodle_exception('viewcommentschildcontextsdisabled', 'core'); // TODO error message
+        }
+
+        $contextids = [$this->context->id];
         list($type, $plugin) = \core_component::normalize_component($this->component);
         if ($type === 'mod') {
-            $modinfo = get_fast_modinfo($this->course->id, $user->id);
+            $modinfo = get_fast_modinfo($this->course->id, ($user) ? $user->id : -1);
             $cms = $modinfo->get_instances_of($plugin);
-            $contextids = [];
             foreach ($cms as $cm) {
-                if ($cm->uservisible) {
+                if ($user === null || $cm->uservisible) {
                     $contextids[] = $cm->context->id;
                 }
             }
             return $contextids;
         }
 
+        // TODO
         // Throw exception telling developers that they need to override this method because their component is not a mod?
     }
 

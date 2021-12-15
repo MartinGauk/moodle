@@ -24,8 +24,10 @@
 
 $commentareas = [
     'submission_comments' => [
-        'areaclass' => '\\core_comment\\area',
+        'areaclass' => '\\assignsubmission_comments\\area',
         'sectionclass' => '\\assignsubmission_comments\\section',
         'replies' => true,
+        'viewallcommentsinarea' => true,
+        'viewchildcontexts' => false,
     ],
 ];
