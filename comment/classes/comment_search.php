@@ -65,7 +65,7 @@ class comment_search implements \IteratorAggregate {
      * @param int|null $timefrom only comments that were created at or after this time
      * @param int|null $timeto only comments that were created at or before this time
      * @param int $page
-     * @param int $pagesize maximum number of comments to fetch
+     * @param int $pagesize maximum number of comments to fetch (-1 for unlimited)
      * @param string $sortdirection ASC or DESC (comments are ordered by timecreated)
      * @param bool $includechildcontexts also fetch comments from child contexts (only if the context is a \course_context)
      * @param bool $includereplies include all replies. Cannot be used combined with replytoid.
@@ -227,19 +227,23 @@ class comment_search implements \IteratorAggregate {
      * @return \stdClass user record
      */
     public function get_user(int $userid) : \stdClass {
-        if (array_key_exists($userid, $this->loadedusers)) {
+        if (isset($this->loadedusers[$userid])) {
             return $this->loadedusers[$userid];
         }
         $results = $this->get_all();
         // Get all user ids from the results (plus the userid passed to this function) that are not loaded yet.
-        $userids = array_diff(
-            array_unique(array_merge(
-                array_column($results, 'userid'),
-                array_column($results, 'usermodified'),
-                array($userid)
-            )),
-            array_keys($this->loadedusers)
-        );
+        $userids = [$userid => $userid];
+        foreach ($results as $comment) {
+            $usercreated = $comment->get_usercreated_id(true);
+            $usermodified = $comment->get_usermodified_id(true);
+            if (!isset($userids[$usercreated]) && !isset($this->loadedusers[$usercreated])) {
+                $userids[$usercreated] = $usercreated;
+            }
+            if (!isset($userids[$usermodified]) && !isset($this->loadedusers[$usermodified])) {
+                $userids[$usermodified] = $usermodified;
+            }
+        }
+
         if (!empty($userids)) {
             global $DB;
             $users = $DB->get_records_list('user', 'id', $userids);
@@ -273,13 +277,23 @@ class comment_search implements \IteratorAggregate {
      */
     public function count_total(bool $includingreplies = true) : int {
         $count = $includingreplies ? $this->totalcountwithreplies : $this->totalcount;
-        if (!is_null($count)) {
+        if ($count !== null) {
             return $count;
         }
 
-        global $DB;
-        [$sql, $params] = $this->get_sql(true, $includingreplies);
-        $count = $DB->count_records_sql($sql, $params);
+        // Maybe we can avoid another query if the comments were already fetched.
+        if ($this->results !== null && (count($this->results) < $this->pagesize || $this->pagesize == -1)) {
+            $count = count($this->results);
+            if ($includingreplies) {
+                $count = array_reduce($this->results, function(int $carry, comment $comment) {
+                    return $carry + $comment->get_replies();
+                }, $count);
+            }
+        } else {
+            global $DB;
+            [$sql, $params] = $this->get_sql(true, $includingreplies);
+            $count = $DB->count_records_sql($sql, $params);
+        }
 
         if ($includingreplies) {
             $this->totalcountwithreplies = $count;
