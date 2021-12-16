@@ -186,7 +186,7 @@ class comment {
             $data->pseudonym = $this->pseudonym;
             $data->usermodified = $this->usermodified;
             $data->timemodified = $this->timemodified;
-            $data->customdata = $this->customdatajson;
+            $data->customdata = $this->get_custom_data_json();
 
             if (!is_null($this->id)) {
                 $data->id = $this->id;

@@ -39,24 +39,35 @@ use stdClass;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class comment_exporter extends \core\external\exporter {
-    /** @var comment The comment. */
-    protected $comment = null;
+    /** @var \core_comment\comment The comment. */
+    protected $comment;
+
+    /** @var \core_comment\section */
+    protected $section;
+
+    /** @var \core_comment\capability */
+    protected $capability;
 
     public function __construct(comment $comment) {
+        global $USER;
+
         $this->comment = $comment;
+        $this->section = $this->comment->get_section();
+        $this->capability = $this->section->get_capability($USER);
+
         $data = new stdClass();
-        $data->component = $comment->get_section()->get_area()->get_component();
-        $data->commentarea = $comment->get_section()->get_area()->get_area();
-        $data->itemid = $comment->get_section()->get_item_id();
-        $data->contextid = $comment->get_section()->get_context()->id;
+        $data->component = $this->section->get_area()->get_component();
+        $data->commentarea = $this->section->get_area()->get_area();
+        $data->itemid = $this->section->get_item_id();
+        $data->contextid = $this->section->get_context()->id;
         $data->id = $comment->get_id();
         $data->pseudonymous = $comment->is_pseudonymous_author();
         $data->replytoid = $comment->get_replytoid();
         $data->content = $comment->get_content();
         $data->contentformat = $comment->get_content_format();
-        $data->customdata = $comment->get_custom_data_json();
+        $data->customdata = $this->section->export_comment_custom_data_json($comment, $this->capability);
         $related = array(
-            'context' => $comment->get_section()->get_context()
+            'context' => $this->section->get_context()
         );
         parent::__construct($data, $related);
     }
@@ -209,8 +220,7 @@ class comment_exporter extends \core\external\exporter {
     public function get_other_values(renderer_base $output) {
         global $USER;
 
-        $cap = $this->comment->get_section()->get_capability($USER);
-        $viewrealidentity = !$this->comment->is_pseudonymous_author() || $cap->can_view_real_identity($this->comment);
+        $viewrealidentity = !$this->comment->is_pseudonymous_author() || $this->capability->can_view_real_identity($this->comment);
         $values = array();
 
         $values['contentraw'] = $this->comment->get_content();
@@ -223,7 +233,7 @@ class comment_exporter extends \core\external\exporter {
         $values['profileurl'] = null;
         $values['userid'] = null;
         if ($viewrealidentity) {
-            $course = $this->comment->get_section()->get_area()->get_course();
+            $course = $this->section->get_area()->get_course();
             $url = new \moodle_url('/user/view.php', array('id' => $usercreated->id, 'course' => $course->id));
             $values['profileurl'] = $url->out(false);
             $values['userid'] = $usercreated->id;
@@ -244,28 +254,28 @@ class comment_exporter extends \core\external\exporter {
         $values['upvotes'] = $this->comment->get_upvotes();
         $values['vote'] = 0; //TODO get this from somewhere
         $values['isown'] = $this->comment->is_owned_by_user($USER->id);
-        $values['allowpseudonymreply'] = $cap->can_post(capability::POST_PSEUDONYM, $this->comment);
-        $values['allowrealnamereply'] = $cap->can_post(capability::POST_REALNAME, $this->comment);
+        $values['allowpseudonymreply'] = $this->capability->can_post(capability::POST_PSEUDONYM, $this->comment);
+        $values['allowrealnamereply'] = $this->capability->can_post(capability::POST_REALNAME, $this->comment);
         $values['canreply'] = $values['allowpseudonymreply'] || $values['allowrealnamereply'];
-        $values['canupvote'] = $cap->can_upvote($this->comment);
-        $subscription = subscription::get_subscription_status($USER, $this->comment->get_section(), $this->comment);
-        $values['cansubscribeimmediate'] = $cap->can_modify_subscription_status(
+        $values['canupvote'] = $this->capability->can_upvote($this->comment);
+        $subscription = subscription::get_subscription_status($USER, $this->section, $this->comment);
+        $values['cansubscribeimmediate'] = $this->capability->can_modify_subscription_status(
             $subscription,
             subscription::NOTIFICATION_IMMEDIATE,
             $this->comment
         );
-        $values['cansubscribedigests'] = $cap->can_modify_subscription_status(
+        $values['cansubscribedigests'] = $this->capability->can_modify_subscription_status(
             $subscription,
             subscription::NOTIFICATION_DAILY_DIGEST,
             $this->comment
         );
-        $values['canunsubscribe'] = $cap->can_modify_subscription_status(
+        $values['canunsubscribe'] = $this->capability->can_modify_subscription_status(
             $subscription,
             subscription::NOTIFICATION_OFF,
             $this->comment
         );
-        $values['canedit'] = $cap->can_edit($this->comment);
-        $values['delete'] = $values['candelete'] = $cap->can_delete($this->comment);
+        $values['canedit'] = $this->capability->can_edit($this->comment);
+        $values['delete'] = $values['candelete'] = $this->capability->can_delete($this->comment);
         $values['subscription'] = external::format_subscription($subscription);
         $subscriptiondefault = subscription::NOTIFICATION_OFF; //TODO where should default come from?
         $values['subscriptiondefault'] = external::format_subscription($subscriptiondefault);

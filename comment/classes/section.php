@@ -26,6 +26,8 @@ namespace core_comment;
 
 defined('MOODLE_INTERNAL') || die();
 
+require_once("$CFG->libdir/externallib.php");
+
 /**
  * Abstract class that represents a comment section in a component.
  *
@@ -141,37 +143,33 @@ abstract class section {
     }
 
     /**
-     * Get the definition of the available properties in the custom data to a comment.
+     * Get the definition of the available properties in the custom data of a comment.
      *
      * This allows to store some custom/meta data associated with a comment.
      *
-     * Example array that can be returned:
-     *  return [
-     *      'property_name' => [
-     *          'type' => PARAM_TYPE,                // Mandatory.
-     *          'default' => 'Default value',        // When not set, the property is considered as required.
-     *          'message' => new lang_string(...),   // Defaults to invalid data error message.
-     *          'choices' => array(1, 2, 3),         // An array of accepted values (optional).
-     *          'internal' => true,                  // Do not expose the property value via the external API (defaults to false).
-     *      ],
-     *  ];
-     *
-     * @return array
+     * @return \external_single_structure|null null if comments in this section do not have custom data
      */
-    public function get_comment_custom_data_field_definition() : array {
-        return [];
+    public function get_comment_custom_data_field_definition() : ?\external_single_structure {
+        return null;
     }
 
     /**
      * Validate the custom data of a comment.
      *
+     * Read the custom data of a comment and write back the validated data.
+     *
      * @param comment $comment
      * @param capability $capability capability manager of the user who wants to save the comment
-     * @return string[] empty array when the validation passed or an array of properties with errors (property => error message).
+     * @throws \invalid_parameter_exception
      */
     protected function validate_comment_custom_data(comment $comment, capability $capability) {
-        // TODO
-        return [];
+        $definition = $this->get_comment_custom_data_field_definition();
+        if ($definition) {
+            $data = \external_api::validate_parameters($definition, $comment->get_custom_data());
+            $comment->set_custom_data($data);
+        } else {
+            $comment->set_custom_data([]);
+        }
     }
 
     /**
@@ -181,13 +179,13 @@ abstract class section {
      *
      * @param comment $comment
      * @param capability $capability capability manager of the user who wants to save the comment
-     * @return string[] empty array when the validation passed or an array of properties with errors (property => error message).
+     * @throws \invalid_parameter_exception
      */
     public function validate_comment(comment $comment, capability $capability) {
         if (!strlen($comment->get_content())) {
             throw new \comment_exception(); //TODO error message
         }
-        return $this->validate_comment_custom_data($comment, $capability);
+        $this->validate_comment_custom_data($comment, $capability);
     }
 
     /**
@@ -207,25 +205,24 @@ abstract class section {
      *
      * @param comment $comment
      * @param capability $capability capability manager of the user who wants to save the comment
-     * @return string[] empty array when the validation passed or an array of properties with errors (property => error message).
+     * @throws \invalid_parameter_exception
      */
-    public function validate_and_modify_comment(comment $comment, capability $capability) {
-        $errors = $this->validate_comment($comment, $capability);
-        if (count($errors) == 0) {
-            $this->modify_comment_before_save($comment, $capability);
-        }
-        return $errors;
+    public final function validate_and_modify_comment(comment $comment, capability $capability) {
+        $this->validate_comment($comment, $capability);
+        $this->modify_comment_before_save($comment, $capability);
     }
 
     /**
-     * Get the custom data of a comment in order to send it to a user.
+     * Get the custom data (as JSON) of a comment in order to send it to a user.
+     *
+     * A subclass may modify the custom data, e.g. removing (internal) data that is not meant for the user.
      *
      * @param comment $comment
-     * @param capability $capability capability manager of the user who wants to save the comment
-     * @return array one-dimensional key-value array
+     * @param capability $capability capability manager of the user who wants to view the comment
+     * @return string JSON encoded data
      */
-    public function export_comment_custom_data(comment $comment, capability $capability) : array {
-        // TODO check default and export only non-internal properties.
+    public function export_comment_custom_data_json(comment $comment, capability $capability) : string {
+        return $comment->get_custom_data_json();
     }
 
     public static function make_unique_key(string $component, string $commentarea, int $contextid, int $itemid) {

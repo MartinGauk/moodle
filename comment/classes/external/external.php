@@ -421,10 +421,7 @@ class external extends \external_api {
             $comment['customdata']
         );
 
-        if ($section->validate_and_modify_comment($commentobj, $cap)) {
-            throw new comment_exception(); // TODO, maybe throw invalid_parameter_exception?
-        }
-
+        $section->validate_and_modify_comment($commentobj, $cap);
         $commentobj->save();
         $exporter = new comment_exporter($commentobj);
         $renderer = $PAGE->get_renderer('core');
@@ -498,10 +495,7 @@ class external extends \external_api {
         $commentobj->set_custom_data_json(trim($comment['customdata']));
         $commentobj->update_time_user($USER->id);
 
-        if ($section->validate_and_modify_comment($commentobj, $cap)) {
-            throw new comment_exception();
-        }
-
+        $section->validate_and_modify_comment($commentobj, $cap);
         $commentobj->save();
         $exporter = new comment_exporter($commentobj);
         $renderer = $PAGE->get_renderer('core');
