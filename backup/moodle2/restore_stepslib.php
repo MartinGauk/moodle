@@ -2512,6 +2512,7 @@ class restore_comments_structure_step extends restore_structure_step {
         global $DB;
 
         $data = (object)$data;
+        $oldid = $data->id;
 
         if (!isset($data->usermodified)) {
             $data->usermodified = $data->userid;
@@ -2527,19 +2528,24 @@ class restore_comments_structure_step extends restore_structure_step {
             $data->itemid = $this->get_mappingid($mapping, $data->itemid);
         }
         // Only restore the comment if has no mapping OR we have found the matching mapping
-        if (!$mapping || $data->itemid) {
-            // Only if user mapping and context
-            $data->userid = $this->get_mappingid('user', $data->userid);
-            $data->usermodified = $this->get_mappingid('user', $data->usermodified);
-            if ($data->userid && $this->task->get_contextid()) {
-                $data->contextid = $this->task->get_contextid();
-                // Only if there is another comment with same context/user/timecreated
-                $params = array('contextid' => $data->contextid, 'userid' => $data->userid, 'timecreated' => $data->timecreated);
-                if (!$DB->record_exists('comments', $params)) {
-                    $DB->insert_record('comments', $data);
-                }
-            }
+        if ($mapping && $data->itemid === false)
+            return;
+
+        // Only if user mapping and context
+        $data->userid = $this->get_mappingid('user', $data->userid);
+        $data->usermodified = $this->get_mappingid('user', $data->usermodified);
+
+        // If comment is reply, map it (parent has already been restored).
+        if (!empty($data->replytoid)) {
+            $data->replytoid = $this->get_mappingid('comment', $data->replytoid);
+            if ($data->replytoid === false)
+                return;
         }
+        if (!$data->userid || !$this->task->get_contextid())
+            return;
+        $data->contextid = $this->task->get_contextid();
+        $newid = $DB->insert_record('comments', $data);
+        $this->set_mapping('comment', $oldid, $newid);
     }
 }
 

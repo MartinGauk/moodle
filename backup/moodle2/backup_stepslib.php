@@ -863,17 +863,18 @@ class backup_comments_structure_step extends backup_structure_step {
         $comments = new backup_nested_element('comments');
 
         $comment = new backup_nested_element('comment', array('id'), array(
-            'component', 'commentarea', 'itemid', 'content', 'format',
-            'userid', 'timecreated'));
+            'component', 'commentarea', 'itemid', 'content', 'format', 'userid', 'usermodified', 'pseudonym',
+            'timecreated', 'timemodified', 'replytoid', 'replies', 'upvotes', 'customdata'));
 
         // Build the tree.
         $comments->add_child($comment);
 
         // Define sources.
-        $comment->set_source_table('comments', array('contextid' => backup::VAR_CONTEXTID));
+        $comment->set_source_table('comments', array('contextid' => backup::VAR_CONTEXTID), 'timecreated ASC, id ASC');
 
         // Define id annotations.
         $comment->annotate_ids('user', 'userid');
+        $comment->annotate_ids('user', 'usermodified');
 
         // Return the root element (comments).
         return $comments;
