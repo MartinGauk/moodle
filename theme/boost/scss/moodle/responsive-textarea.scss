@@ -1,0 +1,22 @@
+.responsive-textarea {
+    position: relative;
+
+    textarea, div {
+        white-space: pre-wrap;
+        word-wrap: break-word; /* make sure the div and the textarea wrap words in the same way */
+        box-sizing: border-box;
+        width: 100%;
+    }
+    textarea {
+        position: absolute;
+        height: 100%;
+        resize: none;
+    }
+    div {
+        visibility: hidden;
+        height: auto;
+        min-height: 3.75rem; /* 2 lines */
+        max-height: 10rem; /* ~6 lines */
+        border: 1px solid #fff;
+    }
+}

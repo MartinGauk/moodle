@@ -47,14 +47,14 @@
         // TODO fill with example comment
     }
 }}
-<div class="core_comment_comment {{#pseudonym}}core_comment_comment_pseudonymous{{/pseudonym}} d-flex flex-row">
-    <div class="core_comment_comment_avatar flex-grow-0">
+<div class="core_comment_comment {{#pseudonym}}pseudonymous{{/pseudonym}}">
+    <div class="comment-avatar">
         {{{avatar}}}
     </div>
-    <div class="flex-grow-1" style="overflow-x: hidden;">
-        <div class="core_comment_comment_header d-flex flex-row flex-nowrap">
-            <div class="flex-grow-1">
-                <span class="core_comment_comment_author">
+    <div class="comment-container">
+        <div class="comment-header">
+            <div class="comment-author-time">
+                <span class="comment-author">
                     {{#profileurl}}
                         <a href="{{profileurl}}">{{fullname}}</a>
                     {{/profileurl}}
@@ -63,7 +63,7 @@
                     {{/profileurl}}
                 </span>
                 -
-                <span class="d-inline-block">{{timecreatedtext}}</span>
+                <span class="comment-timecreated">{{timecreatedtext}}</span>
                 {{#wasmodified}}
                     <span id="editedTooltip{{uniqid}}" data-toggle="tooltip" tabindex="0"
                           title="{{#str}} editedby, core_comment, {
@@ -75,7 +75,7 @@
                 {{/wasmodified}}
             </div>
             {{#showsettings}}
-                <div class="core_comment_comment_settings flex-grow-0 btn-group">
+                <div class="comment-settings btn-group">
                     <a class="action-icon clickable text-muted" data-toggle="dropdown" role="button" data-boundary="window" tabindex="0">
                         <i class="icon fa fa-ellipsis-v fa-fw"></i>
                     </a>
@@ -95,19 +95,21 @@
             {{/showsettings}}
         </div>
 
-        {{#isediting}}
-            <div data-commenteditform="{{id}}"></div>
-        {{/isediting}}
-        {{^isediting}}
-            <div data-commentbody="{{id}}"></div>
-        {{/isediting}}
+        <div class="comment-body">
+            {{#isediting}}
+                <div data-commenteditform="{{id}}"></div>
+            {{/isediting}}
+            {{^isediting}}
+                <div data-commentbody="{{id}}"></div>
+            {{/isediting}}
+        </div>
 
-        <div class="core_comment_comment_footer">
+        <div class="comment-footer">
             {{#canreply}}
                 <a href="#" data-showreplyform="{{id}}">{{# str }} reply, core_comment {{/ str }}</a>
             {{/canreply}}
             {{#replies}}
-                <span class="d-inline-block">
+                <span class="comment-replies-control">
                     {{^showreplies}}
                         <a href="#" data-showreplies="{{id}}">▼ {{ replies }} {{# str }} nreplies, core_comment {{/ str }}</a>
                     {{/showreplies}}

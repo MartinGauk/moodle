@@ -34,12 +34,11 @@
     {
     }
 }}
-<div class="modal moodle-has-zindex" data-region="modal-container" aria-hidden="true" role="dialog" style="height: 100%; overflow-y: hidden;">
-    <div class="modal-dialog {{$classes}}{{classes}}{{/classes}}" role="document" data-region="modal" aria-labelledby="{{uniqid}}-modal-title" tabindex="0"
-         style="height: 100%; overflow-y: hidden;">
-        <div class="modal-content" style="height: 100%; overflow-y: hidden;">
-            <div class="modal-header {{$headerclasses}}{{headerclasses}}{{/headerclasses}}" data-region="header" style="flex: 0 1 auto; overflow-y: hidden">
-
+<div class="modal moodle-has-zindex core_comment_modal_comment_section" data-region="modal-container" aria-hidden="true" role="dialog">
+    <div class="modal-dialog {{$classes}}{{classes}}{{/classes}}" role="document" data-region="modal" aria-labelledby="{{uniqid}}-modal-title" tabindex="0">
+        <div class="modal-content">
+            <div class="modal-header {{$headerclasses}}{{headerclasses}}{{/headerclasses}}" data-region="header">
+{{!TODO Popup Breite}}
                 {{$header}}
                     <h5 id="{{uniqid}}-modal-title" class="modal-title" data-region="title">{{$title}}{{#str}} comments {{/str}}{{/title}}</h5>
                 {{/header}}
@@ -47,14 +46,14 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body" data-region="body" style="flex: 1 1 1px; overflow-y: hidden">
+            <div class="modal-body" data-region="body">
                 {{$body}}
-                    <div class="container" style="height: 100%;">
-                        <div data-commentsection style="height: 100%;"></div>
+                    <div class="container h-100">
+                        <div class="h-100" data-commentsection></div>
                     </div>
                 {{/body}}
             </div>
-            <div class="modal-footer" data-region="footer" style="flex: 0 1 auto; overflow-y: hidden">
+            <div class="modal-footer" data-region="footer">
                 {{$footer}}
                 {{/footer}}
             </div>

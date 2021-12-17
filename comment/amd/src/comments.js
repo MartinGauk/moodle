@@ -32,7 +32,7 @@ export const init = () => {
             commentarea: el.dataset.commentarea,
             itemid: el.dataset.itemid,
             sortDirection: 'ASC',
-            startAtBottom: false,
+            startAtBottom: true,
             fillHeight: true
         };
         if ('modal' in el.dataset) {

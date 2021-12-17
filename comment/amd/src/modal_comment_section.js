@@ -58,7 +58,9 @@ define(['core_comment/comments', 'core/modal', 'core/modal_registry'],
 
         ModalCommentSection.prototype.show = function() {
             const el = this.getBody().find('[data-commentsection]')[0];
-            Comments.initCommentSection(el, this.getOptions());
+            Comments.initCommentSection(el, Object.assign({
+                commentFormOnCancel: (() => this.hide())
+            }, this.getOptions()));
             Modal.prototype.show.call(this);
         };
 

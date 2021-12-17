@@ -41,26 +41,16 @@
         // TODO fill with example section
     }
 }}
-<div class="core_comment_comment_section"
-     {{#fillheight}}style="height: 100%; display: flex; flex-flow: column nowrap;"{{/fillheight}}>
-
+<div class="core_comment_comment_section{{#fillheight}} fill-height{{#startatbottom}} start-at-bottom{{/startatbottom}}{{/fillheight}}">
     {{^startatbottom}}
         {{#canpost}}
-            <div data-commentform {{#fillheight}}style="flex: 0 1 auto;"{{/fillheight}}></div>
+            <div class="comment-form" data-commentform></div>
         {{/canpost}}
     {{/startatbottom}}
-    {{#fillheight}}
-        <div style="flex: 1 1 1px; overflow-y: auto;
-             {{#startatbottom}}display: flex; flex-flow: column-reverse;{{/startatbottom}}">
-            <div data-commentlist></div>
-        </div>
-    {{/fillheight}}
-    {{^fillheight}}
-        <div data-commentlist></div>
-    {{/fillheight}}
+    <div class="comment-list" data-commentlist></div>
     {{#startatbottom}}
         {{#canpost}}
-            <div data-commentform {{#fillheight}}style="flex: 0 1 auto;"{{/fillheight}}></div>
+            <div class="comment-form" data-commentform></div>
         {{/canpost}}
     {{/startatbottom}}
 </div>

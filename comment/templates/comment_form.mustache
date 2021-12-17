@@ -29,6 +29,7 @@
 
     Context variables required for this template:
     * canpost Boolean specifying whether the user can post comments here
+    * cancancel Boolean specifying whether the form can be cancelled
     * allowpseudonym Boolean specifying whether the user may use a pseudonym
     * allowrealname Boolean specifying whether the user may use their real name
     * comment Comment to be edited as exported by core_comment\external\comment_exporter.php (optional)
@@ -37,6 +38,7 @@
     Example context (json):
     {
         "canpost": true,
+        "cancancel": true,
         "allowpseudonym": true,
         "allowrealname": true,
         "comment": {
@@ -49,9 +51,9 @@
 }}
 <div class="core_comment_comment_form">
     {{#canpost}}
-        <form class="mform">
+        <form class="mform comment-form">
             {{#allowpseudonym}}
-                <div class="form-check">
+                <div class="form-check comment-pseudonymous-input">
                     <input id="pseudonymToggle{{uniqid}}" type="checkbox"
                            {{#comment.pseudonymous}}checked disabled{{/comment.pseudonymous}}
                            {{^comment}}{{^allowrealname}}checked disabled{{/allowrealname}}{{/comment}}
@@ -59,18 +61,27 @@
                     <label for="pseudonymToggle{{uniqid}}"> {{# str }} useapseudonym, core_comment {{/ str }}</label>
                 </div>
             {{/allowpseudonym}}
-            <div class="form-group">
+            <div class="form-group comment-content-input">
                 <label for="contentInput{{uniqid}}" class="sr-only">{{# str }} content, core_comment {{/ str }}</label>
-                <div class="form-inline">
+                <div id="responsiveTextArea{{uniqid}}" class="responsive-textarea">
                     <textarea id="contentInput{{uniqid}}" placeholder="{{# str }} writeacomment, core_comment {{/ str }}"
-                              class="form-control w-100"
+                              class="form-control"
                               name="content">{{#comment}}{{contentraw}}{{/comment}}</textarea>
+                    <div class="form-control"></div>
                 </div>
             </div>
-            <div class="form-group">
+            <div class="form-group comment-form-controls">
                 <input type="submit" class="btn btn-primary" value="{{#comment}}{{# str }} updatecomment, core_comment {{/ str }}{{/comment}}{{^comment}}{{# str }} postcomment, core_comment {{/ str }}{{/comment}}">
-                <input type="button" data-cancelcommentform class="btn btn-secondary" value="{{# str }} cancel, core {{/ str }}">
+                {{#cancancel}}
+                    <input type="button" data-cancelcommentform class="btn btn-secondary" value="{{# str }} cancel, core {{/ str }}">
+                {{/cancancel}}
             </div>
         </form>
     {{/canpost}}
 </div>
+{{#js}}
+    require(['theme_boost/responsive-textarea'], function({responsiveTextArea}) {
+        const el = document.getElementById("responsiveTextArea{{uniqid}}");
+        responsiveTextArea(el);
+    });
+{{/js}}

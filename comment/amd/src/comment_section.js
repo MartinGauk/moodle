@@ -44,6 +44,7 @@ export default class CommentSection extends Component {
         this.pageSize = options.pageSize || 10;
         this.context = options.commentSection || null;
         this.renderOptions = options.renderOptions || {};
+        this.commentFormOnCancel = options.commentFormOnCancel;
         this.comments = null;
         this.moreAvailableAbove = false;
         this.moreAvailableBelow = false;
@@ -88,7 +89,8 @@ export default class CommentSection extends Component {
 
     async postRender() {
         this.commentForm = await this.addChild('[data-commentform]', 'commentform', {
-            commentSection: this
+            commentSection: this,
+            onCancel: this.commentFormOnCancel
         });
         this.commentList = await this.addChild('[data-commentlist]', 'commentlist', {
             commentSection: this,
@@ -143,13 +145,17 @@ export default class CommentSection extends Component {
     }
 
     async saveComment(content, pseudonymous = false, customData = null, replyTo = null, comment = null) {
+        let hasItemId = this.itemId !== undefined && this.itemId !== null;
+        if (!hasItemId && !comment) {
+            throw new Error('Cannot create comments when itemid is not set.');
+        }
         return await Ajax.call([
             {methodname: comment ? 'core_comment_update_comment' : 'core_comment_create_comment', args: {
                     comment: {
                         contextid: this.contextId,
                         component: this.component,
                         commentarea: this.commentArea,
-                        itemid: this.itemId,
+                        itemid: hasItemId ? this.itemId : comment.comment.itemid,
                         id: comment ? comment.comment.id : undefined,
                         replytoid: replyTo ? replyTo.comment.id : undefined,
                         content: content,

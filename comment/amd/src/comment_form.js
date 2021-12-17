@@ -30,6 +30,7 @@ export default class CommentForm extends Component {
         super('commentform', el, parent);
         this.commentSection = options.commentSection;
         this.comment = options.comment;
+        this.onCancel = options.onCancel;
         if (this.comment) {
             this.replyTo = this.comment.commentList.replyTo;
         } else {
@@ -40,6 +41,7 @@ export default class CommentForm extends Component {
     async getContext() {
         return {
             canpost: this.commentSection.context.canpost,
+            cancancel: this.comment || this.replyTo || !!this.onCancel,
             allowpseudonym: this.commentSection.context.allowpseudonym,
             allowrealname: this.commentSection.context.allowrealname,
             comment: this.comment ? await this.comment.comment : null,
@@ -91,12 +93,15 @@ export default class CommentForm extends Component {
         this.addListener('[data-cancelcommentform]', 'click', (e) => {
             const form = this.el.querySelector('form');
             form.reset();
+            e.preventDefault();
             if (this.comment) {
                 this.comment.cancelEditing();
             } else if (this.replyTo && this.replyTo.showReplyForm) {
                 this.replyTo.toggleReplyForm();
             }
-            e.preventDefault();
+            if (this.onCancel) {
+                this.onCancel();
+            }
             return false;
         });
     }
