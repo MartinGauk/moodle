@@ -29,9 +29,16 @@ export const responsiveTextArea = (el) => {
     if (!div) {
         throw new Error("Div not found inside responsive textarea container.");
     }
+
     const resize = () => {
-        div.innerText = textArea.value + '\xa0'; // \xa0 (nbsp) makes sure the text area grows when enter is pressed.
+        div.textContent = textArea.value + '\xa0'; // \xa0 (nbsp) makes sure the text area grows when enter is pressed.
     };
     resize();
-    textArea.addEventListener('input', resize, false);
+
+    textArea.addEventListener('input', resize);
+
+    const form = el.closest('form');
+    if (form) {
+        form.addEventListener('reset', () => setTimeout(resize)); // Wait for the textArea to be reset using timeout.
+    }
 };
