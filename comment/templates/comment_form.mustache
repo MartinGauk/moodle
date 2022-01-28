@@ -58,7 +58,12 @@
                            {{#comment.pseudonymous}}checked disabled{{/comment.pseudonymous}}
                            {{^comment}}{{^allowrealname}}checked disabled{{/allowrealname}}{{/comment}}
                            name="pseudonymous" class="form-check-input">
-                    <label for="pseudonymToggle{{uniqid}}"> {{# str }} useapseudonym, core_comment {{/ str }}</label>
+                    <label for="pseudonymToggle{{uniqid}}"> {{# str }} hiderealname, core_comment {{/ str }}</label>
+                    <a class="btn btn-link {{#comment.pseudonymous}}disabled{{/comment.pseudonymous}} p-0" role="button"
+                        data-container="body" data-toggle="popover" data-html="true" tabindex="0" data-trigger="focus"
+                        data-content="{{# str }} hiderealnamehelp, core_comment, {{# str }} pseudonymous, core_comment {{/ str }}{{/ str }}">
+                        {{#pix}}help, core, {{/pix}}
+                    </a>
                 </div>
             {{/allowpseudonym}}
             <div class="form-group comment-content-input">
