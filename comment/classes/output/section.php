@@ -40,6 +40,7 @@ class section implements \renderable, \templatable {
     public $component;
     public $commentarea;
     public $itemid;
+    public $section;
 
     /**
      * Comment section renderable constructor.
@@ -51,6 +52,7 @@ class section implements \renderable, \templatable {
         $this->component = $section->get_area()->get_component();
         $this->commentarea = $section->get_area()->get_area();
         $this->itemid = $section->get_item_id();
+        $this->section = $section;
     }
 
     /**

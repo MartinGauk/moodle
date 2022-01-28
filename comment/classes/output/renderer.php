@@ -44,13 +44,15 @@ class renderer extends \plugin_renderer_base {
         global $PAGE;
         $PAGE->requires->js_call_amd('core_comment/comments', 'init');
         // TODO use modal?
+        $ncomments = $section->section->count_comments();
+        $text = $ncomments ? "Show {$ncomments} comment(s)" : "No comments";
         return "<a href='#'
                     data-commentsection
                     data-modal
                     data-contextid='{$section->contextid}' 
                     data-component='{$section->component}'
                     data-commentarea='{$section->commentarea}'
-                    data-itemid='{$section->itemid}'>Comments</a>"; // TODO localize
+                    data-itemid='{$section->itemid}'>{$text}</a>"; // TODO localize
     }
 
     /**

@@ -3,20 +3,23 @@
     display: flex;
     flex-flow: column nowrap;
 
-    .comment-list {
+    .comment-section-list {
         flex: 1 1 1px;
         overflow-y: auto;
         display: flex;
         flex-flow: column;
     }
 
-    .comment-form {
+    .comment-section-form {
         flex: 0 1 auto;
     }
 
     &.start-at-bottom {
-        .comment-list {
+        .comment-section-list {
             flex-flow: column-reverse;
+        }
+        .comment-section-form {
+            margin-top: .5rem;
         }
     }
 }

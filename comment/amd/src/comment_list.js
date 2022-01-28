@@ -54,6 +54,11 @@ export default class CommentList extends Component {
             above = this.startAtBottom;
         }
 
+        const buttonEl = this.el.querySelector(above ? '[data-loadmoreabove]' : '[data-loadmorebelow]');
+        if (buttonEl) {
+            buttonEl.outerHTML = '<i class="icon fa fa-circle-o-notch fa-spin fa-fw ml-4"></i>';
+        }
+
         let time = null;
         let overlap = 0;
         if (this.comments && this.comments.length) {
@@ -144,6 +149,45 @@ export default class CommentList extends Component {
         return true;
     }
 
+    addIntersectionObserver() {
+        if (!IntersectionObserver) { // IE is dumb.
+            return;
+        }
+        if (this.intersectionObserver) {
+            this.intersectionObserver.disconnect();
+            this.intersectionObserver = null;
+        }
+
+        const loadMoreAbove = this.el.querySelector('[data-loadmoreabove]');
+        const loadMoreBelow = this.el.querySelector('[data-loadmorebelow]');
+        if (!loadMoreAbove && !loadMoreBelow) {
+            return;
+        }
+
+        this.intersectionObserver = new IntersectionObserver(entries => {
+            entries.forEach(entry => {
+                if (!entry.isIntersecting) {
+                    return;
+                }
+                if (entry.target === loadMoreAbove) {
+                    this.loadMore(true).catch(Notification.exception);
+                }
+                if (entry.target === loadMoreBelow) {
+                    this.loadMore(false).catch(Notification.exception);
+                }
+                this.intersectionObserver.disconnect();
+                this.intersectionObserver = null;
+            });
+        }, {root: this.el});
+
+        if (loadMoreAbove) {
+            this.intersectionObserver.observe(loadMoreAbove);
+        }
+        if (loadMoreBelow) {
+            this.intersectionObserver.observe(loadMoreBelow);
+        }
+    }
+
     async postRender() {
         await Promise.all(this.comments.map((comment) => {
             return this.addChild(`[data-comment="${comment.id}"]`, 'comment', {commentList: this, comment: comment});
@@ -158,6 +202,8 @@ export default class CommentList extends Component {
             e.preventDefault();
             return false;
         });
+
+        this.addIntersectionObserver();
     }
 
 }

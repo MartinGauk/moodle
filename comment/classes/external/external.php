@@ -213,8 +213,8 @@ class external extends \external_api {
 
                 $cap = $section->get_capability($USER);
                 if ($cap->can_view()) {
-                    $comments = $section->get_comments($params['replytoid'], $params['timefrom'], $params['timeto'],
-                        $params['page'], $params['pagesize'], $sortdirection, $USER);
+                    $comments = $section->get_comments($params['replytoid'], $USER,
+                        $params['timefrom'], $params['timeto'], $params['page'], $params['pagesize'], $sortdirection);
                     $count = $comments->count_total();
                 }
                 $canpost = $cap->can_post(capability::POST_PSEUDONYM) || $cap->can_post(capability::POST_REALNAME);

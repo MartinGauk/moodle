@@ -97,10 +97,12 @@ abstract class section {
      * Get the number of comments in this section or the number of replies to a comment.
      *
      * @param int|null $replytoid comment id
+     * @param \stdClass|null $user if specified, only count comments that this user can see
      * @return int
      */
-    public function count_comments(int $replytoid = null) : int {
+    public function count_comments(int $replytoid = null, ?\stdClass $user = null) : int {
         // TODO
+        return $this->get_comments($replytoid, $user)->count();
     }
 
     /**
@@ -112,11 +114,10 @@ abstract class section {
      * @param int $page
      * @param int $pagesize maximum number of comments to fetch
      * @param string $sortdirection ASC or DESC (comments are ordered by timecreated)
-     * @param \stdClass|null $user user object
+     * @param \stdClass|null $user if specified, only return comments that this user can see
      * @return comment_search
      */
-    public function get_comments(?int $replytoid, ?int $timefrom, ?int $timeto, int $page, int $pagesize, string $sortdirection,
-            ?\stdClass $user) : comment_search {
+    public function get_comments(?int $replytoid = null, ?\stdClass $user = null, ?int $timefrom = null, ?int $timeto = null, int $page = 0, int $pagesize = -1, string $sortdirection = 'ASC') : comment_search {
         // TODO
         return new comment_search($this->get_area(), $this, $replytoid, $timefrom, $timeto, $page, $pagesize, $sortdirection, false, false, $user);
     }
