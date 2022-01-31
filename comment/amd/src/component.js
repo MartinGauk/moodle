@@ -67,6 +67,9 @@ export default class Component {
             context = await this.preRender(template, context);
             context = this.callback('prerender', [template, context]) || context;
 
+            // TODO remove logging
+            // eslint-disable-next-line no-console
+            console.log('rendering template ' + template + ' with context ', context);
             const {html, js} = await templates.renderForPromise(template, context);
 
             this.detachChildren();
@@ -74,6 +77,10 @@ export default class Component {
 
             await this.postRender(template, context);
             this.callback('postrender', [template, context, this.el]);
+
+            // TODO remove logging
+            // eslint-disable-next-line no-console
+            console.log('postrender template ' + template + ' with context ', context);
         } catch (e) {
             Notification.exception(e);
         }

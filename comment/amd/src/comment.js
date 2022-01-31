@@ -99,6 +99,13 @@ export default class Comment extends Component {
         await this.render();
     }
 
+    async gotoReplyForm() {
+        if (!this.showReplyForm) {
+            await this.toggleReplyForm();
+        }
+        this.commentReplyForm.focus();
+    }
+
     async onDeleted() {
         if (this.replyTo) {
             this.replyTo.comment.replies--;
@@ -173,9 +180,7 @@ export default class Comment extends Component {
             return false;
         });
         this.addListener(`[data-showreplyform="${this.comment.id}"]`, 'click', (e) => {
-            if (!this.showReplyForm) {
-                this.toggleReplyForm();
-            }
+            this.gotoReplyForm();
             e.preventDefault();
             return false;
         });

@@ -69,13 +69,22 @@
             <div class="form-group comment-content-input">
                 <label for="contentInput{{uniqid}}" class="sr-only">{{# str }} content, core_comment {{/ str }}</label>
                 <div id="responsiveTextArea{{uniqid}}" class="responsive-textarea">
-                    <textarea id="contentInput{{uniqid}}" placeholder="{{# str }} writeacomment, core_comment {{/ str }}"
+                    <textarea id="contentInput{{uniqid}}" placeholder="{{!
+                              }}{{#replyto}}{{# str }} writeareply, core_comment {{/ str }}{{/replyto}}{{!
+                              }}{{^replyto}}{{# str }} writeacomment, core_comment {{/ str }}{{/replyto}}"
                               class="form-control" name="content" required>{{#comment}}{{contentraw}}{{/comment}}</textarea>
                     <div class="form-control"></div>
                 </div>
             </div>
             <div class="form-group comment-form-controls">
-                <input type="submit" class="btn btn-primary" value="{{#comment}}{{# str }} updatecomment, core_comment {{/ str }}{{/comment}}{{^comment}}{{# str }} postcomment, core_comment {{/ str }}{{/comment}}">
+                <input type="submit" class="btn btn-primary" value="{{!
+                    }}{{#comment}}{{!
+                    }}{{^replyto}}{{# str }} updatecomment, core_comment {{/ str }}{{/replyto}}{{!
+                    }}{{#replyto}}{{# str }} updatereply, core_comment {{/ str }}{{/replyto}}{{!
+                    }}{{/comment}}{{^comment}}{{!
+                    }}{{^replyto}}{{# str }} postcomment, core_comment {{/ str }}{{/replyto}}{{!
+                    }}{{#replyto}}{{# str }} postreply, core_comment {{/ str }}{{/replyto}}{{!
+                    }}{{/comment}}">
                 {{#cancancel}}
                     <input type="button" data-cancelcommentform class="btn btn-secondary" value="{{# str }} cancel, core {{/ str }}">
                 {{/cancancel}}
