@@ -16,7 +16,6 @@
  * Comment form module.
  *
  * @module     core_comment/comments
- * @package    core_comment
  * @copyright  2021 TU Berlin
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -41,7 +40,7 @@ export default class CommentForm extends Component {
     async getContext() {
         return {
             canpost: this.commentSection.context.canpost,
-            cancancel: this.comment || this.replyTo || !!this.onCancel,
+            cancancel: true,
             allowpseudonym: this.commentSection.context.allowpseudonym,
             allowrealname: this.commentSection.context.allowrealname,
             comment: this.comment ? await this.comment.comment : null,

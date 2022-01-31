@@ -1,25 +1,36 @@
-.core_comment_comment_section.fill-height {
-    height: 100%;
-    display: flex;
-    flex-flow: column nowrap;
-
-    .comment-section-list {
-        flex: 1 1 1px;
-        overflow-y: auto;
-        display: flex;
-        flex-flow: column;
-    }
+.core_comment_comment_section {
 
     .comment-section-form {
-        flex: 0 1 auto;
+        margin-bottom: 2rem;
     }
 
     &.start-at-bottom {
-        .comment-section-list {
-            flex-flow: column-reverse;
-        }
         .comment-section-form {
             margin-top: .5rem;
+            margin-bottom: 0;
+        }
+    }
+
+    &.fill-height {
+        height: 100%;
+        display: flex;
+        flex-flow: column nowrap;
+
+        .comment-section-list {
+            flex: 1 1 1px;
+            overflow-y: auto;
+            display: flex;
+            flex-flow: column;
+        }
+
+        .comment-section-form {
+            flex: 0 1 auto;
+        }
+
+        &.start-at-bottom {
+            .comment-section-list {
+                flex-flow: column-reverse;
+            }
         }
     }
 }
@@ -27,9 +38,11 @@
 .core_comment_comment {
     display: flex;
     flex-flow: row;
+    position: relative;
 
     .comment-avatar {
         flex-grow: 0;
+        margin-right: .5em;
     }
 
     .comment-container {
@@ -40,16 +53,14 @@
             display: flex;
             flex-flow: row nowrap;
 
-            .comment-author-time {
+            .comment-header-left {
                 flex-grow: 1;
-
-                .comment-timecreated {
-                    display: inline-block;
-                }
             }
-
-            .comment-settings {
+            .comment-header-right {
                 flex-grow: 0;
+            }
+            .comment-timecreated {
+                display: inline-block;
             }
         }
 

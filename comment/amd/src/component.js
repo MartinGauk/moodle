@@ -13,10 +13,9 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
- * Comment component module.
+ * Comment UI component module.
  *
  * @module     core_comment/comments
- * @package    core_comment
  * @copyright  2021 TU Berlin
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -68,9 +67,6 @@ export default class Component {
             context = await this.preRender(template, context);
             context = this.callback('prerender', [template, context]) || context;
 
-            // TODO remove logging
-            // eslint-disable-next-line no-console
-            console.log('rendering template ' + template + ' with context ', context);
             const {html, js} = await templates.renderForPromise(template, context);
 
             this.detachChildren();
@@ -78,10 +74,6 @@ export default class Component {
 
             await this.postRender(template, context);
             this.callback('postrender', [template, context, this.el]);
-
-            // TODO remove logging
-            // eslint-disable-next-line no-console
-            console.log('postrender template ' + template + ' with context ', context);
         } catch (e) {
             Notification.exception(e);
         }

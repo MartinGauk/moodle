@@ -52,8 +52,17 @@ class comment {
     /** @var int id of the user who posted this comment */
     protected $usercreated;
 
+    /** @var \stdClass|null a cached instance of the user who posted this comment */
+    protected $cachedusercreated;
+
+    /** @var \stdClass|null a cached instance of the pseudonym user */
+    protected $cachedpseudonymoususer;
+
     /** @var int id of the user who last modified this comment */
     protected $usermodified;
+
+    /** @var \stdClass|null a cached instance of the user who last modified this comment */
+    protected $cachedusermodified;
 
     /** @var bool whether this comment is pseudonymous */
     protected $pseudonym;
@@ -248,9 +257,19 @@ class comment {
      */
     public function get_usercreated(bool $revealidentity = false) : \stdClass {
         if ($this->is_pseudonymous_author() && !$revealidentity) {
-            return \core_user::get_noreply_user();
+            if (!$this->cachedpseudonymoususer) {
+                $dummy = clone(\core_user::get_noreply_user());
+                foreach (\core_user\fields::get_name_fields() as $field) {
+                    $dummy->$field = '';
+                }
+                $dummy->firstname = $this->get_localized_pseudonym();
+                $this->cachedpseudonymoususer = $dummy;
+            }
+            return $this->cachedpseudonymoususer;
         } else {
-            return $this->get_user($this->usercreated);
+            if (!$this->cachedusercreated)
+                $this->cachedusercreated = $this->get_user($this->usercreated);
+            return $this->cachedusercreated;
         }
     }
 
@@ -262,7 +281,7 @@ class comment {
      */
     public function get_usercreated_id(bool $revealidentity = false) : int {
         if ($this->is_pseudonymous_author() && !$revealidentity) {
-            return \core_user::get_noreply_user()->id;
+            return $this->get_usercreated()->id;
         } else {
             return $this->usercreated;
         }
@@ -297,10 +316,12 @@ class comment {
      * @return \stdClass user
      */
     public function get_usermodified(bool $revealidentity = false) : \stdClass {
-        if ($this->is_pseudonymous_author() && $this->usermodified == $this->usercreated && !$revealidentity) {
-            return \core_user::get_noreply_user();
+        if ($this->usermodified == $this->usercreated) {
+            return $this->get_usercreated($revealidentity);
         } else {
-            return $this->get_user($this->usermodified);
+            if (!$this->cachedusermodified)
+                $this->cachedusermodified = $this->get_user($this->usermodified);
+            return $this->cachedusermodified;
         }
     }
 
@@ -311,8 +332,8 @@ class comment {
      * @return int user id
      */
     public function get_usermodified_id(bool $revealidentity = false) : int {
-        if ($this->is_pseudonymous_author() && $this->usermodified == $this->usercreated && !$revealidentity) {
-            return \core_user::get_noreply_user()->id;
+        if ($this->usermodified == $this->usercreated) {
+            return $this->get_usercreated_id($revealidentity);
         } else {
             return $this->usermodified;
         }

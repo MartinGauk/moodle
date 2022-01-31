@@ -16,7 +16,6 @@
  * Comment list module.
  *
  * @module     core_comment/comments
- * @package    core_comment
  * @copyright  2021 TU Berlin
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -178,7 +177,7 @@ export default class CommentList extends Component {
                 this.intersectionObserver.disconnect();
                 this.intersectionObserver = null;
             });
-        }, {root: this.el});
+        });
 
         if (loadMoreAbove) {
             this.intersectionObserver.observe(loadMoreAbove);

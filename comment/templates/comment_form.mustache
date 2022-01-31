@@ -61,9 +61,7 @@
                     <label for="pseudonymToggle{{uniqid}}"> {{# str }} hiderealname, core_comment {{/ str }}</label>
                     <a class="btn btn-link {{#comment.pseudonymous}}disabled{{/comment.pseudonymous}} p-0" role="button"
                         data-container="body" data-toggle="popover" data-html="true" tabindex="0" data-trigger="focus"
-                        data-content="{{#cleanstr}}{{#str}} hiderealnamehelp, core_comment,
-                            {{#str}} pseudonymous, core_comment {{/str}}
-                        {{/str}}{{/cleanstr}}">
+                        data-content="{{#cleanstr}} hiderealnamehelp, core_comment, {{#str}} pseudonymous, core_comment {{/str}}{{/cleanstr}}">
                         {{#pix}}help, core, {{/pix}}
                     </a>
                 </div>
@@ -72,8 +70,7 @@
                 <label for="contentInput{{uniqid}}" class="sr-only">{{# str }} content, core_comment {{/ str }}</label>
                 <div id="responsiveTextArea{{uniqid}}" class="responsive-textarea">
                     <textarea id="contentInput{{uniqid}}" placeholder="{{# str }} writeacomment, core_comment {{/ str }}"
-                              class="form-control"
-                              name="content">{{#comment}}{{contentraw}}{{/comment}}</textarea>
+                              class="form-control" name="content" required>{{#comment}}{{contentraw}}{{/comment}}</textarea>
                     <div class="form-control"></div>
                 </div>
             </div>
