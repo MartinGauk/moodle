@@ -66,10 +66,10 @@
                 <span class="comment-timecreated">{{timecreatedtext}}</span>
                 {{#wasmodified}}
                     <a class="btn btn-none p-0" role="button" data-container="body" data-toggle="popover"
-                        data-content="{{#str}} editedby, core_comment, {
+                        data-content="{{#cleanstr}}{{#str}} editedby, core_comment, {
                             "usermodified": {{#quote}}{{usermodifiedfullname}}{{/quote}},
                             "timemodified": {{#quote}}{{timemodifiedtext}}{{/quote}}
-                        }{{/str}}"
+                        }{{/str}}{{/cleanstr}}"
                         data-html="true" tabindex="0" data-trigger="hover focus">
                         <i class="fa fa-pencil fa-fw"></i>
                     </a>

@@ -61,7 +61,9 @@
                     <label for="pseudonymToggle{{uniqid}}"> {{# str }} hiderealname, core_comment {{/ str }}</label>
                     <a class="btn btn-link {{#comment.pseudonymous}}disabled{{/comment.pseudonymous}} p-0" role="button"
                         data-container="body" data-toggle="popover" data-html="true" tabindex="0" data-trigger="focus"
-                        data-content="{{# str }} hiderealnamehelp, core_comment, {{# str }} pseudonymous, core_comment {{/ str }}{{/ str }}">
+                        data-content="{{#cleanstr}}{{#str}} hiderealnamehelp, core_comment,
+                            {{#str}} pseudonymous, core_comment {{/str}}
+                        {{/str}}{{/cleanstr}}">
                         {{#pix}}help, core, {{/pix}}
                     </a>
                 </div>

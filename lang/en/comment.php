@@ -42,5 +42,5 @@ $string['pseudonymous'] = 'Anonymous';
 $string['reply'] = 'Reply';
 $string['updatecomment'] = 'Update comment';
 $string['hiderealname'] = 'Hide my real name';
-$string['hiderealnamehelp'] = 'The comment will be posted under the pseudonym \'{$a}\'. Only site administrators will be able to see your real name, trainers won\'t. Trainers might be able to guess your identity based on your other activity in this course.';
+$string['hiderealnamehelp'] = 'The comment will be posted under the pseudonym "{$a}". Only site administrators will be able to see your real name, trainers won\'t. Trainers might be able to guess your identity based on your other activity in this course.';
 $string['writeacomment'] = 'Write a comment.';
