@@ -67,7 +67,19 @@
         .comment-footer .comment-replies-control {
             display: inline-block;
         }
+
+        .comment-reply-box {
+            margin-top: .5em;
+        }
     }
+}
+
+.core_comment_comment_list .core_comment_comment {
+    margin: 2em 0 2em 0;
+}
+
+.core_comment_comment_list.replies .core_comment_comment {
+    margin: 1em 0 1em 0;
 }
 
 .core_comment_comment_body {
@@ -75,6 +87,32 @@
 
     .comment-content {
         white-space: pre-wrap;
+    }
+}
+
+.core_comment_comment_form {
+    .comment-form-controls input {
+        margin: 0 .5em .5em 0;
+    }
+
+    &.empty.new-comment:not(.reply) .comment-form-controls {
+        display: none;
+    }
+}
+
+@media (max-width: 495px) {
+
+    .core_comment_comment {
+        .comment-avatar {
+            display: none;
+        }
+        .comment-header, .comment-body, .comment-footer {
+            padding-left: 1em;
+        }
+    }
+
+    .core_comment_comment_form .comment-form-controls input {
+        width: 100%;
     }
 }
 

@@ -49,7 +49,7 @@
         }
     }
 }}
-<div class="core_comment_comment_form">
+<div class="core_comment_comment_form {{#comment}}update-existing{{/comment}}{{^comment}}new-comment{{/comment}} {{#replyto}}reply{{/replyto}}">
     {{#canpost}}
         <form class="mform comment-form">
             {{#allowpseudonym}}
@@ -76,7 +76,7 @@
                     <div class="form-control"></div>
                 </div>
             </div>
-            <div class="form-group comment-form-controls">
+            <div class="comment-form-controls">
                 <input type="submit" class="btn btn-primary" value="{{!
                     }}{{#comment}}{{!
                     }}{{^replyto}}{{# str }} updatecomment, core_comment {{/ str }}{{/replyto}}{{!

@@ -24,9 +24,11 @@
 
 $string['commentsubcontext'] = 'Comments';
 $string['confirmdeletecomment'] = 'Do you really want to delete this comment?';
+$string['confirmdiscardchanges'] = 'Do you really want to discard your changes on this comment?';
 $string['content'] = 'Content';
 $string['delete'] = 'Delete';
 $string['deletecomment'] = 'Delete comment';
+$string['discardchanges'] = 'Discard changes';
 $string['edit'] = 'Edit';
 $string['editedby'] = 'Edited by {$a->usermodified} on {$a->timemodified}';
 $string['loadmore'] = 'Load more...';
@@ -41,6 +43,7 @@ $string['privacy:metadata:comment:timecreated'] = 'Time a comment was created.';
 $string['privacy:metadata:comment:userid'] = 'The user who made the comment.';
 $string['pseudonymous'] = 'Anonymous';
 $string['reply'] = 'Reply';
+$string['unsavedchanges'] = 'You have unsaved changes. If you leave, they will be discarded.';
 $string['updatecomment'] = 'Update comment';
 $string['updatereply'] = 'Update reply';
 $string['hiderealname'] = 'Hide my real name';

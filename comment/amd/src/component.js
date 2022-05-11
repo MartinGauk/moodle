@@ -133,9 +133,13 @@ export default class Component {
     }
 
     addListener(selector, event, callback) {
+        this.addListeners(selector, [event], callback);
+    }
+
+    addListeners(selector, events, callback) {
         const targetEl = this.el.querySelector(selector);
         if (targetEl) {
-            targetEl.addEventListener(event, callback);
+            events.forEach(event => targetEl.addEventListener(event, callback));
         }
     }
 

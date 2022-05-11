@@ -22,6 +22,9 @@
 
 import Component from 'core_comment/component';
 import Notification from 'core/notification';
+import * as ModalFactory from 'core/modal_factory';
+import * as ModalEvents from 'core/modal_events';
+import * as Str from 'core/str';
 
 export default class CommentForm extends Component {
 
@@ -30,6 +33,7 @@ export default class CommentForm extends Component {
         this.commentSection = options.commentSection;
         this.comment = options.comment;
         this.onCancel = options.onCancel;
+        this.onSubmit = options.onSubmit;
         if (this.comment) {
             this.replyTo = this.comment.commentList.replyTo;
         } else {
@@ -48,14 +52,25 @@ export default class CommentForm extends Component {
         };
     }
 
-    async submitForm(form) {
+    getData() {
+        return {
+            content: this.form.content.value,
+            pseudonymous: this.form.pseudonymous ? this.form.pseudonymous.checked : false
+        };
+    }
+
+    async submit() {
+        const data = this.getData();
         const savedComment = await this.commentSection.saveComment(
-            form.content.value,
-            form.pseudonymous ? form.pseudonymous.checked : false,
+            data.content,
+            data.pseudonymous,
             null,
             this.replyTo,
             this.comment
         );
+        if (this.onSubmit) {
+            this.onSubmit(savedComment);
+        }
         if (this.comment) {
             await this.comment.onUpdated(savedComment);
         } else if (this.replyTo) {
@@ -67,7 +82,7 @@ export default class CommentForm extends Component {
     }
 
     focus() {
-        const input = this.el.querySelector('form [name="content"]');
+        const input = this.form.querySelector('[name="content"]');
         if (input) {
             input.focus();
         } else {
@@ -75,33 +90,85 @@ export default class CommentForm extends Component {
         }
     }
 
-    async postRender() {
-        const form = this.el.querySelector('form');
-        if (form) {
-            form.onsubmit = () => {
-                this.submitForm(form).catch(Notification.exception);
-                return false;
-            };
+    isDirty() {
+        const data = this.getData();
+        return Object.keys(this.originalData).some(key => this.originalData[key] !== data[key]);
+    }
+
+    async cancel() {
+        this.form.reset();
+        this.el.firstChild.classList.add('empty');
+        if (this.comment) {
+            await this.comment.cancelEditing();
+        } else if (this.replyTo && this.replyTo.showReplyForm) {
+            await this.replyTo.toggleReplyForm();
         }
-        this.addListener('form textarea[name="content"]', 'keydown', (e) => {
+        if (this.onCancel) {
+            this.onCancel();
+        }
+    }
+
+    async showCancelModal() {
+        let discardChangesString, confirmDiscardChangesString;
+        [discardChangesString, confirmDiscardChangesString] = await Str.get_strings([
+            {key: 'discardchanges', component: 'core_comment'},
+            {key: 'confirmdiscardchanges', component: 'core_comment'}
+        ]);
+
+        const modal = await ModalFactory.create({
+            type: ModalFactory.types.SAVE_CANCEL,
+            title: discardChangesString,
+            body: confirmDiscardChangesString,
+        });
+        modal.setSaveButtonText(discardChangesString);
+        modal.getRoot().on(ModalEvents.save, () => {
+            this.cancel().catch(Notification.exception);
+        });
+        modal.show();
+    }
+
+    async postRender() {
+        this.form = this.el.querySelector('form');
+        this.originalData = this.getData();
+        if (this.originalData.content === '') {
+            this.el.firstChild.classList.add('empty');
+        }
+
+        this.form.onsubmit = () => {
+            this.submit().catch(Notification.exception);
+            return false;
+        };
+        this.addListener('form [name="content"]', 'keydown', (e) => {
             if (e.which === 13 && e.ctrlKey) {
                 e.preventDefault();
-                this.submitForm(form).catch(Notification.exception);
+                this.submit().catch(Notification.exception);
+            }
+        });
+        this.addListener('form [name="content"]', 'input', (e) => {
+            if (e.target.value === '') {
+                this.el.firstChild.classList.add('empty');
+            } else {
+                this.el.firstChild.classList.remove('empty');
             }
         });
         this.addListener('[data-cancelcommentform]', 'click', (e) => {
-            const form = this.el.querySelector('form');
-            form.reset();
+            if (this.isDirty()) {
+                this.showCancelModal();
+            } else {
+                this.cancel();
+            }
             e.preventDefault();
-            if (this.comment) {
-                this.comment.cancelEditing();
-            } else if (this.replyTo && this.replyTo.showReplyForm) {
-                this.replyTo.toggleReplyForm();
-            }
-            if (this.onCancel) {
-                this.onCancel();
-            }
             return false;
         });
+
+        const unsavedChangesString = await Str.get_string('unsavedchanges', 'core_comment');
+        window.addEventListener("beforeunload", (e) => {
+            if (!this.isDirty()) {
+                return undefined;
+            }
+            (e || window.event).returnValue = unsavedChangesString; // Gecko + IE.
+            return unsavedChangesString; // Gecko + Webkit, Safari, Chrome etc.
+        });
+
     }
 }
