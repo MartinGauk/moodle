@@ -81,6 +81,7 @@ abstract class section {
      * @param int $pagesize maximum number of comments to show initially (TODO better variable name?)
      * TODO more options
      * @return string HTML to display
+     * @throws \coding_exception
      */
     public function output(int $pagesize) : string {
         return $this->area->get_renderer()->render(new output\section($this));
@@ -88,9 +89,17 @@ abstract class section {
 
     /**
      * Delete all comments in this section.
+     *
+     * @throws \dml_exception
      */
     public function delete() {
-        // TODO
+        global $DB;
+        $DB->delete_records('comments', [
+            'component' => $this->get_area()->get_component(),
+            'commentarea' => $this->get_area()->get_area(),
+            'contextid' => $this->get_context()->id,
+            'itemid' => $this->get_item_id()
+        ]);
     }
 
     /**
@@ -127,6 +136,7 @@ abstract class section {
      *
      * @param int $commentid
      * @return comment|null
+     * @throws \dml_exception
      */
     public function get_comment(int $commentid) : ?comment {
         global $DB;
@@ -180,7 +190,7 @@ abstract class section {
      *
      * @param comment $comment
      * @param capability $capability capability manager of the user who wants to save the comment
-     * @throws \invalid_parameter_exception
+     * @throws \invalid_parameter_exception|\comment_exception
      */
     public function validate_comment(comment $comment, capability $capability) {
         if (!strlen($comment->get_content())) {
@@ -207,6 +217,7 @@ abstract class section {
      * @param comment $comment
      * @param capability $capability capability manager of the user who wants to save the comment
      * @throws \invalid_parameter_exception
+     * @throws \comment_exception
      */
     public final function validate_and_modify_comment(comment $comment, capability $capability) {
         $this->validate_comment($comment, $capability);
@@ -222,15 +233,29 @@ abstract class section {
      * @param capability $capability capability manager of the user who wants to view the comment
      * @return string JSON encoded data
      */
-    public function export_comment_custom_data_json(comment $comment, capability $capability) : string {
+    public function export_comment_custom_data_json(comment $comment, capability $capability): string {
         return $comment->get_custom_data_json();
     }
 
-    public static function make_unique_key(string $component, string $commentarea, int $contextid, int $itemid) {
+    /**
+     * Returns a string that uniquely identifies a comment section by its properties.
+     *
+     * @param string $component
+     * @param string $commentarea
+     * @param int $contextid
+     * @param int $itemid
+     * @return string
+     */
+    public static function make_unique_key(string $component, string $commentarea, int $contextid, int $itemid): string {
         return $component . '_' . $commentarea . '_' . $contextid . '_' . $itemid;
     }
 
-    public function get_unique_key() : string {
+    /**
+     * Returns a string that uniquely identifies this comment section.
+     *
+     * @return string
+     */
+    public function get_unique_key(): string {
         return self::make_unique_key($this->get_area()->get_component(), $this->get_area()->get_area(), $this->get_context()->id, $this->get_item_id());
     }
 
@@ -239,8 +264,9 @@ abstract class section {
      *
      * @param \stdClass $user
      * @return capability
+     * @throws \coding_exception
      */
-    public function get_capability(\stdClass $user) : capability {
+    public function get_capability(\stdClass $user): capability {
         $options = $this->area->get_options();
         $postmodes = ($options['postrealname']) ? capability::POST_REALNAME : 0;
         $postmodes |=  ($options['postpseudonym']) ? capability::POST_PSEUDONYM : 0;
@@ -255,7 +281,7 @@ abstract class section {
      * @param \stdClass $user
      * @return int one of the \core_comment\subscription::NOTIFICATION_* constants
      */
-    public function get_default_subscription_status(\stdClass $user) : int {
+    public function get_default_subscription_status(\stdClass $user): int {
         // TODO
         return subscription::NOTIFICATION_OFF;
     }
@@ -274,7 +300,7 @@ abstract class section {
      *
      * @return array \core_comment\subscription::NOTIFICATION_* => user records
      */
-    public function get_auto_subscribed_users() : array {
+    public function get_auto_subscribed_users(): array {
         return [];
     }
 
@@ -290,11 +316,11 @@ abstract class section {
         return [];
     }
 
-    public function get_context() : \context {
+    public function get_context(): \context {
         return $this->area->get_context();
     }
 
-    public function enable_votes() : bool {
+    public function enable_votes(): bool {
         return $this->area->get_options()['votes'];
     }
 
@@ -312,7 +338,7 @@ abstract class section {
      * @return comment
      */
     public function construct_new_comment(string $content, int $format, int $usercreated, string $pseudonym,
-            ?comment $replyto, string $customdatajson) : comment {
+            ?comment $replyto, string $customdatajson): comment {
         return comment::construct_new($this, $content, $format, $usercreated, $pseudonym, $replyto, $customdatajson);
     }
 
@@ -323,7 +349,7 @@ abstract class section {
      * @param comment_search|null $search the search this comment
      * @return comment
      */
-    public function construct_comment_from_db(\stdClass $record, ?comment_search $search = null) {
+    public function construct_comment_from_db(\stdClass $record, ?comment_search $search = null): comment {
         return comment::construct_from_db($this, $record, $search);
     }
 
@@ -333,7 +359,7 @@ abstract class section {
      * @param section $other
      * @return bool
      */
-    public function is_equal(section $other) : bool {
+    public function is_equal(section $other): bool {
         if ($this === $other) {
             return true;
         }
@@ -352,7 +378,7 @@ abstract class section {
      *
      * @return string
      */
-    abstract public function get_item_title() : string;
+    abstract public function get_item_title(): string;
 
 
     /**
@@ -362,7 +388,7 @@ abstract class section {
      *
      * @return \moodle_url
      */
-    abstract public function get_item_url() : \moodle_url;
+    abstract public function get_item_url(): \moodle_url;
 
     /**
      * Get the URL to a comment within the section.
