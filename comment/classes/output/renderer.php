@@ -41,8 +41,7 @@ class renderer extends \plugin_renderer_base {
      * @return string HTML
      */
     public function render_section(\core_comment\output\section $section) : string {
-        global $PAGE;
-        $PAGE->requires->js_call_amd('core_comment/comments', 'init');
+        $this->page->requires->js_call_amd('core_comment/comments', 'init');
         // TODO use modal?
         $ncomments = $section->section->count_comments();
         $text = $ncomments ? "Show {$ncomments} comment(s)" : "No comments";

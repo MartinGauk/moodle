@@ -117,6 +117,8 @@ class comment {
      * }
      */
     public function __construct(stdClass $options) {
+        debugging('This comment API is deprecated. Please use the new comment API at \core_comment\manager.', DEBUG_DEVELOPER);
+
         $this->viewcap = false;
         $this->postcap = false;
 
@@ -170,6 +172,9 @@ class comment {
         // setup commentarea
         if (!empty($options->area)) {
             $this->commentarea = $options->area;
+            if (in_array($this->commentarea, \core_comment\manager::get_comment_areas_in_component($this->component))) {
+                throw new comment_exception('areausesnewcommentapi', '', '', $options);
+            }
         }
 
         // setup itemid

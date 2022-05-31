@@ -28,6 +28,7 @@ $string['agedigitalconsentmapinvalidcomma'] = '"{$a}" has more or less than one 
 $string['agedigitalconsentmapinvalidcountry'] = '"{$a}" is not a valid value for country.';
 $string['agedigitalconsentmapinvaliddefault'] = 'Default (*) value is missing.';
 $string['agelocationverificationdisabled'] = 'Age and location verification disabled';
+$string['areausesnewcommentapi'] = 'The comment area "{$a->area}" of component {$a->component} is managed by the new comment API and cannot be accessed by the old API.';
 $string['authnotexisting'] = 'The autorization plugin doesn\'t exist';
 $string['backupcontainexternal'] = 'This backup file contains external Moodle Network Hosts that are not configured locally';
 $string['backuptablefail'] = 'Backup tables could NOT be set up successfully!';
