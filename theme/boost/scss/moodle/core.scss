@@ -569,6 +569,121 @@ table.mod_index {
     width: 100%;
 }
 
+// Comments
+.comment-ctrl {
+    font-size: 12px;
+    display: none;
+    margin: 0;
+    padding: 0;
+}
+
+.comment-ctrl h5 {
+    margin: 0;
+    padding: 5px;
+}
+
+.comment-area {
+    max-width: 400px;
+    padding: 5px;
+}
+
+.comment-area textarea {
+    width: 100%;
+    overflow: auto;
+
+    &.fullwidth {
+        -webkit-box-sizing: border-box;
+        -moz-box-sizing: border-box;
+        box-sizing: border-box;
+    }
+}
+
+.comment-area .fd {
+    text-align: right;
+}
+
+.comment-meta span {
+    color: gray;
+}
+
+.comment-link img {
+    vertical-align: text-bottom;
+}
+
+.comment-list {
+    font-size: 11px;
+    overflow: auto;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.comment-list li {
+    margin: 2px;
+    list-style: none;
+    margin-bottom: 5px;
+    clear: both;
+    padding: .3em;
+    position: relative;
+}
+
+.comment-list li.first {
+    display: none;
+}
+
+.comment-paging {
+    text-align: center;
+}
+
+.comment-paging .pageno {
+    padding: 2px;
+}
+
+.comment-paging .curpage {
+    border: 1px solid #ccc;
+}
+
+.comment-message .picture {
+    float: left;
+    margin-right: 0.25rem;
+}
+
+.comment-message .text {
+    margin: 0;
+    padding: 0;
+}
+
+.comment-message .text p {
+    padding: 0;
+    margin: 0 18px 0 0;
+}
+
+.comment-delete {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: .3em;
+}
+
+.comment-report-selectall {
+    display: none;
+}
+
+.comment-link {
+    display: none;
+}
+
+.jsenabled .comment-link {
+    display: block;
+}
+
+.jsenabled .showcommentsnonjs {
+    display: none;
+}
+
+.jsenabled .comment-report-selectall {
+    display: inline;
+}
 /**
 * Completion progress report
 */
