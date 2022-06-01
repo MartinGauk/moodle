@@ -281,7 +281,7 @@ class external extends \external_api {
      * Returns description of method parameters for the add_comments method.
      *
      * @return external_function_parameters
-     * @deprecated since Moodle 4.0 MDL-71935 - Use create_comment instead.
+     * @deprecated since Moodle 4.1 MDL-71935 - Use create_comment instead.
      * @since Moodle 3.8
      */
     public static function add_comments_parameters() {
@@ -318,7 +318,7 @@ class external extends \external_api {
      * @param array $comments the array of comments to create.
      * @return array the array containing those comments created.
      * @throws comment_exception
-     * @deprecated since Moodle 4.0 MDL-71935 - Use create_comment instead.
+     * @deprecated since Moodle 4.1 MDL-71935 - Use create_comment instead.
      * @since Moodle 3.8
      */
     public static function add_comments($comments) {
@@ -345,7 +345,7 @@ class external extends \external_api {
      * Returns description of method result value for the add_comments method.
      *
      * @return \external_description
-     * @deprecated since Moodle 4.0 MDL-71935 - Use create_comment instead.
+     * @deprecated since Moodle 4.1 MDL-71935 - Use create_comment instead.
      * @since Moodle 3.8
      */
     public static function add_comments_returns() {

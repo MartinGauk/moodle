@@ -30,6 +30,7 @@ defined('MOODLE_INTERNAL') || die();
  * @category  comment
  * @copyright 2010 Dongsheng Cai {@link http://dongsheng.org}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @deprecated since Moodle 4.1 MDL-71935 - Use the new comment API at \core_comment\manager.
  */
 class comment {
     /** @var int there may be several comment box in one page so we need a client_id to recognize them */
@@ -115,6 +116,7 @@ class comment {
      *            notoggle => boolean don't show/hide button
      *            linktext => string title of show/hide button
      * }
+     * @deprecated since Moodle 4.1 MDL-71935
      */
     public function __construct(stdClass $options) {
         debugging('This comment API is deprecated. Please use the new comment API at \core_comment\manager.', DEBUG_DEVELOPER);
