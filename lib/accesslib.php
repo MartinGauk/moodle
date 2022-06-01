@@ -5466,9 +5466,7 @@ abstract class context extends stdClass implements IteratorAggregate {
 
         blocks_delete_all_for_context($this->_id);
         filter_delete_all_for_context($this->_id);
-
-        require_once($CFG->dirroot . '/comment/lib.php');
-        comment::delete_comments(array('contextid'=>$this->_id));
+        \core_comment\manager::delete_comments_in_context($this);
 
         require_once($CFG->dirroot.'/rating/lib.php');
         $delopt = new stdclass();

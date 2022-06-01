@@ -241,6 +241,9 @@ function uninstall_plugin($type, $name) {
     // delete message provider
     message_provider_uninstall($component);
 
+    // Delete all comments.
+    \core_comment\manager::delete_component_comments($component);
+
     // delete the plugin tables
     $xmldbfilepath = $plugindirectory . '/db/install.xml';
     drop_plugin_tables($component, $xmldbfilepath, false);

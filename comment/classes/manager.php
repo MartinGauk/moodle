@@ -152,24 +152,36 @@ class manager {
     /**
      * Delete all comments from a component.
      *
-     * TODO call this in uninstall_plugin() in lib/adminlib.php
+     * This is called by uninstall_plugin() in lib/adminlib.php.
      *
      * @param string $component
      */
     static public function delete_component_comments(string $component) {
-        // TODO
+        global $DB;
+        $DB->delete_records('comments', ['component' => $component]);
     }
 
     /**
-     * Delete all comments in a context and its child contexts.
+     * Delete all comments in a context and optionally its child contexts.
      *
      * This deletes comments in an efficient way and does not call each delete method on the comment area objects.
-     * If a component has some additional book-keeping of comments, it should delete their data first before calling this function.
+     * TODO Das wird uns allerdings Probleme bereiten, wenn wir auch Dateien in den Kommentaren erlauben wollen,
+     *      da der file storage keine Möglichkeit bietet, auch alle Dateien in child contexts zu löschen.
+     *      Wir sollten also lieber unique Paare (component, area, contextid) holen und auf jeder area delete aufrufen.
      *
      * @param \context $context
+     * @param bool $includechildcontexts do also delete comments in child contexts
      */
-    static public function delete_comments_in_context(\context $context) {
-        // TODO
+    static public function delete_comments_in_context(\context $context, bool $includechildcontexts = false) {
+        global $DB;
+
+        $contextids = [$context->id];
+        if ($includechildcontexts) {
+            foreach ($context->get_child_contexts() as $childctx) {
+                $contextids[] = $childctx->id;
+            }
+        }
+        $DB->delete_records_list('comments', 'context', $contextids);
     }
 
     /**

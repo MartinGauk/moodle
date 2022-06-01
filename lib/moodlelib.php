@@ -5098,7 +5098,6 @@ function remove_course_contents($courseid, $showfeedback = true, array $options 
     require_once($CFG->libdir.'/questionlib.php');
     require_once($CFG->libdir.'/gradelib.php');
     require_once($CFG->dirroot.'/group/lib.php');
-    require_once($CFG->dirroot.'/comment/lib.php');
     require_once($CFG->dirroot.'/rating/lib.php');
     require_once($CFG->dirroot.'/notes/lib.php');
 
@@ -5242,6 +5241,9 @@ function remove_course_contents($courseid, $showfeedback = true, array $options 
         echo $OUTPUT->notification($strdeleted.get_string('contentbank', 'contentbank'), 'notifysuccess');
     }
 
+    // Delete comments.
+    \core_comment\manager::delete_comments_in_context($coursecontext, true);
+
     // Make sure there are no subcontexts left - all valid blocks and modules should be already gone.
     $childcontexts = $coursecontext->get_child_contexts(); // Returns all subcontexts since 2.2.
     foreach ($childcontexts as $childcontext) {
@@ -5273,9 +5275,6 @@ function remove_course_contents($courseid, $showfeedback = true, array $options 
 
     // Notes, you shall not pass!
     note_delete_all($course->id);
-
-    // Die comments!
-    comment::delete_comments($coursecontext->id);
 
     // Ratings are history too.
     $delopt = new stdclass();

@@ -212,10 +212,15 @@ class area {
     }
 
     /**
-     * Delete the whole comment area in the context.
+     * Delete the whole comment area in this context.
      */
     public function delete() {
-        // TODO
+        global $DB;
+        $DB->delete_records('comments', [
+            'component' => $this->component,
+            'commentarea' => $this->area,
+            'contextid' => $this->context->id,
+        ]);
     }
 
     /**
