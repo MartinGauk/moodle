@@ -198,13 +198,8 @@ class external extends \external_api {
             $context = self::get_context_from_params($params);
             self::validate_context($context);
 
-            list($context, $course, $cm) = get_context_info_array($context->id);
-            if ($context->id == SYSCONTEXTID) {
-                $course = $SITE;
-            }
-
             // Initialising comment object.
-            $area = manager::get_comment_area($params['component'], $params['commentarea'] ?? $params['area'], $context, $course);
+            $area = manager::get_comment_area($params['component'], $params['commentarea'] ?? $params['area'], $context);
             if (!is_null($params['itemid'])) {
                 $section = $area->get_section($params['itemid']);
 
@@ -383,14 +378,11 @@ class external extends \external_api {
 
         $params = self::validate_parameters(self::create_comment_parameters(), ['comment' => $comment]);
         $comment = $params['comment'];
-        list($context, $course, $cm) = get_context_info_array($comment['contextid']);
-        if ($context->id == SYSCONTEXTID) {
-            $course = $SITE;
-        }
+        $context = \context::instance_by_id($comment['contextid']);
         self::validate_context($context);
 
         // Initialising comment object.
-        $area = manager::get_comment_area($comment['component'], $comment['commentarea'], $context, $course);
+        $area = manager::get_comment_area($comment['component'], $comment['commentarea'], $context);
         $section = $area->get_section($comment['itemid']);
         $replyto = null;
         if ($comment['replytoid'] !== null) {
@@ -467,15 +459,11 @@ class external extends \external_api {
 
         $params = self::validate_parameters(self::update_comment_parameters(), ['comment' => $comment]);
         $comment = $params['comment'];
-
-        list($context, $course, $cm) = get_context_info_array($comment['contextid']);
-        if ($context->id == SYSCONTEXTID) {
-            $course = $SITE;
-        }
+        $context = \context::instance_by_id($comment['contextid']);
         self::validate_context($context);
 
         // Find and update comment.
-        $area = manager::get_comment_area($comment['component'], $comment['commentarea'], $context, $course);
+        $area = manager::get_comment_area($comment['component'], $comment['commentarea'], $context);
         $section = $area->get_section($comment['itemid']);
         $commentobj = $section->get_comment($comment['id']);
         if (!$commentobj) {
@@ -560,14 +548,11 @@ class external extends \external_api {
         $comments = []; // Holds the comment objects, for later deletion.
         foreach ($commentrecords as $commentrecord) {
             // Validate the context.
-            list($context, $course, $cm) = get_context_info_array($commentrecord->contextid);
-            if ($context->id == SYSCONTEXTID) {
-                $course = $SITE;
-            }
+            $context = \context::instance_by_id($commentrecord->contextid);
             self::validate_context($context);
 
             // Make sure the user is allowed to delete the comment.
-            $area = manager::get_comment_area($commentrecord->component, $commentrecord->commentarea, $context, $course);
+            $area = manager::get_comment_area($commentrecord->component, $commentrecord->commentarea, $context);
             $section = $area->get_section($commentrecord->itemid);
             $comment = $section->construct_comment_from_db($commentrecord);
 
@@ -639,14 +624,11 @@ class external extends \external_api {
         );
         $params = self::validate_parameters(self::get_commentsections_parameters(), $arrayparams);
 
-        list($context, $course, $cm) = get_context_info_array($params['contextid']);
-        if ($context->id == SYSCONTEXTID) {
-            $course = $SITE;
-        }
+        $context = \context::instance_by_id($params['contextid']);
         self::validate_context($context);
 
         // Search comment sections.
-        $area = manager::get_comment_area($params['component'], $params['area'], $context, $course);
+        $area = manager::get_comment_area($params['component'], $params['area'], $context);
         $commentsections = [];
         if (!is_null($params['itemid'])) {
             $section = $area->get_section($params['itemid']);

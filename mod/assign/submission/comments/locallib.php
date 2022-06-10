@@ -61,7 +61,6 @@ class assign_submission_comments extends assign_submission_plugin {
             'assignsubmission_comments',
             'submission_comments',
             $this->assignment->get_context(),
-            $this->assignment->get_course(),
             $submission->id,
             ['submission' => $submission, 'assignment' => $this->assignment]
         );

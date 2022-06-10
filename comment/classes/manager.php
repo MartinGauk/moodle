@@ -61,14 +61,13 @@ class manager {
      * @param string $component component name
      * @param string $area comment area name
      * @param \context $context context that this area belongs to
-     * @param \stdClass $course course object
      * @return area
      */
-    static public function get_comment_area(string $component, string $area, \context $context, \stdClass $course) : area {
+    static public function get_comment_area(string $component, string $area, \context $context) : area {
         $areas = self::get_component_comment_area_definitions($component);
         if (isset($areas[$area])) {
             $class = $areas[$area]['areaclass'];
-            return new $class($component, $area, $context, $course, $areas[$area]);
+            return new $class($component, $area, $context, $areas[$area]);
         }
 
         throw new \coding_exception("Component {$component} has no comment area with the name {$area}.");
@@ -107,13 +106,12 @@ class manager {
      * @param string $component component name
      * @param string $area comment area name
      * @param \context $context context that this area belongs to
-     * @param \stdClass $course course object
      * @param int $itemid
      * @param mixed|null $item
      * @return section
      */
-    static public function get_comment_section(string $component, string $area, \context $context, \stdClass $course, int $itemid, $item = null) : section {
-        return self::get_comment_area($component, $area, $context, $course)->get_section($itemid, $item);
+    static public function get_comment_section(string $component, string $area, \context $context, int $itemid, $item = null) : section {
+        return self::get_comment_area($component, $area, $context)->get_section($itemid, $item);
     }
 
     /**
@@ -129,12 +127,8 @@ class manager {
             return null;
         }
 
-        list($context, $course, $cm) = get_context_info_array($record->contextid);
-        if ($context->id == SYSCONTEXTID) {
-            $course = $SITE;
-        }
-
-        $area = self::get_comment_area($record->component, $record->commentarea, $context, $course);
+        $context = \context::instance_by_id($record->contextid);
+        $area = self::get_comment_area($record->component, $record->commentarea, $context);
         $section = $area->get_section($record->itemid);
         return $section->construct_comment_from_db($record);
     }

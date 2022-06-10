@@ -78,7 +78,7 @@ class section extends \core_comment\section {
             if (!$this->submission = $DB->get_record('assign_submission', array('id' => $itemid))) {
                 throw new \comment_exception('invalidcommentitemid');
             }
-            $this->assignment = new \assign($this->area->get_context(), null, $this->area->get_course());
+            $this->assignment = new \assign($this->area->get_context(), null, null);
         }
 
         if ($this->assignment->get_instance()->id != $this->submission->assignment) {

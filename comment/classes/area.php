@@ -42,14 +42,14 @@ class area {
     /** @var string name of this area */
     protected $area;
 
-    /** @var \stdClass course object */
-    protected $course;
-
     /** @var \context context that this area belongs to */
     protected $context;
 
     /** @var array options as defined in component's db/comments.php */
     protected $options;
+
+    /** @var int course id */
+    protected $courseid;
 
     /**
      * Comment area constructor.
@@ -59,15 +59,20 @@ class area {
      * @param string $component component name
      * @param string $area comment area name
      * @param \context $context context that this area belongs to
-     * @param \stdClass $course course object
      * @param array $options options as defined in component's db/comments.php
      */
-    public function __construct(string $component, string $area, \context $context, \stdClass $course, array $options) {
+    public function __construct(string $component, string $area, \context $context, array $options) {
         $this->component = $component;
         $this->area = $area;
-        $this->course = $course;
         $this->context = $context;
         $this->options = $options;
+
+        $coursecontext = $context->get_course_context(false);
+        if ($coursecontext) {
+            $this->courseid = $coursecontext->instanceid;
+        } else {
+            $this->courseid = SITEID;
+        }
     }
 
     /**
@@ -89,15 +94,6 @@ class area {
     }
 
     /**
-     * Get the course object.
-     *
-     * @return \stdClass
-     */
-    public function get_course() : \stdClass {
-        return $this->course;
-    }
-
-    /**
      * Get the context that this area belongs to.
      *
      * @return \context
@@ -114,6 +110,15 @@ class area {
      */
     public function get_options() : array {
         return $this->options;
+    }
+
+    /**
+     * Get the course id.
+     *
+     * @return int
+     */
+    public function get_course_id() : int {
+        return $this->courseid;
     }
 
 
@@ -197,7 +202,7 @@ class area {
         $contextids = [$this->context->id];
         list($type, $plugin) = \core_component::normalize_component($this->component);
         if ($type === 'mod') {
-            $modinfo = get_fast_modinfo($this->course->id, ($user) ? $user->id : -1);
+            $modinfo = get_fast_modinfo($this->courseid, ($user) ? $user->id : -1);
             $cms = $modinfo->get_instances_of($plugin);
             foreach ($cms as $cm) {
                 if ($user === null || $cm->uservisible) {

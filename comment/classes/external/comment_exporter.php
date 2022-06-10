@@ -233,8 +233,8 @@ class comment_exporter extends \core\external\exporter {
         $values['profileurl'] = null;
         $values['userid'] = null;
         if ($viewrealidentity) {
-            $course = $this->section->get_area()->get_course();
-            $url = new \moodle_url('/user/view.php', array('id' => $usercreated->id, 'course' => $course->id));
+            $courseid = $this->section->get_area()->get_course_id();
+            $url = new \moodle_url('/user/view.php', array('id' => $usercreated->id, 'course' => $courseid));
             $values['profileurl'] = $url->out(false);
             $values['userid'] = $usercreated->id;
         }
