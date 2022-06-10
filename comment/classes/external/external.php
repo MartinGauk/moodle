@@ -353,7 +353,7 @@ class external extends \external_api {
      * Returns description of method parameters for the create_comment method.
      *
      * @return external_function_parameters
-     * @since Moodle 4.0
+     * @since Moodle 4.1
      */
     public static function create_comment_parameters() {
         return new external_function_parameters([
@@ -367,7 +367,7 @@ class external extends \external_api {
      * @param array $comment comment data.
      * @return \stdClass data of the created comment.
      * @throws comment_exception
-     * @since Moodle 4.0
+     * @since Moodle 4.1
      */
     public static function create_comment($comment) {
         global $CFG, $SITE, $USER, $PAGE;
@@ -424,7 +424,7 @@ class external extends \external_api {
      * Returns description of method result value for the create_comment method.
      *
      * @return \external_description
-     * @since Moodle 4.0
+     * @since Moodle 4.1
      */
     public static function create_comment_returns() {
         return comment_exporter::get_read_structure();
@@ -434,7 +434,7 @@ class external extends \external_api {
      * Returns description of method parameters for the update_comment method.
      *
      * @return external_function_parameters
-     * @since Moodle 4.0
+     * @since Moodle 4.1
      */
     public static function update_comment_parameters() {
         return new external_function_parameters([
@@ -448,7 +448,7 @@ class external extends \external_api {
      * @param array $comment data of the comment to update.
      * @return \stdClass data of the updated comment.
      * @throws comment_exception
-     * @since Moodle 4.0
+     * @since Moodle 4.1
      */
     public static function update_comment($comment) {
         global $CFG, $SITE, $USER, $PAGE;
@@ -494,7 +494,7 @@ class external extends \external_api {
      * Returns description of method result value for the update_comment method.
      *
      * @return \external_description
-     * @since Moodle 4.0
+     * @since Moodle 4.1
      */
     public static function update_comment_returns() {
         return comment_exporter::get_read_structure();
@@ -589,7 +589,7 @@ class external extends \external_api {
      * Returns description of method parameters for the get_commentsections() method.
      *
      * @return external_function_parameters
-     * @since Moodle 4.0
+     * @since Moodle 4.1
      */
     public static function get_commentsections_parameters() {
 
@@ -611,7 +611,7 @@ class external extends \external_api {
      * @param string $area comment area
      * @param int|null $itemid the item id
      * @return array of comment sections
-     * @since Moodle 4.0
+     * @since Moodle 4.1
      */
     public static function get_commentsections(int $contextid, string $component, string $area, ?int $itemid = null) {
         global $CFG, $SITE, $USER, $PAGE;
@@ -655,7 +655,7 @@ class external extends \external_api {
      * Returns description of method result value for the get_commentsections() method.
      *
      * @return \external_description
-     * @since Moodle 4.0
+     * @since Moodle 4.1
      */
     public static function get_commentsections_returns() {
         return new external_single_structure(
