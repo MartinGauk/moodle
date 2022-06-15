@@ -35,7 +35,7 @@
     }
 }
 
-.core_comment_comment {
+.core_comment_comment .comment-row {
     display: flex;
     flex-flow: row;
     position: relative;
@@ -49,21 +49,6 @@
         flex-grow: 1;
         overflow: hidden;
 
-        .comment-header {
-            display: flex;
-            flex-flow: row nowrap;
-
-            .comment-header-left {
-                flex-grow: 1;
-            }
-            .comment-header-right {
-                flex-grow: 0;
-            }
-            .comment-timecreated {
-                display: inline-block;
-            }
-        }
-
         .comment-footer .comment-replies-control {
             display: inline-block;
         }
@@ -71,6 +56,21 @@
         .comment-reply-box {
             margin-top: .5em;
         }
+    }
+}
+
+.core_comment_comment_header {
+    display: flex;
+    flex-flow: row nowrap;
+
+    .comment-header-left {
+        flex-grow: 1;
+    }
+    .comment-header-right {
+        flex-grow: 0;
+    }
+    .comment-timecreated {
+        display: inline-block;
     }
 }
 

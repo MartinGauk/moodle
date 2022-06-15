@@ -189,6 +189,8 @@ class external extends \external_api {
             $comment = manager::get_comment($params['commentid']);
             self::validate_context($comment->get_section()->get_context());
 
+            $areaobj = $comment->get_section()->get_area();
+
             if ($comment && $comment->get_section()->get_capability($USER)->can_view()) {
                 $comments = [$comment];
                 $count = 1;
@@ -199,9 +201,9 @@ class external extends \external_api {
             self::validate_context($context);
 
             // Initialising comment object.
-            $area = manager::get_comment_area($params['component'], $params['commentarea'] ?? $params['area'], $context);
+            $areaobj = manager::get_comment_area($params['component'], $params['commentarea'] ?? $params['area'], $context);
             if (!is_null($params['itemid'])) {
-                $section = $area->get_section($params['itemid']);
+                $section = $areaobj->get_section($params['itemid']);
 
                 // Always export section, even if no comments are returned.
                 $exportsections[$section->get_unique_key()] = $section;
@@ -215,8 +217,8 @@ class external extends \external_api {
                 }
                 $canpost = $cap->can_post(capability::POST_PSEUDONYM) || $cap->can_post(capability::POST_REALNAME);
             } else {
-                $comments = $area->get_comments_in_area($params['timefrom'], $params['timeto'], $params['page'],
-                    $params['pagesize'], $sortdirection, $params['includechildcontexts'], $USER);
+                $comments = $areaobj->get_comments_in_area($params['timefrom'], $params['timeto'], $params['page'],
+                    $params['pagesize'], $sortdirection, $params['includechildcontexts'], false, $USER);
                 $count = $comments->count_total();
             }
         }
@@ -240,10 +242,17 @@ class external extends \external_api {
             $exportedsections[] = $sectionexporter->export($renderer);
         }
 
+        $renderoptions = $areaobj->get_area_render_options();
+        array_walk($renderoptions, function (&$value, $key) {
+            $value = ['key' => $key, 'value' => $value];
+        });
+        $renderoptions = array_values($renderoptions);
+
         return array(
             'comments' => $exportedcomments,
             'count' => $count,
             'commentsections' => $exportedsections,
+            'renderoptions' => $renderoptions,
             'perpage' => $params['pagesize'], // Deprecated, kept for backwards-compatibility.
             'canpost'  => $canpost, // Deprecated, kept for backwards-compatibility.
             'warnings' => $warnings
@@ -265,6 +274,14 @@ class external extends \external_api {
                 'count' => new external_value(PARAM_INT,  'Total number of comments.', VALUE_OPTIONAL),
                 'commentsections' => new external_multiple_structure(
                     comment_section_exporter::get_read_structure(), 'List of all comment sections referenced in the comments list'
+                ),
+                'renderoptions' => new external_multiple_structure(
+                    new external_single_structure(
+                        array(
+                            'key' => new external_value(PARAM_RAW, 'Key of the render option.'),
+                            'value' => new external_value(PARAM_RAW, 'Value of the render option.')
+                        )
+                    ), 'List of all render options for the requested comment area'
                 ),
                 'perpage' => new external_value(PARAM_INT,  'Number of comments per page.', VALUE_OPTIONAL),
                 'canpost' => new external_value(PARAM_BOOL, 'deprecated, replaced by commentsections.canpost', VALUE_OPTIONAL),

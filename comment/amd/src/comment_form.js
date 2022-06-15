@@ -21,6 +21,7 @@
  */
 
 import Component from 'core_comment/component';
+import * as Comments from 'core_comment/comments';
 import Notification from 'core/notification';
 import * as ModalFactory from 'core/modal_factory';
 import * as ModalEvents from 'core/modal_events';
@@ -39,14 +40,21 @@ export default class CommentForm extends Component {
         } else {
             this.replyTo = options.replyTo;
         }
+        if (this.comment) {
+            this.section = this.comment.comment.section;
+        } else if (this.replyTo) {
+            this.section = this.replyTo.comment.section;
+        } else {
+            this.section = this.commentSection.section;
+        }
     }
 
     async getContext() {
         return {
-            canpost: this.commentSection.context.canpost,
+            canpost: this.section.canpost,
             cancancel: true,
-            allowpseudonym: this.commentSection.context.allowpseudonym,
-            allowrealname: this.commentSection.context.allowrealname,
+            allowpseudonym: this.section.allowpseudonym,
+            allowrealname: this.section.allowrealname,
             comment: this.comment ? await this.comment.comment : null,
             replyto: this.replyTo ? await this.replyTo.comment : null
         };
@@ -55,19 +63,40 @@ export default class CommentForm extends Component {
     getData() {
         return {
             content: this.form.content.value,
-            pseudonymous: this.form.pseudonymous ? this.form.pseudonymous.checked : false
+            pseudonymous: this.form.pseudonymous ? this.form.pseudonymous.checked : false,
+            customdata: null
         };
     }
 
     async submit() {
         const data = this.getData();
-        const savedComment = await this.commentSection.saveComment(
-            data.content,
-            data.pseudonymous,
-            null,
-            this.replyTo,
-            this.comment
-        );
+        let comment = {
+            contextid: this.section.contextid,
+            component: this.section.component,
+            commentarea: this.section.commentarea,
+            itemid: this.section.itemid,
+            id: this.comment ? this.comment.comment.id : null,
+            replytoid: this.replyTo ? this.replyTo.comment.id : null,
+            content: data.content,
+            pseudonymous: data.pseudonymous,
+            customdata: data.customdata
+        };
+
+        comment = this.callback('presave', [comment, this.form], comment);
+        if (!comment) {
+            return;
+        }
+        comment = this.callback(this.comment ? 'preupdate' : 'precreate', [comment, this.form], comment);
+        if (!comment) {
+            return;
+        }
+
+        const savedComment = await Comments.saveComment(comment);
+        savedComment.section = this.section;
+
+        this.callback('postsave', [savedComment]);
+        this.callback(this.comment ? 'postupdate' : 'postcreate', [savedComment]);
+
         if (this.onSubmit) {
             this.onSubmit(savedComment);
         }

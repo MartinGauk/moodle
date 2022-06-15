@@ -308,6 +308,7 @@ abstract class section {
      * Get render options for this section.
      *
      * This may be used to pass arbitrary data to the JavaScript code that displays the comment section.
+     * These override the comment area's render options in the context of this section.
      *
      * @return array An array with string keys and string values.
      */

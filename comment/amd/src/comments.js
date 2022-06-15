@@ -20,16 +20,17 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import CommentSection from 'core_comment/comment_section';
 import Notification from 'core/notification';
+import Ajax from 'core/ajax';
+import * as templates from 'core/templates';
 
-export const init = () => {
-    document.querySelectorAll('[data-commentsection]').forEach((el) => {
+export const init = async() => {
+    for (const el in document.querySelectorAll('[data-commentsection]')) {
         const options = {
-            contextid: el.dataset.contextid,
+            contextId: el.dataset.contextid,
             component: el.dataset.component,
-            commentarea: el.dataset.commentarea,
-            itemid: el.dataset.itemid,
+            commentArea: el.dataset.commentarea,
+            itemId: el.dataset.itemid,
             sortDirection: 'ASC',
             startAtBottom: true,
             fillHeight: true
@@ -42,13 +43,125 @@ export const init = () => {
                         .catch(Notification.exception);
                 });
         } else {
-            initCommentSection(el, options);
+            await initCommentSection(el, options);
         }
-    });
+    }
 };
 
-export const initCommentSection = (el, options) => {
+export const initCommentSection = async(el, options) => {
     if (!el.commentSection) {
-        el.commentSection = new CommentSection(el, options);
+        el.commentSection = await createCommentSection(el, options);
+        await el.commentSection.render();
     }
+};
+
+const createCommentSection = async(el, options) => {
+    options.pageSize = options.pageSize || 10;
+    options.sortDirection = (options.sortDirection || 'DESC').toUpperCase();
+    let sortDirection = options.sortDirection;
+    if (options.startAtBottom) {
+        sortDirection = (sortDirection === 'DESC') ? 'ASC' : 'DESC';
+    }
+    const response = await getComments(
+        options.contextId, options.component, options.commentArea, options.itemId,
+        options.pageSize + 1, sortDirection
+    );
+    if (response.comments.length > options.pageSize) {
+        if (options.startAtBottom) {
+            options.moreAvailableAbove = true;
+        } else {
+            options.moreAvailableBelow = true;
+        }
+    }
+    options.comments = response.comments.slice(0, options.pageSize);
+    if (options.startAtBottom) {
+        options.comments.reverse();
+    }
+
+    if (options.itemid) {
+        options.section = response.commentsections[0];
+    }
+
+    options.renderOptions = Object.assign({
+        commentsectiontemplate: 'core_comment/comment_section',
+        commentlisttemplate: 'core_comment/comment_list',
+        commentformtemplate: 'core_comment/comment_form',
+        commenttemplate: 'core_comment/comment',
+        commentitemlinktemplate: 'core_comment/comment_item_link',
+        commentheadertemplate: 'core_comment/comment_header',
+        commentbodytemplate: 'core_comment/comment_body',
+        commentsectionclass: await import('core_comment/comment_section'),
+        commentlistclass: await import('core_comment/comment_list'),
+        commentformclass: await import('core_comment/comment_form'),
+        commentclass: await import('core_comment/comment'),
+        commentitemlinkclass: await import('core_comment/comment_item_link'),
+        commentheaderclass: await import('core_comment/comment_header'),
+        commentbodyclass: await import('core_comment/comment_body')
+    },
+        Object.fromEntries(response.renderoptions),
+        options.section ? options.section.renderoptions : {},
+        options.renderOptions
+    );
+
+    // Prefetch all templates (i.e. the values of all render options with keys ending in "template").
+    templates.prefetchTemplates(
+        Object.entries(options.renderOptions)
+            // eslint-disable-next-line no-unused-vars
+            .filter(([key, value]) => key.endsWith('template'))
+            // eslint-disable-next-line no-unused-vars
+            .map(([key, value]) => value)
+    );
+
+    return new options.renderOptions.commentsectionclass(el, null, options);
+};
+
+export const getComments = async(
+    contextId, component, commentArea, itemId,
+    pageSize, sortDirection, replyToId = null, timeFrom = null, timeTo = null
+) => {
+    const response = await Ajax.call([
+        {
+            methodname: 'core_comment_get_comments', args: {
+                contextid: contextId,
+                component: component,
+                commentarea: commentArea,
+                itemid: itemId,
+                replytoid: replyToId || undefined,
+                timefrom: timeFrom,
+                timeto: timeTo,
+                pagesize: pageSize,
+                sortdirection: sortDirection
+            }
+        },
+    ])[0];
+
+    const sections = Object.fromEntries(response.commentsections.map(section => [section.itemid, section]));
+    for (let i = 0; i < response.comments.length; i++) {
+        Object.assign(response.comments[i], {section: sections[response.comments[i].itemid]});
+    }
+    return response;
+};
+
+export const saveComment = async(comment) => {
+    return await Ajax.call([
+        {methodname: comment.id ? 'core_comment_update_comment' : 'core_comment_create_comment', args: {
+                comment: {
+                    contextid: comment.contextid,
+                    component: comment.component,
+                    commentarea: comment.commentarea,
+                    itemid: comment.itemid,
+                    id: comment.id || undefined,
+                    replytoid: comment.replytoid || undefined,
+                    content: comment.content,
+                    pseudonymous: comment.pseudonymous,
+                    customdata: comment.customdata || '',
+                }
+            }},
+    ])[0];
+};
+
+export const deleteComments = async(commentIds) => {
+    return await Ajax.call([
+        {methodname: 'core_comment_delete_comments', args: {comments: commentIds}},
+    ])[0];
 };

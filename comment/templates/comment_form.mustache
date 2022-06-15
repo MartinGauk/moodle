@@ -95,6 +95,8 @@
 {{#js}}
     require(['theme_boost/responsive-textarea'], function({responsiveTextArea}) {
         const el = document.getElementById("responsiveTextArea{{uniqid}}");
-        responsiveTextArea(el);
+        if (el) {
+            responsiveTextArea(el);
+        }
     });
 {{/js}}

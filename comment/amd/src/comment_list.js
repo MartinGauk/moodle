@@ -22,6 +22,7 @@
 
 import Component from 'core_comment/component';
 import Comment from 'core_comment/comment';
+import * as Comments from 'core_comment/comments';
 import Notification from 'core/notification';
 
 export default class CommentList extends Component {
@@ -86,7 +87,11 @@ export default class CommentList extends Component {
         if (above) {
             sortDirection = (sortDirection === 'DESC') ? 'ASC' : 'DESC';
         }
-        const newComments = await this.commentSection.getComments(pageSize, sortDirection, this.replyTo, timeFrom, timeTo);
+        const newComments = (await Comments.getComments(
+            this.commentSection.contextId, this.commentSection.component, this.commentSection.commentArea,
+            this.replyTo ? this.replyTo.comment.itemid : this.commentSection.itemId, pageSize, sortDirection,
+            this.replyTo ? this.replyTo.comment.id : null, timeFrom, timeTo
+        )).comments;
         const moreAvailable = newComments.length === pageSize;
         if (above) {
             this.moreAvailableAbove = moreAvailable;

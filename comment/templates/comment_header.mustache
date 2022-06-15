@@ -1,0 +1,94 @@
+{{!
+    This file is part of Moodle - http://moodle.org/
+
+    Moodle is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Moodle is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+}}
+{{!
+    @template core_comment/comment_body
+
+    Moodle comment header template.
+
+    The purpose of this template is to render the header of a single comment.
+
+    Classes required for JS:
+    * none
+
+    Data attributes required for JS:
+    * none
+
+    Context variables required for this template:
+    * isediting Boolean specifying whether the comment is being edited
+    * showreplies Boolean specifing whether replies are displayed
+    * showreplyform Boolean specifing whether the reply form is displayed
+    * showsettings Boolean specifying whether the settings menu should be shown
+    * wasmodified Boolean specifying whether this comment was modified
+    * Comment as exported by core_comment\external\comment_exporter.php
+
+    Example context (json):
+    {
+        "isediting": false,
+        "showreplies": false,
+        "showreplyform": false,
+        "showsettings": true,
+        "wasmodified": false,
+        // TODO fill with example comment
+    }
+}}
+<div class="core_comment_comment_header">
+    <span class="comment-header-left">
+        <span class="comment-author">
+            {{#profileurl}}
+                <a href="{{profileurl}}">{{fullname}}</a>
+            {{/profileurl}}
+            {{^profileurl}}
+                <span class="text-danger">{{fullname}}</span>
+            {{/profileurl}}
+        </span>
+        -
+        <span class="comment-timecreated">{{timecreatedtext}}</span>
+        {{#wasmodified}}
+            <span class="comment-modified">
+                <a class="btn btn-none p-0" role="button" data-container="body" data-toggle="popover"
+                        data-content="{{#cleanstr}} editedby, core_comment, {
+                        "usermodified": {{#quote}}{{usermodifiedfullname}}{{/quote}},
+                        "timemodified": {{#quote}}{{timemodifiedtext}}{{/quote}}
+                    }{{/cleanstr}}"
+                    data-html="true" tabindex="0" data-trigger="hover focus">
+                    <i class="fa fa-pencil fa-fw"></i>
+                    </a>
+            </span>
+        {{/wasmodified}}
+    </span>
+    <span class="comment-header-right">
+        {{#showsettings}}
+            <div class="comment-settings btn-group dropdown">
+                    <a class="action-icon clickable text-muted" data-toggle="dropdown" role="button" data-boundary="window" tabindex="0">
+                        <i class="icon fa fa-ellipsis-v fa-fw"></i>
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        {{#canedit}}{{^isediting}}
+                            <a href="#" class="dropdown-item" data-editcomment="{{id}}">
+                                <i class="icon fa fa-pencil fa-fw"></i> {{# str }} edit, core_comment {{/ str }}
+                            </a>
+                        {{/isediting}}{{/canedit}}
+                        {{#candelete}}
+                            <a href="#" class="dropdown-item" data-deletecomment="{{id}}">
+                                <i class="icon fa fa-trash fa-fw"></i> {{# str }} delete, core_comment {{/ str }}
+                            </a>
+                        {{/candelete}}
+                    </div>
+                </div>
+        {{/showsettings}}
+    </span>
+</div>

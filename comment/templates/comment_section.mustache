@@ -32,25 +32,29 @@
     Context variables required for this template:
     * startatbottom Boolean specifying whether the comment form is below the comment list
     * fillheight Boolean specifying whether the comment section should fill the available height of it's parent element
-    * Comment section as exported by core_comment\external\comment_section_exporter.php
+    * showform Boolean specifying whether the comment form should be shown
+    * section Comment section as exported by core_comment\external\comment_section_exporter.php
 
     Example context (json):
     {
         "startatbottom": false,
         "fillheight": false,
-        // TODO fill with example section
+        "showform": true,
+        "section": {
+            // TODO fill with example section
+        }
     }
 }}
 <div class="core_comment_comment_section{{#fillheight}} fill-height{{#startatbottom}} start-at-bottom{{/startatbottom}}{{/fillheight}}">
     {{^startatbottom}}
-        {{#canpost}}
+        {{#showform}}
             <div class="comment-section-form" data-commentform></div>
-        {{/canpost}}
+        {{/showform}}
     {{/startatbottom}}
     <div class="comment-section-list" data-commentlist></div>
     {{#startatbottom}}
-        {{#canpost}}
+        {{#showform}}
             <div class="comment-section-form" data-commentform></div>
-        {{/canpost}}
+        {{/showform}}
     {{/startatbottom}}
 </div>

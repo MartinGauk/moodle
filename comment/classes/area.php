@@ -121,6 +121,20 @@ class area {
         return $this->courseid;
     }
 
+    /**
+     * Get render options for this area.
+     *
+     * This may be used to pass arbitrary data to the JavaScript code that displays a comment section or recent comments.
+     * May be overridden by a section's render options in the context of a section.
+     *
+     * @return array An array with string keys and string values.
+     */
+    public function get_area_render_options(): array {
+        if (!$this->options['renderoptions']) {
+            return [];
+        }
+        return $this->options['renderoptions'];
+    }
 
     /**
      * Called when the subscription status is modified.
@@ -147,12 +161,13 @@ class area {
      * @param int $pagesize maximum number of comments to fetch
      * @param string $sortdirection ASC or DESC (comments are ordered by timecreated)
      * @param bool $includechildcontexts also fetch comments from child contexts (only if the context is a \course_context)
+     * @param bool $includereplies include all replies
      * @param \stdClass|null $user
      * @return comment_search
      */
     public function get_comments_in_area(?int $timefrom, ?int $timeto, int $page, int $pagesize, string $sortdirection,
-            bool $includechildcontexts, ?\stdClass $user) : comment_search {
-        return new comment_search($this, null, null, $timefrom, $timeto, $page, $pagesize, $sortdirection, $includechildcontexts, true, $user);
+            bool $includechildcontexts, $includereplies, ?\stdClass $user) : comment_search {
+        return new comment_search($this, null, null, $timefrom, $timeto, $page, $pagesize, $sortdirection, $includechildcontexts, $includereplies, $user);
     }
 
     /**

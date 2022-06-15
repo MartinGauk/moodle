@@ -35,6 +35,7 @@ $string['loadmore'] = 'Load more...';
 $string['nocomments'] = 'No comments.';
 $string['nreplies'] = 'replies';
 $string['postcomment'] = 'Post comment';
+$string['postedin'] = 'Comment for: <a href="{$a->itemurl}">{$a->itemtitle}</a>';
 $string['postreply'] = 'Post reply';
 $string['pseudonymwithrealname'] = '{$a->pseudonym} ({$a->realname})';
 $string['privacy:metadata:comment'] = 'Stores comments of users.';
