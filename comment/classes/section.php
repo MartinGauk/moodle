@@ -401,4 +401,46 @@ abstract class section {
         $url->set_anchor('comment-' . $commentid);
         return $url;
     }
+
+    /**
+     * Trigger a comment created/updated/deleted event.
+     *
+     * @param comment $comment
+     * @param string $action created, updated or deleted
+     * @return void
+     */
+    public function trigger_comment_event(comment $comment, string $action) {
+        if (!in_array($action, ['created', 'updated', 'deleted'])) {
+            throw new \coding_exception('$action must be created, updated or deleted.');
+        }
+
+        if (!$comment->get_section()->is_equal($this)) {
+            throw new \coding_exception('$comment belongs to another comment section.');
+        }
+
+        $options = $this->area->get_options();
+        $eventclass = $options['events']['comment' . $action] ?? null;
+
+        if ($eventclass) {
+            $event = $eventclass::create([
+                'context' => $this->get_context(),
+                'objectid' => $comment->get_id(),
+                'other' => [
+                    'itemid' => $this->itemid,
+                ],
+                'anonymous' => $comment->is_pseudonymous_author(),
+            ]);
+            $event->trigger();
+        }
+    }
+
+    /**
+     * Trigger a comments viewed event.
+     *
+     * By default, no event is triggered.
+     *
+     * @return void
+     */
+    public function trigger_comments_viewed_event() {
+    }
 }

@@ -211,6 +211,7 @@ class external extends \external_api {
                     $comments = $section->get_comments($params['replytoid'], $USER,
                         $params['timefrom'], $params['timeto'], $params['page'], $params['pagesize'], $sortdirection);
                     $count = $comments->count_total();
+                    $section->trigger_comments_viewed_event();
                 }
                 $canpost = $cap->can_post(capability::POST_PSEUDONYM) || $cap->can_post(capability::POST_REALNAME);
             } else {
@@ -415,6 +416,7 @@ class external extends \external_api {
 
         $section->validate_and_modify_comment($commentobj, $cap);
         $commentobj->save();
+        $commentobj->trigger_event('created');
         $exporter = new comment_exporter($commentobj);
         $renderer = $PAGE->get_renderer('core');
         return $exporter->export($renderer);
@@ -485,6 +487,7 @@ class external extends \external_api {
 
         $section->validate_and_modify_comment($commentobj, $cap);
         $commentobj->save();
+        $commentobj->trigger_event('updated');
         $exporter = new comment_exporter($commentobj);
         $renderer = $PAGE->get_renderer('core');
         return $exporter->export($renderer);
@@ -569,6 +572,7 @@ class external extends \external_api {
 
         // All comments can be deleted by the user. Make it so.
         foreach ($comments as $comment) {
+            $comment->trigger_event('deleted');
             $comment->delete();
         }
 

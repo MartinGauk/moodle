@@ -612,4 +612,14 @@ class comment {
     public function update_vote(\stdClass $user, int $vote) {
         // TODO
     }
+
+    /**
+     * Trigger a comment created/updated/deleted event.
+     *
+     * @param string $action created, updated or deleted
+     * @return void
+     */
+    public function trigger_event(string $action) {
+        $this->section->trigger_comment_event($this, $action);
+    }
 }

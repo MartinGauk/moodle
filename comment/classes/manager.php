@@ -49,6 +49,12 @@ class manager {
 
         // Users can also view all comments in child contexts.
         'viewchildcontexts' => false,
+
+        'events' => [
+            'commentcreated' => null,
+            'commentupdated' => null,
+            'commentdeleted' => null,
+        ],
     ];
 
     /** @var array cached comment area definitions (component name => area name => area options) */
