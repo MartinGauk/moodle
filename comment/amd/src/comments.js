@@ -25,7 +25,7 @@ import Ajax from 'core/ajax';
 import * as templates from 'core/templates';
 
 export const init = async() => {
-    for (const el in document.querySelectorAll('[data-commentsection]')) {
+    for (const el of document.querySelectorAll('[data-commentsection]')) {
         const options = {
             contextId: el.dataset.contextid,
             component: el.dataset.component,
@@ -78,7 +78,7 @@ const createCommentSection = async(el, options) => {
         options.comments.reverse();
     }
 
-    if (options.itemid) {
+    if (options.itemId) {
         options.section = response.commentsections[0];
     }
 
@@ -136,8 +136,8 @@ export const getComments = async(
     ])[0];
 
     const sections = Object.fromEntries(response.commentsections.map(section => [section.itemid, section]));
-    for (let i = 0; i < response.comments.length; i++) {
-        Object.assign(response.comments[i], {section: sections[response.comments[i].itemid]});
+    for (let comment of response.comments) {
+        Object.assign(comment, {section: sections[comment.itemid]});
     }
     return response;
 };

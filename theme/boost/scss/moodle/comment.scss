@@ -90,14 +90,8 @@
     }
 }
 
-.core_comment_comment_form {
-    .comment-form-controls input {
-        margin: 0 .5em .5em 0;
-    }
-
-    &.empty.new-comment:not(.reply) .comment-form-controls {
-        display: none;
-    }
+.core_comment_comment_form .comment-form-controls input {
+    margin: 0 .5em .5em 0;
 }
 
 @media (max-width: 495px) {
