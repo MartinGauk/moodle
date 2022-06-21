@@ -181,58 +181,49 @@ class comment {
      */
     public function save() {
         global $DB;
-        $lockfactory = \core\lock\lock_config::get_lock_factory('core_comment_save_comment');
-        try {
 
-            $data = new \stdClass();
-            $data->content = $this->content;
-            $data->format = $this->format;
-            $data->pseudonym = $this->pseudonym;
-            $data->usermodified = $this->usermodified;
-            $data->timemodified = $this->timemodified;
-            $data->customdata = $this->get_custom_data_json();
+        $data = new \stdClass();
+        $data->content = $this->content;
+        $data->format = $this->format;
+        $data->pseudonym = $this->pseudonym;
+        $data->usermodified = $this->usermodified;
+        $data->timemodified = $this->timemodified;
+        $data->customdata = $this->get_custom_data_json();
 
-            if (!is_null($this->id)) {
-                $data->id = $this->id;
-                $DB->update_record('comments', $data);
-            } else {
-                $replyto = $this->get_replyto();
-                if ($replyto) {
-                    if (!$this->section->is_equal($replyto->section)) {
-                        throw new \comment_exception('invalidreplytoidcomment');
-                    }
-                    if ($replyto->replytoid !== null) {
-                        throw new \comment_exception('noreplytoreplyallowed');
-                    }
+        if (!is_null($this->id)) {
+            $data->id = $this->id;
+            $DB->update_record('comments', $data);
+        } else {
+            $replyto = $this->get_replyto();
+            if ($replyto) {
+                if (!$this->section->is_equal($replyto->section)) {
+                    throw new \comment_exception('invalidreplytoidcomment');
                 }
-
-                $data->contextid = $this->get_section()->get_context()->id;
-                $data->component = $this->get_section()->get_area()->get_component();
-                $data->commentarea = $this->get_section()->get_area()->get_area();
-                $data->itemid = $this->get_section()->get_item_id();
-                $data->replytoid = $this->replytoid;
-                $data->userid = $this->usercreated;
-                $data->timecreated = $this->timecreated;
-                $data->replies = $this->replies;
-                $data->upvotes = $this->upvotes;
-
-                $transaction = $DB->start_delegated_transaction();
-
-                // Create record and increment reply counter in a transaction.
-                $this->id = $DB->insert_record('comments', $data);
-                if (!is_null($this->replytoid)) {
-                    $DB->execute('UPDATE {comments} SET replies = replies + 1 WHERE id = :replytoid', [
-                        'replytoid' => $this->replytoid
-                    ]);
+                if ($replyto->replytoid !== null) {
+                    throw new \comment_exception('noreplytoreplyallowed');
                 }
-
-                $transaction->allow_commit();
             }
 
-        } finally {
-            if (!empty($lock)) {
-                $lock->release();
+            $data->contextid = $this->get_section()->get_context()->id;
+            $data->component = $this->get_section()->get_area()->get_component();
+            $data->commentarea = $this->get_section()->get_area()->get_area();
+            $data->itemid = $this->get_section()->get_item_id();
+            $data->replytoid = $this->replytoid;
+            $data->userid = $this->usercreated;
+            $data->timecreated = $this->timecreated;
+            $data->replies = $this->replies;
+
+            $transaction = $DB->start_delegated_transaction();
+
+            // Create record and increment reply counter in a transaction.
+            $this->id = $DB->insert_record('comments', $data);
+            if (!is_null($this->replytoid)) {
+                $DB->execute('UPDATE {comments} SET replies = replies + 1 WHERE id = :replytoid', [
+                    'replytoid' => $this->replytoid
+                ]);
             }
+
+            $transaction->allow_commit();
         }
     }
 
