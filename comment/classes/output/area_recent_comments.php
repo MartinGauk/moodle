@@ -34,13 +34,20 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class area_recent_comments implements \renderable, \templatable {
+
+    // TODO docs
+    public $area;
+    public $displaymode;
+
     /**
-     * Recent comments in area constructor.
+     * Recent comments in area renderable constructor.
      *
-     * @param \core_comment\area $ara
+     * @param \core_comment\area $area
+     * @param int $displaymode One of \core_comment\output\renderer::DISPLAYMODE_*
      */
-    public function __construct(\core_comment\area $ara) {
-        // TODO
+    public function __construct(\core_comment\area $area, int $displaymode) {
+        $this->area = $area;
+        $this->displaymode = $displaymode;
     }
 
     /**
@@ -52,5 +59,6 @@ class area_recent_comments implements \renderable, \templatable {
      */
     public function export_for_template(\renderer_base $renderer) : array {
         // TODO
+        return [];
     }
 }

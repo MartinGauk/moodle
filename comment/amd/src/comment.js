@@ -103,6 +103,7 @@ export default class Comment extends Component {
     async onReplyPosted(reply) {
         this.comment.replies++;
         this.showReplies = true;
+        this.showReplyForm = false;
         await this.render();
         await this.commentReplies.onCommentPosted(reply);
     }

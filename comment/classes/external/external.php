@@ -169,15 +169,15 @@ class external extends \external_api {
 
                 $cap = $section->get_capability($USER);
                 if ($cap->can_view()) {
-                    $comments = $section->get_comments($params['replytoid'], $USER,
+                    $comments = $section->get_comments($USER, $params['replytoid'],
                         $params['timefrom'], $params['timeto'], $params['page'], $params['pagesize'], $sortdirection);
                     $count = $comments->count_total();
                     $section->trigger_comments_viewed_event();
                 }
                 $canpost = $cap->can_post(capability::POST_PSEUDONYM) || $cap->can_post(capability::POST_REALNAME);
             } else {
-                $comments = $areaobj->get_comments_in_area($params['timefrom'], $params['timeto'], $params['page'],
-                    $params['pagesize'], $sortdirection, $params['includechildcontexts'], false, $USER);
+                $comments = $areaobj->get_comments_in_area($USER, $params['timefrom'], $params['timeto'], $params['page'],
+                    $params['pagesize'], $sortdirection, $params['includechildcontexts'], false);
                 $count = $comments->count_total();
             }
         }

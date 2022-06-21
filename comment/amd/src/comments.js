@@ -23,6 +23,7 @@
 import Notification from 'core/notification';
 import Ajax from 'core/ajax';
 import * as templates from 'core/templates';
+import * as Str from 'core/str';
 
 export const init = async() => {
     for (const el of document.querySelectorAll('[data-commentsection]')) {
@@ -31,21 +32,40 @@ export const init = async() => {
             component: el.dataset.component,
             commentArea: el.dataset.commentarea,
             itemId: el.dataset.itemid,
-            sortDirection: 'ASC',
-            startAtBottom: true,
-            fillHeight: true
+            sortDirection: el.dataset.sortdirection || 'ASC',
+            startAtBottom: !('startatbottom' in el.dataset) || el.dataset.startatbottom !== 'false',
+            fillHeight: !('fillheight' in el.dataset) || el.dataset.fillheight !== 'false',
+            pageSize: el.dataset.pagesize || 10
         };
         if ('modal' in el.dataset) {
-            require(['jquery', 'core/modal_factory', 'core_comment/modal_comment_section'],
-                function($, ModalFactory, ModalCommentSection) {
-                    ModalFactory.create({type: ModalCommentSection.TYPE, large: true, scrollable: false}, $(el))
-                        .then((modal) => modal.setOptions(options))
-                        .catch(Notification.exception);
-                });
+            await initCommentModal(options, el);
         } else {
             await initCommentSection(el, options);
         }
     }
+};
+
+export const initCommentModal = async(options, triggerEl) => {
+    const title = options.itemId ?
+        await Str.get_string('comments', 'core') :
+        await Str.get_string('recentcomments', 'core_comment');
+    return await new Promise((resolve) => {
+        require(['jquery', 'core/modal_factory', 'core_comment/modal_comment_section'],
+            function($, ModalFactory, ModalCommentSection) {
+                ModalFactory.create({
+                    title: title,
+                    type: ModalCommentSection.TYPE,
+                    large: true,
+                    scrollable: false
+                }, $(triggerEl))
+                    .then((modal) => {
+                        modal.setOptions(options);
+                        resolve(modal);
+                        return modal;
+                    })
+                    .catch(Notification.exception);
+            });
+    });
 };
 
 export const initCommentSection = async(el, options) => {

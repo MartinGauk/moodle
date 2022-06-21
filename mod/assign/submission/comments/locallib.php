@@ -65,7 +65,7 @@ class assign_submission_comments extends assign_submission_plugin {
             ['submission' => $submission, 'assignment' => $this->assignment]
         );
 
-        $o = $this->assignment->get_renderer()->container($section->output(10), 'commentscontainer');
+        $o = $this->assignment->get_renderer()->container($section->output(10, \core_comment\output\renderer::DISPLAYMODE_MODAL), 'commentscontainer');
         return $o;
     }
 

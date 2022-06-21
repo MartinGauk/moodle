@@ -137,6 +137,20 @@ class area {
     }
 
     /**
+     * Get the number of comments in this area, optionally including all replies.
+     *
+     * @param bool $includechildcontexts also count comments from child contexts (only if the context is a \course_context)
+     * @param bool $includereplies count all replies
+     * @param \stdClass|null $user if specified, only count comments that this user can see
+     * @return int
+     */
+    public function count_comments_in_area(?\stdClass $user, bool $includechildcontexts = true, $includereplies = false) : int {
+        // TODO
+        return $this->get_comments_in_area($user, null, null, 0, -1, 'ASC',
+            $includechildcontexts, $includereplies)->count();
+    }
+
+    /**
      * Fetch the comments that were posted anywhere in the area.
      *
      * Pass a user if only comments should be returned that this user is allowed to view.
@@ -151,8 +165,8 @@ class area {
      * @param \stdClass|null $user
      * @return comment_search
      */
-    public function get_comments_in_area(?int $timefrom, ?int $timeto, int $page, int $pagesize, string $sortdirection,
-            bool $includechildcontexts, $includereplies, ?\stdClass $user) : comment_search {
+    public function get_comments_in_area(?\stdClass $user, ?int $timefrom = null, ?int $timeto = null, int $page = 0, int $pagesize = -1, string $sortdirection = 'ASC',
+            bool $includechildcontexts = true, $includereplies = false) : comment_search {
         return new comment_search($this, null, null, $timefrom, $timeto, $page, $pagesize, $sortdirection, $includechildcontexts, $includereplies, $user);
     }
 
@@ -257,12 +271,12 @@ class area {
     /**
      * Show the most recent comments within a comment area.
      *
-     *
      * @param int $pagesize maximum number of comments to show initially (TODO better variable name?)
-     * @param bool $includechildcontexts also show comments from child contexts (only if the context is a \course_context)
+     * @param int $displaymode One of \core_comment\output\renderer::DISPLAYMODE_*
      * @return string HTML to display
+     * @throws \coding_exception
      */
-    public function output_recent_comments(int $pagesize, bool $includechildcontexts) : string {
-        // TODO move to renderer
+    public function output_recent_comments(int $pagesize, int $displaymode) : string {
+        return $this->get_renderer()->render(new output\area_recent_comments($this, $displaymode));
     }
 }

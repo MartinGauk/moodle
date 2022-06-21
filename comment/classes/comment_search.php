@@ -105,7 +105,7 @@ class comment_search implements \IteratorAggregate {
     protected function get_sql(bool $count = false, ?bool $includereplies = null) : array {
         global $DB;
 
-        if (!in_array($this->sortdirection, ['ASC', 'DESC'])) {
+        if (!in_array(strtoupper($this->sortdirection), ['ASC', 'DESC'])) {
             throw new \moodle_exception('invalidsortdirection', 'core'); // TODO error message
         }
 

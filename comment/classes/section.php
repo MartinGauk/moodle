@@ -79,12 +79,13 @@ abstract class section {
      * Show the comments in this section.
      *
      * @param int $pagesize maximum number of comments to show initially (TODO better variable name?)
+     * @param int $displaymode One of \core_comment\output\renderer::DISPLAYMODE_*
      * TODO more options
      * @return string HTML to display
      * @throws \coding_exception
      */
-    public function output(int $pagesize) : string {
-        return $this->area->get_renderer()->render(new output\section($this));
+    public function output(int $pagesize, int $displaymode) : string {
+        return $this->area->get_renderer()->render(new output\section($this, $displaymode));
     }
 
     /**
@@ -109,9 +110,9 @@ abstract class section {
      * @param \stdClass|null $user if specified, only count comments that this user can see
      * @return int
      */
-    public function count_comments(int $replytoid = null, ?\stdClass $user = null) : int {
+    public function count_comments(?\stdClass $user, int $replytoid = null) : int {
         // TODO
-        return $this->get_comments($replytoid, $user)->count();
+        return $this->get_comments($user, $replytoid)->count();
     }
 
     /**
@@ -126,7 +127,7 @@ abstract class section {
      * @param \stdClass|null $user if specified, only return comments that this user can see
      * @return comment_search
      */
-    public function get_comments(?int $replytoid = null, ?\stdClass $user = null, ?int $timefrom = null, ?int $timeto = null, int $page = 0, int $pagesize = -1, string $sortdirection = 'ASC') : comment_search {
+    public function get_comments(?\stdClass $user, ?int $replytoid = null, ?int $timefrom = null, ?int $timeto = null, int $page = 0, int $pagesize = -1, string $sortdirection = 'ASC') : comment_search {
         // TODO
         return new comment_search($this->get_area(), $this, $replytoid, $timefrom, $timeto, $page, $pagesize, $sortdirection, false, false, $user);
     }

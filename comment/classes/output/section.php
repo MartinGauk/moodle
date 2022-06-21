@@ -36,23 +36,18 @@ defined('MOODLE_INTERNAL') || die();
 class section implements \renderable, \templatable {
 
     // TODO docs
-    public $contextid;
-    public $component;
-    public $commentarea;
-    public $itemid;
     public $section;
+    public $displaymode;
 
     /**
      * Comment section renderable constructor.
      *
      * @param \core_comment\section $section
+     * @param int $displaymode One of \core_comment\output\renderer::DISPLAYMODE_*
      */
-    public function __construct(\core_comment\section $section) {
-        $this->contextid = $section->get_context()->id;
-        $this->component = $section->get_area()->get_component();
-        $this->commentarea = $section->get_area()->get_area();
-        $this->itemid = $section->get_item_id();
+    public function __construct(\core_comment\section $section, int $displaymode) {
         $this->section = $section;
+        $this->displaymode = $displaymode;
     }
 
     /**
@@ -64,5 +59,6 @@ class section implements \renderable, \templatable {
      */
     public function export_for_template(\renderer_base $renderer) : array {
         // TODO
+        return [];
     }
 }

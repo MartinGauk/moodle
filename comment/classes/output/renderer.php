@@ -34,24 +34,50 @@ defined('MOODLE_INTERNAL') || die();
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class renderer extends \plugin_renderer_base {
+
+    // TODO docs
+    const DISPLAYMODE_INLINE = 0;
+    const DISPLAYMODE_MODAL = 1;
+
     /**
      * Render a comment section.
      *
      * @param section $section
      * @return string HTML
+     * @throws \comment_exception
      */
     public function render_section(\core_comment\output\section $section) : string {
+        global $USER;
         $this->page->requires->js_call_amd('core_comment/comments', 'init');
-        // TODO use modal?
-        $ncomments = $section->section->count_comments();
-        $text = $ncomments ? "Show {$ncomments} comment(s)" : "No comments";
-        return "<a href='#'
+        $contextid = $section->section->get_context()->id;
+        $component = $section->section->get_area()->get_component();
+        $area = $section->section->get_area()->get_area();
+        $itemid = $section->section->get_item_id();
+        switch ($section->displaymode) {
+            case self::DISPLAYMODE_MODAL:
+                $ncomments = $section->section->count_comments($USER);
+                if ($ncomments) {
+                    $text = get_string('showcomments', 'core_comment', $ncomments);
+                } else {
+                    $text = get_string('shownocomments', 'core_comment');
+                }
+                return "<a href='#'
                     data-commentsection
                     data-modal
-                    data-contextid='{$section->contextid}' 
-                    data-component='{$section->component}'
-                    data-commentarea='{$section->commentarea}'
-                    data-itemid='{$section->itemid}'>{$text}</a>"; // TODO localize
+                    data-contextid='{$contextid}' 
+                    data-component='{$component}'
+                    data-commentarea='{$area}'
+                    data-itemid='{$itemid}'>{$text}</a>";
+            case self::DISPLAYMODE_INLINE:
+                return "<div
+                    data-commentsection
+                    data-contextid='{$contextid}' 
+                    data-component='{$component}'
+                    data-commentarea='{$area}'
+                    data-itemid='{$itemid}'></div>";
+            default:
+                throw new \comment_exception('unknowndisplaymode'); // TODO localize
+        }
     }
 
     /**
@@ -61,7 +87,38 @@ class renderer extends \plugin_renderer_base {
      * @return string HTML
      */
     public function render_area_recent_comments(\core_comment\output\area_recent_comments $arearecentcomments) : string {
-        // TODO
+        global $USER;
+        $this->page->requires->js_call_amd('core_comment/comments', 'init');
+        $contextid = $arearecentcomments->area->get_context()->id;
+        $component = $arearecentcomments->area->get_component();
+        $area = $arearecentcomments->area->get_area();
+        switch ($arearecentcomments->displaymode) {
+            case self::DISPLAYMODE_MODAL:
+                $ncomments = $arearecentcomments->area->count_comments_in_area($USER);
+                if ($ncomments) {
+                    $text = get_string('showrecentcomments', 'core_comment', $ncomments);
+                } else {
+                    $text = get_string('shownorecentcomments', 'core_comment');
+                }
+                return "<a href='#'
+                    data-commentsection
+                    data-modal
+                    data-contextid='{$contextid}' 
+                    data-component='{$component}'
+                    data-commentarea='{$area}'
+                    data-sortdirection='DESC'
+                    data-startatbottom='false'>{$text}</a>";
+            case self::DISPLAYMODE_INLINE:
+                return "<div
+                    data-commentsection
+                    data-contextid='{$contextid}' 
+                    data-component='{$component}'
+                    data-commentarea='{$area}'
+                    data-sortdirection='DESC'
+                    data-startatbottom='false'></div>";
+            default:
+                throw new \comment_exception('unknowndisplaymode'); // TODO localize
+        }
     }
 
 }
