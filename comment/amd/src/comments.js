@@ -90,13 +90,13 @@ const createCommentSection = async(el, options) => {
         commentitemlinktemplate: 'core_comment/comment_item_link',
         commentheadertemplate: 'core_comment/comment_header',
         commentbodytemplate: 'core_comment/comment_body',
-        commentsectionclass: await import('core_comment/comment_section'),
-        commentlistclass: await import('core_comment/comment_list'),
-        commentformclass: await import('core_comment/comment_form'),
-        commentclass: await import('core_comment/comment'),
-        commentitemlinkclass: await import('core_comment/comment_item_link'),
-        commentheaderclass: await import('core_comment/comment_header'),
-        commentbodyclass: await import('core_comment/comment_body')
+        commentsectionclass: 'core_comment/comment_section',
+        commentlistclass: 'core_comment/comment_list',
+        commentformclass: 'core_comment/comment_form',
+        commentclass: 'core_comment/comment',
+        commentitemlinkclass: 'core_comment/comment_item_link',
+        commentheaderclass: 'core_comment/comment_header',
+        commentbodyclass: 'core_comment/comment_body'
     },
         Object.fromEntries(response.renderoptions),
         options.section ? options.section.renderoptions : {},
@@ -111,6 +111,13 @@ const createCommentSection = async(el, options) => {
             // eslint-disable-next-line no-unused-vars
             .map(([key, value]) => value)
     );
+
+    // Import all classes (i.e. the values of all render options with keys ending in "class").
+    for (const key in options.renderOptions) {
+        if (key.endsWith('class') && typeof options.renderOptions[key] === 'string') {
+            options.renderOptions[key] = await import(options.renderOptions[key]);
+        }
+    }
 
     return new options.renderOptions.commentsectionclass(el, null, options);
 };
