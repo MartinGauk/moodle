@@ -72,7 +72,6 @@ abstract class capability {
     abstract public function can_post(int $postmode, ?comment $replyto = null) : bool;
     abstract public function can_edit(comment $comment = null) : bool;
     abstract public function can_delete(comment $comment = null) : bool;
-    abstract public function can_upvote(comment $comment = null) : bool;
 
     /**
      * Can the user view the comment author's real identity even though a pseudonym was set?
@@ -85,14 +84,4 @@ abstract class capability {
     public function can_view_real_identity(comment $comment) : bool {
         return false;
     }
-
-    /**
-     * Can the user (un)subscribe to the comment thread/comment section?
-     *
-     * @param int $currentstatus
-     * @param int $newstatus
-     * @param comment|null $comment comment thread
-     * @return bool
-     */
-    abstract public function can_modify_subscription_status(int $currentstatus, int $newstatus, comment $comment = null) : bool;
 }

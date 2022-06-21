@@ -270,38 +270,7 @@ abstract class section {
         $options = $this->area->get_options();
         $postmodes = ($options['postrealname']) ? capability::POST_REALNAME : 0;
         $postmodes |=  ($options['postpseudonym']) ? capability::POST_PSEUDONYM : 0;
-        return new capability_simple($this, $user, true, $options['replies'], $options['votes'], $postmodes);
-    }
-
-    /**
-     * Get the default subscription status of a user.
-     *
-     * Defines if the user is subscribed to this comment section by default.
-     *
-     * @param \stdClass $user
-     * @return int one of the \core_comment\subscription::NOTIFICATION_* constants
-     */
-    public function get_default_subscription_status(\stdClass $user): int {
-        // TODO
-        return subscription::NOTIFICATION_OFF;
-    }
-
-    /**
-     * Get the users that are subscribed to this comment section by default.
-     *
-     * Return an array that defines whether the users should receive immediate notifications or daily digests.
-     * You may return an empty array or the \core_comment\subscription::NOTIFICATION_* constants as the key and the users as values.
-     *
-     * Example:
-     *  return [
-     *      \core_comment\subscription::NOTIFICATION_IMMEDIATE => get_users_by_capability($this->area->get_context(), ...),
-     *      \core_comment\subscription::NOTIFICATION_DAILY_DIGEST => get_users_by_capability(...)
-     *  ];
-     *
-     * @return array \core_comment\subscription::NOTIFICATION_* => user records
-     */
-    public function get_auto_subscribed_users(): array {
-        return [];
+        return new capability_simple($this, $user, true, $options['replies'], $postmodes);
     }
 
     /**
@@ -319,10 +288,6 @@ abstract class section {
 
     public function get_context(): \context {
         return $this->area->get_context();
-    }
-
-    public function enable_votes(): bool {
-        return $this->area->get_options()['votes'];
     }
 
     /**
@@ -409,6 +374,7 @@ abstract class section {
      * @param comment $comment
      * @param string $action created, updated or deleted
      * @return void
+     * @throws \coding_exception
      */
     public function trigger_comment_event(comment $comment, string $action) {
         if (!in_array($action, ['created', 'updated', 'deleted'])) {

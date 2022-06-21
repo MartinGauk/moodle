@@ -38,8 +38,6 @@ class manager {
     const DEFAULT_OPTIONS = [
         'areaclass' => '\\core_comment\\area',
         'sectionclass' => '\\core_comment\\section',
-        'votes' => true,
-        'subscriptions' => true,
         'replies' => false,
         'postrealname' => true,
         'postpseudonym' => false,
@@ -115,6 +113,7 @@ class manager {
      * @param int $itemid
      * @param mixed|null $item
      * @return section
+     * @throws \coding_exception
      */
     static public function get_comment_section(string $component, string $area, \context $context, int $itemid, $item = null) : section {
         return self::get_comment_area($component, $area, $context)->get_section($itemid, $item);
@@ -125,9 +124,10 @@ class manager {
      *
      * @param int $commentid
      * @return comment|null
+     * @throws \coding_exception|\dml_exception
      */
     static public function get_comment(int $commentid) : ?comment {
-        global $DB, $SITE;
+        global $DB;
         $record = $DB->get_record('comments', ['id' => $commentid]);
         if (!$record) {
             return null;
@@ -182,14 +182,5 @@ class manager {
             }
         }
         $DB->delete_records_list('comments', 'context', $contextids);
-    }
-
-    /**
-     * Delete all votes that a user did.
-     *
-     * @param int $userid
-     */
-    static public function delete_user_votes(int $userid) {
-        // TODO
     }
 }

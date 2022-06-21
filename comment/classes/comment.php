@@ -85,9 +85,6 @@ class comment {
     /** @var int number of replies to this comment */
     protected $replies;
 
-    /** @var int number of upvotes on this comment */
-    protected $upvotes;
-
     /** @var string|null custom data associated with this comment as json */
     protected $customdatajson = null;
 
@@ -123,7 +120,6 @@ class comment {
         $comment->pseudonym = $record->pseudonym;
         $comment->replytoid = $record->replytoid;
         $comment->replies = $record->replies;
-        $comment->upvotes = $record->upvotes;
         $comment->customdatajson = $record->customdata;
         return $comment;
     }
@@ -153,7 +149,6 @@ class comment {
         $comment->replyto = $replyto;
         $comment->customdatajson = $customdatajson;
         $comment->replies = 0;
-        $comment->upvotes = 0;
         return $comment;
     }
 
@@ -493,15 +488,6 @@ class comment {
     }
 
     /**
-     * Get the number of upvotes on this comment.
-     *
-     * @return int
-     */
-    public function get_upvotes() : int {
-        return $this->upvotes;
-    }
-
-    /**
      * Set comment content and text format.
      *
      * @param string $content
@@ -600,16 +586,6 @@ class comment {
      * @param section $section
      */
     public function move_to_section(section $section) {
-        // TODO
-    }
-
-    /**
-     * Update the vote of a user for this comment.
-     *
-     * @param \stdClass $user
-     * @param int $vote 1 for an upvote, 0 to remove vote
-     */
-    public function update_vote(\stdClass $user, int $vote) {
         // TODO
     }
 

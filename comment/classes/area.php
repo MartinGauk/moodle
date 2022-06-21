@@ -137,20 +137,6 @@ class area {
     }
 
     /**
-     * Called when the subscription status is modified.
-     *
-     * A user can subscribe to a specific comment area, to a comment section and to replies of a comment.
-     *
-     * @param \stdClass $user user object
-     * @param int $subscription one of the \core_comment\subscription::NOTIFICATION_* constants
-     * @param section|null $section
-     * @param comment|null $comment
-     */
-    public function on_update_subscription_status(\stdClass $user, int $subscription, section $section = null, comment $comment = null) {
-        // TODO trigger event?
-    }
-
-    /**
      * Fetch the comments that were posted anywhere in the area.
      *
      * Pass a user if only comments should be returned that this user is allowed to view.

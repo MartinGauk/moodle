@@ -2708,10 +2708,6 @@ function xmldb_main_upgrade($oldversion) {
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }
-        $field = new xmldb_field('upvotes', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
         $field = new xmldb_field('customdata', XMLDB_TYPE_TEXT, null, null, null, null, null);
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
@@ -2744,80 +2740,6 @@ function xmldb_main_upgrade($oldversion) {
         ]);
         if (!$dbman->index_exists($table, $index)) {
             $dbman->add_index($table, $index);
-        }
-
-        // Define table comments_queue to be created.
-        $table = new xmldb_table('comments_queue');
-
-        // Adding fields to table comments_queue.
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('commentid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-
-        // Adding keys to table comments_queue.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-        $table->add_key('userid', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
-        $table->add_key('commentid', XMLDB_KEY_FOREIGN, ['commentid'], 'comments', ['id']);
-
-        // Adding indexes to table comments_queue.
-        $table->add_index('userid-commentid', XMLDB_INDEX_UNIQUE, ['userid', 'commentid']);
-
-        // Conditionally launch create table for comments_queue.
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
-        }
-
-        // Define table comments_subscriptions to be created.
-        $table = new xmldb_table('comments_subscriptions');
-
-        // Adding fields to table comments_subscriptions.
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('contextid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('component', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('commentarea', XMLDB_TYPE_CHAR, '100', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('itemid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
-        $table->add_field('commentid', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
-        $table->add_field('subscription', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-
-        // Adding keys to table comments_subscriptions.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-        $table->add_key('userid', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
-        $table->add_key('contextid', XMLDB_KEY_FOREIGN, ['contextid'], 'context', ['id']);
-        $table->add_key('commentid', XMLDB_KEY_FOREIGN, ['commentid'], 'comments', ['id']);
-
-        // Adding indexes to table comments_subscriptions.
-        $table->add_index('component-commentarea-contextid-itemid-commentid-userid', XMLDB_INDEX_UNIQUE, [
-            'component', 'commentarea', 'contextid', 'itemid', 'commentid', 'userid'
-        ]);
-
-        // Conditionally launch create table for comments_subscriptions.
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
-        }
-
-        // Define table comments_votes to be created.
-        $table = new xmldb_table('comments_votes');
-
-        // Adding fields to table comments_votes.
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('commentid', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('vote', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, null);
-
-        // Adding keys to table comments_votes.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-        $table->add_key('userid', XMLDB_KEY_FOREIGN, ['userid'], 'user', ['id']);
-        $table->add_key('commentid', XMLDB_KEY_FOREIGN, ['commentid'], 'comments', ['id']);
-
-        // Adding indexes to table comments_votes.
-        $table->add_index('userid-commentid', XMLDB_INDEX_UNIQUE, ['userid', 'commentid']);
-
-        // Conditionally launch create table for comments_votes.
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
         }
 
         // Main savepoint reached.

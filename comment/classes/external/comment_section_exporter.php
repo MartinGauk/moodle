@@ -27,7 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 
 use core_comment\capability;
 use core_comment\section;
-use core_comment\subscription;
 use renderer_base;
 use stdClass;
 
@@ -82,13 +81,6 @@ class comment_section_exporter extends \core\external\exporter {
             'allowrealname' => array(
                 'type' => PARAM_BOOL,
             ),
-            'subscription' => array(
-                'type' => PARAM_RAW,
-                'null' => NULL_ALLOWED,
-            ),
-            'subscriptiondefault' => array(
-                'type' => PARAM_RAW,
-            ),
             'itemtitle' => array(
                 'type' => PARAM_RAW,
             ),
@@ -109,8 +101,6 @@ class comment_section_exporter extends \core\external\exporter {
         $values['allowpseudonym'] = $cap->can_post(capability::POST_PSEUDONYM);
         $values['allowrealname'] = $cap->can_post(capability::POST_REALNAME);
         $values['canpost'] = $values['allowpseudonym'] || $values['allowrealname'];
-        $values['subscription'] = external::format_subscription(subscription::get_subscription_status($USER, $this->section));
-        $values['subscriptiondefault'] = external::format_subscription($this->section->get_default_subscription_status($USER));
         $values['itemtitle'] = $this->section->get_item_title();
         $values['itemurl'] = $this->section->get_item_url()->out(false);
         $renderoptions = $this->section->get_section_render_options();

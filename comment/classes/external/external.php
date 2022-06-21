@@ -34,7 +34,6 @@ require_once("$CFG->dirroot/comment/lib.php");
 use comment_exception;
 use core_comment\capability;
 use core_comment\manager;
-use core_comment\subscription;
 use external_function_parameters;
 use external_multiple_structure;
 use external_single_structure;
@@ -50,46 +49,6 @@ use external_value;
  * @since      Moodle 2.9
  */
 class external extends \external_api {
-
-    /**
-     * Parse a subscription string and return the integer constant or null if invalid.
-     *
-     * @param string $subscription One of 'default', 'off', 'digests' and 'immediate'.
-     * @return int|null The subscription constant.
-     */
-    public static function parse_subscription(string $subscription) : ?int {
-        switch ($subscription) {
-            case 'default':
-                return subscription::NOTIFICATION_DEFAULT;
-            case 'off':
-                return subscription::NOTIFICATION_OFF;
-            case 'digests':
-                return subscription::NOTIFICATION_DAILY_DIGEST;
-            case 'immediate':
-                return subscription::NOTIFICATION_IMMEDIATE;
-        }
-        return null;
-    }
-
-    /**
-     * Format a subscription constant as a string or null if invalid.
-     *
-     * @param int $subscription The subscription constant.
-     * @return string|null One of 'default', 'off', 'digests' and 'immediate'.
-     */
-    public static function format_subscription(int $subscription) : ?string {
-        switch ($subscription) {
-            case subscription::NOTIFICATION_DEFAULT:
-                return 'default';
-            case subscription::NOTIFICATION_OFF:
-                return 'off';
-            case subscription::NOTIFICATION_DAILY_DIGEST:
-                return 'digests';
-            case subscription::NOTIFICATION_IMMEDIATE:
-                return 'immediate';
-        }
-        return null;
-    }
 
     /**
      * Returns description of method parameters

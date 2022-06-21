@@ -43,9 +43,6 @@ class capability_simple extends capability {
     /** @var bool user is allowed to reply to other comments */
     protected $allowreplies;
 
-    /** @var bool user is allowed to upvote comments */
-    protected $allowupvotes;
-
     /** @var bool user is allowed to post under their real name */
     protected $allowrealname;
 
@@ -54,9 +51,6 @@ class capability_simple extends capability {
 
     /** @var int allowed post modes (bitmask of the capability::POST_* constants) */
     protected $allowedpostmodes;
-
-    /** @var bool user is allowed to subscribe to the section and comments */
-    protected $allowsubscriptions;
 
     /** @var \context */
     protected $context;
@@ -68,25 +62,23 @@ class capability_simple extends capability {
      * @param \stdClass $user
      * @param bool $canview Is the user allowed to view this comment section?
      * @param bool $allowreplies Is the user allowed to reply to other comments in this section?
-     * @param bool $allowupvotes Is the user allowed to upvote other comments?
      * @param int $allowedpostmodes bitmask of the capability::POST_* constants (defining whether the user can post under
      *     the real name and/or under a pseudonym)
-     * @param bool $allowsubscriptions Is the user allowed to change the subscription to the section?
      * @throws \coding_exception
      */
-    public function __construct(section $section, \stdClass $user, bool $canview, bool $allowreplies = true,
-            bool $allowupvotes = true, int $allowedpostmodes = self::POST_REALNAME, bool $allowsubscriptions = true) {
+    public function __construct(
+        section $section, \stdClass $user, bool $canview, bool $allowreplies = true,
+        int $allowedpostmodes = self::POST_REALNAME
+    ) {
         parent::__construct($section, $user);
         $this->context = $section->get_context();
         $this->canview = $canview && has_capability('moodle/comment:view', $this->context, $this->user);
         $this->allowreplies = $allowreplies;
-        $this->allowupvotes = $allowupvotes;
         $this->allowedpostmodes = $allowedpostmodes;
         $this->allowrealname = ($allowedpostmodes & self::POST_REALNAME) &&
             has_capability('moodle/comment:post', $this->context, $this->user);
         $this->allowpseudonym = ($allowedpostmodes & self::POST_PSEUDONYM) &&
             has_capability('moodle/comment:postpseudonym', $this->context, $this->user);
-        $this->allowsubscriptions = $allowsubscriptions;
     }
 
     // TODO add phpdocs
@@ -114,23 +106,5 @@ class capability_simple extends capability {
 
     public function can_delete(comment $comment = null) : bool {
         return $this->canview && has_capability('moodle/comment:delete', $this->context, $this->user);
-    }
-
-    public function can_upvote(comment $comment = null) : bool {
-        return $this->canview && $this->allowupvotes && $comment->get_usercreated_id(true) !== $this->user->id;
-    }
-
-    /**
-     * Can the user (un)subscribe to the comment section?
-     *
-     * @param int $currentstatus
-     * @param int $newstatus
-     * @param comment|null $comment comment thread
-     * @return bool
-     */
-    public function can_modify_subscription_status(int $currentstatus, int $newstatus, comment $comment = null) : bool {
-        if ($newstatus == subscription::NOTIFICATION_OFF)
-            return true; // Unsubscribing is always possible.
-        return $this->canview && $this->allowsubscriptions;
     }
 }

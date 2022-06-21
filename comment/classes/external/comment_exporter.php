@@ -27,7 +27,6 @@ defined('MOODLE_INTERNAL') || die();
 
 use core_comment\capability;
 use core_comment\comment;
-use core_comment\subscription;
 use renderer_base;
 use stdClass;
 
@@ -148,19 +147,6 @@ class comment_exporter extends \core\external\exporter {
             'replies' => array(
                 'type' => PARAM_INT,
             ),
-            'upvotes' => array(
-                'type' => PARAM_INT,
-            ),
-            'vote' => array(
-                'type' => PARAM_INT,
-            ),
-            'subscription' => array(
-                'type' => PARAM_RAW,
-                'null' => NULL_ALLOWED,
-            ),
-            'subscriptiondefault' => array(
-                'type' => PARAM_RAW,
-            ),
             'userid' => array(
                 'type' => PARAM_INT,
                 'null' => NULL_ALLOWED,
@@ -173,18 +159,6 @@ class comment_exporter extends \core\external\exporter {
                 'type' => PARAM_RAW,
             ),
             'isown' => array(
-                'type' => PARAM_BOOL,
-            ),
-            'canupvote' => array(
-                'type' => PARAM_BOOL,
-            ),
-            'cansubscribeimmediate' => array(
-                'type' => PARAM_BOOL,
-            ),
-            'cansubscribedigests' => array(
-                'type' => PARAM_BOOL,
-            ),
-            'canunsubscribe' => array(
                 'type' => PARAM_BOOL,
             ),
             'canreply' => array(
@@ -251,34 +225,12 @@ class comment_exporter extends \core\external\exporter {
             'link' => $viewrealidentity
         ));
         $values['replies'] = $this->comment->get_replies();
-        $values['upvotes'] = $this->comment->get_upvotes();
-        $values['vote'] = 0; //TODO get this from somewhere
         $values['isown'] = $this->comment->is_owned_by_user($USER->id);
         $values['allowpseudonymreply'] = $this->capability->can_post(capability::POST_PSEUDONYM, $this->comment);
         $values['allowrealnamereply'] = $this->capability->can_post(capability::POST_REALNAME, $this->comment);
         $values['canreply'] = $values['allowpseudonymreply'] || $values['allowrealnamereply'];
-        $values['canupvote'] = $this->capability->can_upvote($this->comment);
-        $subscription = subscription::get_subscription_status($USER, $this->section, $this->comment);
-        $values['cansubscribeimmediate'] = $this->capability->can_modify_subscription_status(
-            $subscription,
-            subscription::NOTIFICATION_IMMEDIATE,
-            $this->comment
-        );
-        $values['cansubscribedigests'] = $this->capability->can_modify_subscription_status(
-            $subscription,
-            subscription::NOTIFICATION_DAILY_DIGEST,
-            $this->comment
-        );
-        $values['canunsubscribe'] = $this->capability->can_modify_subscription_status(
-            $subscription,
-            subscription::NOTIFICATION_OFF,
-            $this->comment
-        );
         $values['canedit'] = $this->capability->can_edit($this->comment);
         $values['delete'] = $values['candelete'] = $this->capability->can_delete($this->comment);
-        $values['subscription'] = external::format_subscription($subscription);
-        $subscriptiondefault = subscription::NOTIFICATION_OFF; //TODO where should default come from?
-        $values['subscriptiondefault'] = external::format_subscription($subscriptiondefault);
         $values['format'] = $this->comment->get_content_format();
         return $values;
     }
