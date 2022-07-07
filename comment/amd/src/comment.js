@@ -32,6 +32,7 @@ export default class Comment extends Component {
         this.commentSection = this.commentList.commentSection;
         this.replyTo = this.commentList.replyTo;
         this.comment = options.comment;
+        this.highlightedReply = this.isHighlighted() ? this.commentList.highlightedReply : null;
         this.showReplies = false;
         this.showReplyForm = false;
         this.isEditing = false;
@@ -41,11 +42,16 @@ export default class Comment extends Component {
         return Object.assign({
             isediting: this.isEditing,
             showreplies: this.showReplies,
+            highlightedreply: this.highlightedReply,
             showreplyform: this.showReplyForm,
             showsettings: (this.comment.canedit && !this.isEditing) || this.comment.candelete,
             showitemlink: !this.commentSection.itemId && !this.replyTo,
             wasmodified: this.comment.timecreated !== this.comment.timemodified,
         }, this.comment);
+    }
+
+    isHighlighted() {
+        return this.commentList.highlightedComment && this.comment.id === this.commentList.highlightedComment.id;
     }
 
     async delete() {
@@ -66,6 +72,7 @@ export default class Comment extends Component {
     }
 
     async toggleReplies() {
+        this.highlightedReply = null;
         this.showReplies = !this.showReplies;
         await this.render();
         if (this.showReplies) {
@@ -139,6 +146,15 @@ export default class Comment extends Component {
                 replyTo: this,
                 pageSize: 5,
                 sortDirection: 'ASC'
+            });
+        }
+        if (this.highlightedReply) {
+            this.commentReplies = await this.addChild(`[data-highlightedreply="${this.highlightedReply.id}"]`, 'commentlist', {
+                commentSection: this.commentSection,
+                replyTo: this,
+                moreAvailableAbove: false,
+                moreAvailableBelow: false,
+                highlightedComment: this.highlightedReply
             });
         }
 

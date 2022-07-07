@@ -26,13 +26,19 @@ export default class CommentSection extends Component {
 
     constructor(el, parent = null, options = {}) {
         super('commentsection', el, parent);
-        Object.assign(this, options);
+        this.options = options;
+        this.renderOptions = options.renderOptions;
+        this.contextId = options.contextId;
+        this.component = options.component;
+        this.commentArea = options.commentArea;
+        this.itemId = options.itemId;
+        this.section = options.section;
     }
 
     async getContext() {
         return {
-            startatbottom: this.startAtBottom,
-            fillheight: this.fillHeight,
+            startatbottom: this.options.startAtBottom,
+            fillheight: this.options.fillHeight,
             showform: this.section && this.section.canpost,
             section: this.section
         };
@@ -41,16 +47,18 @@ export default class CommentSection extends Component {
     async postRender() {
         this.commentForm = await this.addChild('[data-commentform]', 'commentform', {
             commentSection: this,
-            onCancel: this.commentFormOnCancel
+            onCancel: this.options.commentFormOnCancel
         });
         this.commentList = await this.addChild('[data-commentlist]', 'commentlist', {
             commentSection: this,
-            pageSize: this.pageSize,
-            sortDirection: this.sortDirection,
-            startAtBottom: this.startAtBottom,
-            preLoadedComments: this.comments,
-            moreAvailableAbove: this.moreAvailableAbove,
-            moreAvailableBelow: this.moreAvailableBelow
+            pageSize: this.options.pageSize,
+            sortDirection: this.options.sortDirection,
+            startAtBottom: this.options.startAtBottom,
+            preLoadedComments: this.options.comments,
+            moreAvailableAbove: this.options.moreAvailableAbove,
+            moreAvailableBelow: this.options.moreAvailableBelow,
+            highlightedComment: this.options.highlightedComment,
+            highlightedReply: this.options.highlightedReply
         });
     }
 

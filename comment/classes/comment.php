@@ -154,6 +154,7 @@ class comment {
 
     /**
      * Delete comment.
+     * @throws \dml_exception
      */
     public function delete() : bool {
         global $DB;
@@ -391,6 +392,7 @@ class comment {
      * Get the comment that this is a reply to.
      *
      * @return comment|null
+     * @throws \dml_exception
      */
     public function get_replyto() : ?comment {
         if (is_null($this->replytoid)) {
@@ -585,6 +587,7 @@ class comment {
      *
      * @param string $action created, updated or deleted
      * @return void
+     * @throws \coding_exception
      */
     public function trigger_event(string $action) {
         $this->section->trigger_comment_event($this, $action);

@@ -29,6 +29,7 @@ export default class Component {
         this.name = name;
         this.el = el;
         this.parent = parent;
+        this.uniqid = null;
         if (parent) {
             this.renderOptions = parent.renderOptions;
         } else {
@@ -71,6 +72,7 @@ export default class Component {
             // eslint-disable-next-line no-console
             console.log('rendering template ' + template + ' with context ', context);
             const {html, js} = await templates.renderForPromise(template, context);
+            this.uniqid = context.uniqid;
 
             this.detachChildren();
             templates.replaceNodeContents(this.el, html, js);

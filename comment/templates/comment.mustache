@@ -36,6 +36,7 @@
     * showsettings Boolean specifying whether the settings menu should be shown
     * showitemlink Boolean specifying whether a link to the context where the comment was posted should be shown
     * wasmodified Boolean specifying whether this comment was modified
+    * highlightedreply Comment as exported by core_comment\external\comment_exporter.php
     * Comment as exported by core_comment\external\comment_exporter.php
 
     Example context (json):
@@ -46,6 +47,7 @@
         "showsettings": true,
         "showitemlink": false,
         "wasmodified": false,
+        "highlightedreply": // TODO fill with example comment
         // TODO fill with example comment
     }
 }}
@@ -89,6 +91,11 @@
                 {{/replies}}
             </div>
 
+            {{#highlightedreply}}
+                <div class="comment-replies-box">
+                    <div data-highlightedreply="{{id}}"></div>
+                </div>
+            {{/highlightedreply}}
             {{#showreplies}}
                 <div class="comment-replies-box">
                     <div data-commentreplies="{{id}}"></div>

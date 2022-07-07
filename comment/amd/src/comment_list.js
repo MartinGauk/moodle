@@ -37,15 +37,22 @@ export default class CommentList extends Component {
         this.moreAvailableAbove = 'moreAvailableAbove' in options ? options.moreAvailableAbove : !!this.startAtBottom;
         this.moreAvailableBelow = 'moreAvailableBelow' in options ? options.moreAvailableBelow : !this.startAtBottom;
         this.comments = options.preLoadedComments || [];
+        this.highlightedComment = options.highlightedComment;
+        this.highlightedReply = options.highlightedReply;
     }
 
     async getContext() {
+        let comments = this.comments;
+        if (this.highlightedComment) {
+            comments = comments.filter(c => c.id !== this.highlightedComment.id);
+        }
         return {
             replyto: this.replyTo ? this.replyTo.comment : null,
-            comments: this.comments || [],
-            count: this.comments ? this.comments.length : 0,
+            highlightedcomment: this.highlightedComment,
+            comments: comments,
+            count: comments.length,
             moreavailableabove: this.moreAvailableAbove,
-            moreavailablebelow: this.moreAvailableBelow
+            moreavailablebelow: this.moreAvailableBelow,
         };
     }
 
@@ -54,7 +61,8 @@ export default class CommentList extends Component {
             above = this.startAtBottom;
         }
 
-        const buttonEl = this.el.querySelector(above ? '[data-loadmoreabove]' : '[data-loadmorebelow]');
+        const buttonEl = this.el.querySelector(above ?
+            `[data-loadmoreabove="${this.uniqid}"]` : `[data-loadmorebelow="${this.uniqid}"]`);
         if (buttonEl) {
             buttonEl.outerHTML = '<i class="icon fa fa-circle-o-notch fa-spin fa-fw ml-4"></i>';
         }
@@ -162,8 +170,8 @@ export default class CommentList extends Component {
             this.intersectionObserver = null;
         }
 
-        const loadMoreAbove = this.el.querySelector('[data-loadmoreabove]');
-        const loadMoreBelow = this.el.querySelector('[data-loadmorebelow]');
+        const loadMoreAbove = this.el.querySelector(`[data-loadmoreabove="${this.uniqid}"]`);
+        const loadMoreBelow = this.el.querySelector(`[data-loadmorebelow="${this.uniqid}"]`);
         if (!loadMoreAbove && !loadMoreBelow) {
             return;
         }
@@ -193,21 +201,37 @@ export default class CommentList extends Component {
     }
 
     async postRender() {
-        await Promise.all(this.comments.map((comment) => {
+        let comments = this.comments;
+        if (this.highlightedComment && !comments.includes(this.highlightedComment)) {
+            comments = comments.concat(this.highlightedComment);
+        }
+        await Promise.all(comments.map((comment) => {
             return this.addChild(`[data-comment="${comment.id}"]`, 'comment', {commentList: this, comment: comment});
         }));
-        this.addListener('[data-loadmoreabove]', 'click', (e) => {
+
+        this.addListener(`[data-loadmoreabove="${this.uniqid}"]`, 'click', (e) => {
             this.loadMore(true).catch(Notification.exception);
             e.preventDefault();
             return false;
         });
-        this.addListener('[data-loadmorebelow]', 'click', (e) => {
+        this.addListener(`[data-loadmorebelow="${this.uniqid}"]`, 'click', (e) => {
             this.loadMore(false).catch(Notification.exception);
             e.preventDefault();
             return false;
         });
+        if (this.highlightedComment) {
+            this.addListener(`[data-dismisshighlightedcomment="${this.highlightedComment.id}"]`, 'click', (e) => {
+                this.highlightedComment = null;
+                this.highlightedReply = null;
+                this.render().catch(Notification.exception);
+                e.preventDefault();
+                return false;
+            });
+        }
 
-        this.addIntersectionObserver();
+        if (!this.replyTo) {
+            this.addIntersectionObserver();
+        }
     }
 
 }

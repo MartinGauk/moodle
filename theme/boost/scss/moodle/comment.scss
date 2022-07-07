@@ -74,12 +74,30 @@
     }
 }
 
-.core_comment_comment_list .core_comment_comment {
-    margin: 2em 0 2em 0;
-}
+.core_comment_comment_list {
+    .core_comment_comment {
+        margin: 2em 0 2em 0;
+    }
+    .highlighted-comment .core_comment_comment {
+        margin: .5em 0 1em 0;
 
-.core_comment_comment_list.replies .core_comment_comment {
-    margin: 1em 0 1em 0;
+        .core_comment_comment_list.replies {
+            margin-bottom: -1em;
+        }
+    }
+
+    &.replies {
+        .core_comment_comment {
+            margin: 1em 0 1em 0;
+        }
+        .highlighted-comment {
+            margin-top: 1em;
+
+            .core_comment_comment {
+                margin: .5em 0 1em 0;
+            }
+        }
+    }
 }
 
 .core_comment_comment_body {

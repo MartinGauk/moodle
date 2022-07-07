@@ -75,13 +75,38 @@ export const initCommentSection = async(el, options) => {
     }
 };
 
-const createCommentSection = async(el, options) => {
-    options.pageSize = options.pageSize || 10;
-    options.sortDirection = (options.sortDirection || 'DESC').toUpperCase();
+const getHighlightedCommentFromHash = (hash) => {
+    if (!hash.startsWith('#c')) {
+        return null;
+    }
+    const id = Number(hash.substr(2));
+    if (!Number.isInteger(id)) {
+        return null;
+    }
+    return id;
+};
+
+const preloadHighlightedComment = async(options) => {
+    const highlightedCommentId = 'highlightedComment' in options ?
+        options.highlightedComment : getHighlightedCommentFromHash(window.location.hash);
+    if (highlightedCommentId) {
+        const highlightedComment = await getComment(highlightedCommentId, true);
+        if (highlightedComment.parent) {
+            options.highlightedComment = highlightedComment.parent;
+            highlightedComment.parent = undefined;
+            options.highlightedReply = highlightedComment;
+        } else {
+            options.highlightedComment = highlightedComment;
+        }
+    }
+};
+
+const preloadComments = async(options) => {
     let sortDirection = options.sortDirection;
     if (options.startAtBottom) {
         sortDirection = (sortDirection === 'DESC') ? 'ASC' : 'DESC';
     }
+
     const response = await getComments(
         options.contextId, options.component, options.commentArea, options.itemId,
         options.pageSize + 1, sortDirection
@@ -103,26 +128,28 @@ const createCommentSection = async(el, options) => {
     }
 
     options.renderOptions = Object.assign({
-        commentsectiontemplate: 'core_comment/comment_section',
-        commentlisttemplate: 'core_comment/comment_list',
-        commentformtemplate: 'core_comment/comment_form',
-        commenttemplate: 'core_comment/comment',
-        commentitemlinktemplate: 'core_comment/comment_item_link',
-        commentheadertemplate: 'core_comment/comment_header',
-        commentbodytemplate: 'core_comment/comment_body',
-        commentsectionclass: 'core_comment/comment_section',
-        commentlistclass: 'core_comment/comment_list',
-        commentformclass: 'core_comment/comment_form',
-        commentclass: 'core_comment/comment',
-        commentitemlinkclass: 'core_comment/comment_item_link',
-        commentheaderclass: 'core_comment/comment_header',
-        commentbodyclass: 'core_comment/comment_body'
-    },
+            commentsectiontemplate: 'core_comment/comment_section',
+            commentlisttemplate: 'core_comment/comment_list',
+            commentformtemplate: 'core_comment/comment_form',
+            commenttemplate: 'core_comment/comment',
+            commentitemlinktemplate: 'core_comment/comment_item_link',
+            commentheadertemplate: 'core_comment/comment_header',
+            commentbodytemplate: 'core_comment/comment_body',
+            commentsectionclass: 'core_comment/comment_section',
+            commentlistclass: 'core_comment/comment_list',
+            commentformclass: 'core_comment/comment_form',
+            commentclass: 'core_comment/comment',
+            commentitemlinkclass: 'core_comment/comment_item_link',
+            commentheaderclass: 'core_comment/comment_header',
+            commentbodyclass: 'core_comment/comment_body'
+        },
         Object.fromEntries(response.renderoptions),
         options.section ? options.section.renderoptions : {},
         options.renderOptions
     );
+};
 
+const prefetchTemplates = async(options) => {
     // Prefetch all templates (i.e. the values of all render options with keys ending in "template").
     templates.prefetchTemplates(
         Object.entries(options.renderOptions)
@@ -131,13 +158,30 @@ const createCommentSection = async(el, options) => {
             // eslint-disable-next-line no-unused-vars
             .map(([key, value]) => value)
     );
+};
 
+const preloadClasses = async(options) => {
     // Import all classes (i.e. the values of all render options with keys ending in "class").
     for (const key in options.renderOptions) {
         if (key.endsWith('class') && typeof options.renderOptions[key] === 'string') {
             options.renderOptions[key] = await import(options.renderOptions[key]);
         }
     }
+};
+
+const createCommentSection = async(el, options) => {
+    options.pageSize = options.pageSize || 10;
+    options.sortDirection = (options.sortDirection || 'DESC').toUpperCase();
+
+    await Promise.all([
+        preloadHighlightedComment(options),
+        preloadComments(options).then(async() => {
+            return Promise.all([
+                prefetchTemplates(options),
+                preloadClasses(options)
+            ]);
+        })
+    ]);
 
     return new options.renderOptions.commentsectionclass(el, null, options);
 };
@@ -167,6 +211,26 @@ export const getComments = async(
         Object.assign(comment, {section: sections[comment.itemid]});
     }
     return response;
+};
+
+export const getComment = async(commentId, includeParent = false) => {
+    const response = await Ajax.call([
+        {
+            methodname: 'core_comment_get_comments', args: {
+                commentid: commentId,
+                includeparents: includeParent
+            }
+        },
+    ])[0];
+    const comment = response.comments.find(c => c.id === commentId);
+    if (!comment) {
+        return null;
+    }
+    if (includeParent) {
+        comment.parent = response.comments.find(c => c.id === comment.replytoid);
+    }
+    comment.section = response.commentsections[0];
+    return comment;
 };
 
 export const saveComment = async(comment) => {

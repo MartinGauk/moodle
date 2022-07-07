@@ -75,6 +75,7 @@ class external extends \external_api {
                 'timefrom'      => new external_value(PARAM_INT, 'filter comments by timecreated', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'timeto'        => new external_value(PARAM_INT, 'filter comments by timecreated', VALUE_DEFAULT, null, NULL_ALLOWED),
                 'sortdirection' => new external_value(PARAM_ALPHA, 'Sort direction: ASC or DESC', VALUE_DEFAULT, 'DESC'),
+                'includeparents' => new external_value(PARAM_BOOL, 'fetch all parent comments as well', VALUE_DEFAULT, false, NULL_NOT_ALLOWED)
             )
         );
     }
@@ -96,14 +97,18 @@ class external extends \external_api {
      * @param int|null $timefrom filter comments by timecreated
      * @param int|null $timeto filter comments by timecreated
      * @param string $sortdirection sort direction
+     * @param bool $includeparents
      * @return array of comments and warnings
+     * @throws \invalid_parameter_exception
+     * @throws \dml_exception
+     * @throws \coding_exception
      * @since Moodle 2.9
      */
     public static function get_comments(?string $contextlevel, ?int $instanceid, ?int $contextid, ?string $component,
             ?int $itemid, ?string $area = null, ?string $commentarea = null, bool $includechildcontexts = false,
             ?int $replytoid = null, ?int $commentid = null, int $page = 0, int $pagesize = 50, ?int $timefrom = null,
-            ?int $timeto = null, string $sortdirection = 'DESC') {
-        global $CFG, $SITE, $USER, $PAGE;
+            ?int $timeto = null, string $sortdirection = 'DESC', bool $includeparents = false) {
+        global $USER, $PAGE;
 
         // TODO check $CFG->usecomments and return empty result?
 
@@ -124,6 +129,7 @@ class external extends \external_api {
             'timefrom'      => $timefrom,
             'timeto'        => $timeto,
             'sortdirection' => $sortdirection,
+            'includeparents' => $includeparents
         );
         $params = self::validate_parameters(self::get_comments_parameters(), $arrayparams);
 
@@ -139,6 +145,7 @@ class external extends \external_api {
                 $params['pagesize'] . ', maximum 200 allowed)');
         }
 
+        /** @var \core_comment\comment[] $comments */
         $comments = [];
         $count = 0;
         $canpost = false;
@@ -179,6 +186,20 @@ class external extends \external_api {
                 $comments = $areaobj->get_comments_in_area($USER, $params['timefrom'], $params['timeto'], $params['page'],
                     $params['pagesize'], $sortdirection, $params['includechildcontexts'], false);
                 $count = $comments->count_total();
+            }
+        }
+
+        // Include parents.
+        if ($params['includeparents']) {
+            $parentids = [];
+            foreach ($comments as $comment) {
+                $parentid = $comment->get_replytoid();
+                if (!$parentid || in_array($parentid, $parentids)) {
+                    continue;
+                }
+                $parent = $comment->get_replyto();
+                $comments[] = $parent;
+                $parentids[] = $parentid;
             }
         }
 

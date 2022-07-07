@@ -48,21 +48,34 @@
     }
 }}
 <div class="core_comment_comment_list {{#replyto}}replies{{/replyto}}">
+    {{#highlightedcomment}}
+        <div class="highlighted-comment">
+            {{^replyto}}{{#str}} highlightedcomment, core_comment {{/str}}{{/replyto}}
+            {{#replyto}}{{#str}} highlightedreply, core_comment {{/str}}{{/replyto}}
+            <div data-comment="{{id}}">
+            </div>
+            {{^replyto}}
+                <a class="btn btn-secondary" href="#" data-dismisshighlightedcomment="{{id}}">
+                    {{#str}} dismisshighlightedcomment, core_comment {{/str}}
+                </a>
+            {{/replyto}}
+        </div>
+    {{/highlightedcomment}}
     {{#moreavailableabove}}
         <div class="my-3">
-            <a href="#" data-loadmoreabove>{{#str}} loadmore, core_comment {{/str}}</a>
+            <a href="#" data-loadmoreabove="{{uniqid}}">{{#str}} loadmore, core_comment {{/str}}</a>
         </div>
     {{/moreavailableabove}}
     {{#comments}}
         <div data-comment="{{id}}">
         </div>
     {{/comments}}
-    {{^comments}}
+    {{^comments}}{{^highlightedcomment}}
         {{#str}} nocomments, core_comment {{/str}}
-    {{/comments}}
+    {{/highlightedcomment}}{{/comments}}
     {{#moreavailablebelow}}
         <div class="my-3">
-            <a href="#" data-loadmorebelow>{{#str}} loadmore, core_comment {{/str}}</a>
+            <a href="#" data-loadmorebelow="{{uniqid}}">{{#str}} loadmore, core_comment {{/str}}</a>
         </div>
     {{/moreavailablebelow}}
 </div>
