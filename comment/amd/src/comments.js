@@ -25,6 +25,8 @@ import Ajax from 'core/ajax';
 import * as templates from 'core/templates';
 import * as Str from 'core/str';
 
+const COMMENT_HASH_PREFIX = '#comment-';
+
 export const init = async() => {
     for (const el of document.querySelectorAll('[data-commentsection]')) {
         const options = {
@@ -76,10 +78,10 @@ export const initCommentSection = async(el, options) => {
 };
 
 const getHighlightedCommentFromHash = (hash) => {
-    if (!hash.startsWith('#c')) {
+    if (!hash.startsWith(COMMENT_HASH_PREFIX)) {
         return null;
     }
-    const id = Number(hash.substr(2));
+    const id = Number(hash.substr(COMMENT_HASH_PREFIX.length));
     if (!Number.isInteger(id)) {
         return null;
     }
@@ -87,10 +89,21 @@ const getHighlightedCommentFromHash = (hash) => {
 };
 
 const preloadHighlightedComment = async(options) => {
-    const highlightedCommentId = 'highlightedComment' in options ?
-        options.highlightedComment : getHighlightedCommentFromHash(window.location.hash);
+    const highlightedCommentId = 'highlightedCommentId' in options ?
+        options.highlightedCommentId : getHighlightedCommentFromHash(window.location.hash);
+
     if (highlightedCommentId) {
         const highlightedComment = await getComment(highlightedCommentId, true);
+        if (!highlightedComment) {
+            return;
+        }
+
+        if (highlightedComment.contextid !== options.contextId ||
+            highlightedComment.commentarea !== options.commentArea ||
+            (options.itemId && highlightedComment.itemid !== options.itemId)) {
+            return;
+        }
+
         if (highlightedComment.parent) {
             options.highlightedComment = highlightedComment.parent;
             highlightedComment.parent = undefined;

@@ -153,13 +153,14 @@ class external extends \external_api {
         if (!is_null($params['commentid'])) {
             // Select a single comment by id.
             $comment = manager::get_comment($params['commentid']);
-            self::validate_context($comment->get_section()->get_context());
-
-            $areaobj = $comment->get_section()->get_area();
-
             if ($comment && $comment->get_section()->get_capability($USER)->can_view()) {
+                self::validate_context($comment->get_section()->get_context());
+
+                $areaobj = $comment->get_section()->get_area();
                 $comments = [$comment];
                 $count = 1;
+            } else {
+                self::validate_context(\context_system::instance());
             }
         } else {
             // Search comments.
@@ -222,11 +223,14 @@ class external extends \external_api {
             $exportedsections[] = $sectionexporter->export($renderer);
         }
 
-        $renderoptions = $areaobj->get_area_render_options();
-        array_walk($renderoptions, function (&$value, $key) {
-            $value = ['key' => $key, 'value' => $value];
-        });
-        $renderoptions = array_values($renderoptions);
+        $renderoptions = [];
+        if ($areaobj) {
+            $areaobj->get_area_render_options();
+            array_walk($renderoptions, function (&$value, $key) {
+                $value = ['key' => $key, 'value' => $value];
+            });
+            $renderoptions = array_values($renderoptions);
+        }
 
         return array(
             'comments' => $exportedcomments,
