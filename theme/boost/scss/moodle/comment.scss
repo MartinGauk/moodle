@@ -4,7 +4,16 @@
         margin-bottom: 2rem;
     }
 
+    .comment-section-list {
+        overflow-y: auto;
+        display: flex;
+        flex-flow: column;
+    }
+
     &.start-at-bottom {
+        .comment-section-list {
+            flex-flow: column-reverse;
+        }
         .comment-section-form {
             margin-top: .5rem;
             margin-bottom: 0;
@@ -19,18 +28,10 @@
         .comment-section-list {
             flex: 1 1 1px;
             overflow-y: auto;
-            display: flex;
-            flex-flow: column;
         }
 
         .comment-section-form {
             flex: 0 1 auto;
-        }
-
-        &.start-at-bottom {
-            .comment-section-list {
-                flex-flow: column-reverse;
-            }
         }
     }
 }

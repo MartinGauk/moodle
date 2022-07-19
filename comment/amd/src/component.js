@@ -79,12 +79,8 @@ export default class Component {
 
             await this.postRender(template, context);
             this.callback('postrender', [template, context, this.el]);
-
-            // TODO remove logging
-            // eslint-disable-next-line no-console
-            console.log('postrender template ' + template + ' with context ', context);
         } catch (e) {
-            Notification.exception(e);
+            await Notification.exception(e);
         }
     }
 

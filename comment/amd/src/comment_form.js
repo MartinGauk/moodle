@@ -31,21 +31,21 @@ export default class CommentForm extends Component {
 
     constructor(el, parent, options = {}) {
         super('commentform', el, parent);
-        this.commentSection = options.commentSection;
-        this.comment = options.comment;
+        this.commentSectionEl = options.commentSectionEl;
+        this.commentEl = options.commentEl;
         this.onCancel = options.onCancel;
         this.onSubmit = options.onSubmit;
-        if (this.comment) {
-            this.replyTo = this.comment.commentList.replyTo;
+        if (this.commentEl) {
+            this.replyToEl = this.commentEl.commentListEl.replyToEl;
         } else {
-            this.replyTo = options.replyTo;
+            this.replyToEl = options.replyToEl;
         }
-        if (this.comment) {
-            this.section = this.comment.comment.section;
-        } else if (this.replyTo) {
-            this.section = this.replyTo.comment.section;
+        if (this.commentEl) {
+            this.section = this.commentEl.section;
+        } else if (this.replyToEl) {
+            this.section = this.replyToEl.section;
         } else {
-            this.section = this.commentSection.section;
+            this.section = this.commentSectionEl.section;
         }
     }
 
@@ -55,8 +55,8 @@ export default class CommentForm extends Component {
             cancancel: true,
             allowpseudonym: this.section.allowpseudonym,
             allowrealname: this.section.allowrealname,
-            comment: this.comment ? await this.comment.comment : null,
-            replyto: this.replyTo ? await this.replyTo.comment : null
+            comment: this.commentEl ? await this.commentEl.comment : null,
+            replyto: this.replyToEl ? await this.replyToEl.comment : null
         };
     }
 
@@ -75,8 +75,8 @@ export default class CommentForm extends Component {
             component: this.section.component,
             commentarea: this.section.commentarea,
             itemid: this.section.itemid,
-            id: this.comment ? this.comment.comment.id : null,
-            replytoid: this.replyTo ? this.replyTo.comment.id : null,
+            id: this.commentEl ? this.commentEl.comment.id : null,
+            replytoid: this.replyToEl ? this.replyToEl.comment.id : null,
             content: data.content,
             pseudonymous: data.pseudonymous,
             customdata: data.customdata
@@ -86,26 +86,25 @@ export default class CommentForm extends Component {
         if (!comment) {
             return;
         }
-        comment = this.callback(this.comment ? 'preupdate' : 'precreate', [comment, this.form], comment);
+        comment = this.callback(this.commentEl ? 'preupdate' : 'precreate', [comment, this.form], comment);
         if (!comment) {
             return;
         }
 
         const savedComment = await Comments.saveComment(comment);
-        savedComment.section = this.section;
 
         this.callback('postsave', [savedComment]);
-        this.callback(this.comment ? 'postupdate' : 'postcreate', [savedComment]);
+        this.callback(this.commentEl ? 'postupdate' : 'postcreate', [savedComment]);
 
         if (this.onSubmit) {
             this.onSubmit(savedComment);
         }
-        if (this.comment) {
-            await this.comment.onUpdated(savedComment);
-        } else if (this.replyTo) {
-            await this.replyTo.onReplyPosted(savedComment);
+        if (this.commentEl) {
+            await this.commentEl.onUpdated(savedComment);
+        } else if (this.replyToEl) {
+            await this.replyToEl.onReplyPosted(savedComment);
         } else {
-            await this.commentSection.commentList.onCommentPosted(savedComment);
+            await this.commentSectionEl.commentListEl.onCommentPosted(savedComment);
         }
         await this.render();
     }
@@ -127,10 +126,10 @@ export default class CommentForm extends Component {
     async cancel() {
         this.form.reset();
         this.el.firstChild.classList.add('empty');
-        if (this.comment) {
-            await this.comment.cancelEditing();
-        } else if (this.replyTo && this.replyTo.showReplyForm) {
-            await this.replyTo.toggleReplyForm();
+        if (this.commentEl) {
+            await this.commentEl.cancelEditing();
+        } else if (this.replyToEl && this.replyToEl.showReplyForm) {
+            await this.replyToEl.toggleReplyForm();
         }
         if (this.onCancel) {
             this.onCancel();

@@ -37,17 +37,25 @@ class area_recent_comments implements \renderable, \templatable {
 
     // TODO docs
     public $area;
-    public $displaymode;
+    public $displayoptions;
 
     /**
      * Recent comments in area renderable constructor.
      *
      * @param \core_comment\area $area
-     * @param int $displaymode One of \core_comment\output\renderer::DISPLAYMODE_*
+     * @param \stdClass $displayoptions Object with the following optional properties:
+     * <ul>
+     * <li>int <b>displaymode</b>: One of \core_comment\output\renderer::DISPLAYMODE_*. Defaults to DISPLAYMODE_MODAL.</li>
+     * <li>bool <b>fillheight</b>: Whether the comment section will fill the available height. Defaults to true for modals.</li>
+     * <li>bool <b>startfrombottom</b>: Whether the comment form is below the comment list. Defaults to true if fillheight is true.</li>
+     * <li>string <b>sortdirection</b>: One of 'ASC' and 'DESC'. Comments are sorted based on creation date. Defaults to 'DESC'.</li>
+     * <li>int <b>maxlistheight</b>: Maximum height of the list of comments in pixels.</li>
+     * <li>int <b>pagesize</b>: Number of comments to load at the same time.</li>
+     * </ul>
      */
-    public function __construct(\core_comment\area $area, int $displaymode) {
+    public function __construct(\core_comment\area $area, \stdClass $displayoptions = null) {
         $this->area = $area;
-        $this->displaymode = $displaymode;
+        $this->displayoptions = $displayoptions;
     }
 
     /**

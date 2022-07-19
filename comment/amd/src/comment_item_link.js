@@ -26,10 +26,10 @@ export default class CommentItemLink extends Component {
 
     constructor(el, parent, options = {}) {
         super('commentitemlink', el, parent);
-        this.comment = options.comment;
+        this.commentEl = options.commentEl;
     }
 
     async getContext() {
-        return this.comment.comment;
+        return this.commentEl.comment;
     }
 }

@@ -45,13 +45,13 @@
         }
     }
 }}
-<div class="core_comment_comment_section{{#fillheight}} fill-height{{#startatbottom}} start-at-bottom{{/startatbottom}}{{/fillheight}}">
+<div class="core_comment_comment_section{{#fillheight}} fill-height{{/fillheight}}{{#startatbottom}} start-at-bottom{{/startatbottom}}">
     {{^startatbottom}}
         {{#showform}}
             <div class="comment-section-form" data-commentform></div>
         {{/showform}}
     {{/startatbottom}}
-    <div class="comment-section-list" data-commentlist></div>
+    <div class="comment-section-list"{{#maxlistheight}} style="max-height: {{maxlistheight}}px;"{{/maxlistheight}} data-commentlist></div>
     {{#startatbottom}}
         {{#showform}}
             <div class="comment-section-form" data-commentform></div>

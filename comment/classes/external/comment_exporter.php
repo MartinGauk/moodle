@@ -134,6 +134,9 @@ class comment_exporter extends \core\external\exporter {
             'strftimeformat' => array(
                 'type' => PARAM_RAW,
             ),
+            'commenturl' => array(
+                'type' => PARAM_RAW
+            ),
             'profileurl' => array(
                 'type' => PARAM_RAW,
                 'null' => NULL_ALLOWED
@@ -204,6 +207,7 @@ class comment_exporter extends \core\external\exporter {
         $values['timemodified'] = $this->comment->get_timemodified();
         $values['timemodifiedtext'] = userdate($values['timemodified'], $values['strftimeformat']);
         $usercreated = $this->comment->get_usercreated($viewrealidentity);
+        $values['commenturl'] = $this->comment->get_url()->out(false);
         $values['profileurl'] = null;
         $values['userid'] = null;
         if ($viewrealidentity) {

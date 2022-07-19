@@ -191,16 +191,15 @@ class external extends \external_api {
         }
 
         // Include parents.
+        $parents = [];
         if ($params['includeparents']) {
-            $parentids = [];
             foreach ($comments as $comment) {
                 $parentid = $comment->get_replytoid();
-                if (!$parentid || in_array($parentid, $parentids)) {
+                if (!$parentid || array_key_exists($parentid, $parents)) {
                     continue;
                 }
                 $parent = $comment->get_replyto();
-                $comments[] = $parent;
-                $parentids[] = $parentid;
+                $parents[$parentid] = $parent;
             }
         }
 
@@ -232,7 +231,7 @@ class external extends \external_api {
             $renderoptions = array_values($renderoptions);
         }
 
-        return array(
+        $result = array(
             'comments' => $exportedcomments,
             'count' => $count,
             'commentsections' => $exportedsections,
@@ -241,6 +240,10 @@ class external extends \external_api {
             'canpost'  => $canpost, // Deprecated, kept for backwards-compatibility.
             'warnings' => $warnings
         );
+        if ($params['includeparents']) {
+            $result['parents'] = $parents;
+        }
+        return $result;
     }
 
     /**
@@ -258,6 +261,9 @@ class external extends \external_api {
                 'count' => new external_value(PARAM_INT,  'Total number of comments.', VALUE_OPTIONAL),
                 'commentsections' => new external_multiple_structure(
                     comment_section_exporter::get_read_structure(), 'List of all comment sections referenced in the comments list'
+                ),
+                'parents' =>  new external_multiple_structure(
+                    comment_exporter::get_read_structure(), 'List of parent comments', VALUE_OPTIONAL
                 ),
                 'renderoptions' => new external_multiple_structure(
                     new external_single_structure(

@@ -574,6 +574,15 @@ class comment {
     }
 
     /**
+     * Get the URL to the comment within its section.
+     *
+     * @return \moodle_url
+     */
+    public function get_url(): \moodle_url {
+        return $this->section->get_comment_url($this->get_id());
+    }
+
+    /**
      * Move this comment (and its replies) to another comment section.
      *
      * @param section $section

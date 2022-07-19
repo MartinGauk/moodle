@@ -29,11 +29,11 @@ export default class CommentHeader extends Component {
 
     constructor(el, parent, options = {}) {
         super('commentheader', el, parent);
-        this.comment = options.comment;
+        this.commentEl = options.commentEl;
     }
 
     async getContext() {
-        return await this.comment.getContext();
+        return await this.commentEl.getContext();
     }
 
     async showDeleteModal() {
@@ -51,19 +51,24 @@ export default class CommentHeader extends Component {
         });
         modal.setSaveButtonText(deleteString);
         modal.getRoot().on(ModalEvents.save, () => {
-            this.comment.delete().catch(Notification.exception);
+            this.commentEl.delete().catch(Notification.exception);
         });
         modal.show();
     }
 
     async postRender() {
-        this.addListener(`[data-deletecomment="${this.comment.comment.id}"]`, 'click', (e) => {
+        this.addListener(`[data-deletecomment="${this.commentEl.comment.id}"]`, 'click', (e) => {
             this.showDeleteModal().catch(Notification.exception);
             e.preventDefault();
             return false;
         });
-        this.addListener(`[data-editcomment="${this.comment.comment.id}"]`, 'click', (e) => {
-            this.comment.startEditing();
+        this.addListener(`[data-editcomment="${this.commentEl.comment.id}"]`, 'click', (e) => {
+            this.commentEl.startEditing();
+            e.preventDefault();
+            return false;
+        });
+        this.addListener(`[data-copycommenturl="${this.commentEl.comment.id}"]`, 'click', (e) => {
+            navigator.clipboard.writeText(this.commentEl.comment.commenturl);
             e.preventDefault();
             return false;
         });

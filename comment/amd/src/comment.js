@@ -28,11 +28,12 @@ export default class Comment extends Component {
 
     constructor(el, parent, options = {}) {
         super('comment', el, parent);
-        this.commentList = options.commentList;
-        this.commentSection = this.commentList.commentSection;
-        this.replyTo = this.commentList.replyTo;
+        this.commentListEl = options.commentListEl;
+        this.commentSectionEl = this.commentListEl.commentSectionEl;
+        this.replyToEl = this.commentListEl.replyToEl;
         this.comment = options.comment;
-        this.highlightedReply = this.isHighlighted() ? this.commentList.highlightedReply : null;
+        this.section = this.commentSectionEl.sections.find(section => section.itemid === this.comment.itemid); // TODO test this
+        this.highlightedReply = this.isHighlighted() ? this.commentListEl.highlightedReply : null;
         this.showReplies = false;
         this.showReplyForm = false;
         this.isEditing = false;
@@ -44,14 +45,14 @@ export default class Comment extends Component {
             showreplies: this.showReplies,
             highlightedreply: this.highlightedReply,
             showreplyform: this.showReplyForm,
-            showsettings: (this.comment.canedit && !this.isEditing) || this.comment.candelete,
-            showitemlink: !this.commentSection.itemId && !this.replyTo,
+            showitemlink: !this.commentSectionEl.itemId && !this.replyToEl,
             wasmodified: this.comment.timecreated !== this.comment.timemodified,
+            section: this.section,
         }, this.comment);
     }
 
     isHighlighted() {
-        return this.commentList.highlightedComment && this.comment.id === this.commentList.highlightedComment.id;
+        return this.commentListEl.highlightedComment && this.comment.id === this.commentListEl.highlightedComment.id;
     }
 
     async delete() {
@@ -76,7 +77,7 @@ export default class Comment extends Component {
         this.showReplies = !this.showReplies;
         await this.render();
         if (this.showReplies) {
-            await this.commentReplies.loadMore().catch(Notification.exception);
+            await this.commentRepliesEl.loadMore().catch(Notification.exception);
         }
     }
 
@@ -89,22 +90,22 @@ export default class Comment extends Component {
         if (!this.showReplyForm) {
             await this.toggleReplyForm();
         }
-        this.commentReplyForm.focus();
+        this.commentReplyFormEl.focus();
     }
 
     async onDeleted() {
-        if (this.replyTo) {
-            this.replyTo.comment.replies--;
-            this.replyTo.render();
+        if (this.replyToEl) {
+            this.replyToEl.comment.replies--;
+            this.replyToEl.render();
         }
-        await this.commentList.onCommentDeleted(this.comment.id);
+        await this.commentListEl.onCommentDeleted(this.comment.id);
     }
 
     async onUpdated(updatedComment) {
         this.comment = updatedComment;
         this.isEditing = false;
-        this.removeChild(this.commentEditForm);
-        await Promise.all([this.render(), this.commentHeader.render(), this.commentBody.render()]);
+        this.removeChild(this.commentEditFormEl);
+        await Promise.all([this.render(), this.commentHeaderEl.render(), this.commentBodyEl.render()]);
     }
 
     async onReplyPosted(reply) {
@@ -112,46 +113,52 @@ export default class Comment extends Component {
         this.showReplies = true;
         this.showReplyForm = false;
         await this.render();
-        await this.commentReplies.onCommentPosted(reply);
+        await this.commentRepliesEl.onCommentPosted(reply);
     }
 
     async postRender() {
-        await this.addChild(`[data-commentitemlink="${this.comment.id}"]`, 'commentitemlink', {comment: this});
+        await this.addChild(`[data-commentitemlink="${this.comment.id}"]`, 'commentitemlink', {
+            commentEl: this
+        });
 
         // Render comment header.
-        this.commentHeader = await this.addChild(`[data-commentheader="${this.comment.id}"]`, 'commentheader', {comment: this});
+        this.commentHeaderEl = await this.addChild(`[data-commentheader="${this.comment.id}"]`, 'commentheader', {
+            commentEl: this
+        });
 
         // Render editing form or comment body.
         if (this.isEditing) {
-            this.commentEditForm = await this.addChild(`[data-commenteditform="${this.comment.id}"]`, 'commentform', {
-                commentSection: this.commentSection,
-                comment: this
+            this.commentEditFormEl = await this.addChild(`[data-commenteditform="${this.comment.id}"]`, 'commentform', {
+                commentSectionEl: this.commentSectionEl,
+                commentEl: this
             });
         } else {
-            this.commentBody = await this.addChild(`[data-commentbody="${this.comment.id}"]`, 'commentbody', {comment: this});
+            this.commentBodyEl = await this.addChild(`[data-commentbody="${this.comment.id}"]`, 'commentbody', {
+                commentEl: this
+            });
         }
 
         // Render reply form.
         if (this.showReplyForm) {
-            this.commentReplyForm = await this.addChild(`[data-commentreplyform="${this.comment.id}"]`, 'commentform', {
-                commentSection: this.commentSection,
-                replyTo: this
+            this.commentReplyFormEl = await this.addChild(`[data-commentreplyform="${this.comment.id}"]`, 'commentform', {
+                commentSectionEl: this.commentSectionEl,
+                replyToEl: this
             });
         }
 
         // Render replies.
         if (this.showReplies) {
-            this.commentReplies = await this.addChild(`[data-commentreplies="${this.comment.id}"]`, 'commentlist', {
-                commentSection: this.commentSection,
-                replyTo: this,
+            this.commentRepliesEl = await this.addChild(`[data-commentreplies="${this.comment.id}"]`, 'commentlist', {
+                commentSectionEl: this.commentSectionEl,
+                replyToEl: this,
                 pageSize: 5,
                 sortDirection: 'ASC'
             });
         }
         if (this.highlightedReply) {
-            this.commentReplies = await this.addChild(`[data-highlightedreply="${this.highlightedReply.id}"]`, 'commentlist', {
-                commentSection: this.commentSection,
-                replyTo: this,
+            this.commentRepliesEl = await this.addChild(`[data-highlightedreply="${this.highlightedReply.id}"]`, 'commentlist', {
+                commentSectionEl: this.commentSectionEl,
+                replyToEl: this,
                 moreAvailableAbove: false,
                 moreAvailableBelow: false,
                 highlightedComment: this.highlightedReply

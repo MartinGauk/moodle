@@ -29,8 +29,8 @@ export default class CommentList extends Component {
 
     constructor(el, parent, options = {}) {
         super('commentlist', el, parent);
-        this.commentSection = options.commentSection;
-        this.replyTo = options.replyTo || null;
+        this.commentSectionEl = options.commentSectionEl;
+        this.replyToEl = options.replyToEl || null;
         this.pageSize = options.pageSize || 10;
         this.sortDirection = (options.sortDirection || 'DESC').toUpperCase();
         this.startAtBottom = options.startAtBottom;
@@ -47,7 +47,7 @@ export default class CommentList extends Component {
             comments = comments.filter(c => c.id !== this.highlightedComment.id);
         }
         return {
-            replyto: this.replyTo ? this.replyTo.comment : null,
+            replyto: this.replyToEl ? this.replyToEl.comment : null,
             highlightedcomment: this.highlightedComment,
             comments: comments,
             count: comments.length,
@@ -61,12 +61,16 @@ export default class CommentList extends Component {
             above = this.startAtBottom;
         }
 
+        // Start loading animation. Will stop automatically when the component is rendered again.
         const buttonEl = this.el.querySelector(above ?
             `[data-loadmoreabove="${this.uniqid}"]` : `[data-loadmorebelow="${this.uniqid}"]`);
         if (buttonEl) {
             buttonEl.outerHTML = '<i class="icon fa fa-circle-o-notch fa-spin fa-fw ml-4"></i>';
         }
 
+        // We fetch comments starting from the timecreated of the topmost (or bottommost) comment. In order to ensure
+        // that we fetch a complete page anyway, we count the number of already loaded comments with that exact
+        // timecreated (overlap).
         let time = null;
         let overlap = 0;
         if (this.comments && this.comments.length) {
@@ -90,24 +94,36 @@ export default class CommentList extends Component {
             timeFrom = time;
         }
 
+        // We add one to the page size and overlap to find out if there are more comments available after this page.
         let pageSize = this.pageSize + overlap + 1;
         let sortDirection = this.sortDirection;
         if (above) {
             sortDirection = (sortDirection === 'DESC') ? 'ASC' : 'DESC';
         }
-        const newComments = (await Comments.getComments(
-            this.commentSection.contextId, this.commentSection.component, this.commentSection.commentArea,
-            this.replyTo ? this.replyTo.comment.itemid : this.commentSection.itemId, pageSize, sortDirection,
-            this.replyTo ? this.replyTo.comment.id : null, timeFrom, timeTo
-        )).comments;
-        const moreAvailable = newComments.length === pageSize;
+
+        // Fetch comments.
+        const result = await Comments.getComments(
+            this.commentSectionEl.contextId, this.commentSectionEl.component, this.commentSectionEl.commentArea,
+            this.replyToEl ? this.replyToEl.comment.itemid : this.commentSectionEl.itemId, pageSize, sortDirection,
+            this.replyToEl ? this.replyToEl.comment.id : null, timeFrom, timeTo
+        );
+
+        // Save new comments.
+        const moreAvailable = result.comments.length === pageSize;
         if (above) {
             this.moreAvailableAbove = moreAvailable;
-            this.comments.unshift(...newComments.reverse().slice(-this.pageSize - overlap, -overlap));
+            this.comments.unshift(...result.comments.reverse().slice(-this.pageSize - overlap, -overlap));
         } else {
             this.moreAvailableBelow = moreAvailable;
-            this.comments.push(...newComments.slice(overlap, this.pageSize + overlap));
+            this.comments.push(...result.comments.slice(overlap, this.pageSize + overlap));
         }
+
+        // Save new comment sections.
+        this.commentSectionEl.sections.push(
+            ...result.commentsections.filter(
+                section => !this.commentSectionEl.sections.find(other => other.itemid === section.itemid)
+            )
+        );
 
         await this.render();
     }
@@ -206,7 +222,10 @@ export default class CommentList extends Component {
             comments = comments.concat(this.highlightedComment);
         }
         await Promise.all(comments.map((comment) => {
-            return this.addChild(`[data-comment="${comment.id}"]`, 'comment', {commentList: this, comment: comment});
+            return this.addChild(`[data-comment="${comment.id}"]`, 'comment', {
+                commentListEl: this,
+                comment: comment
+            });
         }));
 
         this.addListener(`[data-loadmoreabove="${this.uniqid}"]`, 'click', (e) => {
@@ -229,7 +248,7 @@ export default class CommentList extends Component {
             });
         }
 
-        if (!this.replyTo) {
+        if (!this.replyToEl) {
             this.addIntersectionObserver();
         }
     }

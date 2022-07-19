@@ -33,24 +33,26 @@ export default class CommentSection extends Component {
         this.commentArea = options.commentArea;
         this.itemId = options.itemId;
         this.section = options.section;
+        this.sections = options.sections;
     }
 
     async getContext() {
         return {
             startatbottom: this.options.startAtBottom,
             fillheight: this.options.fillHeight,
+            maxlistheight: this.options.maxListHeight,
             showform: this.section && this.section.canpost,
             section: this.section
         };
     }
 
     async postRender() {
-        this.commentForm = await this.addChild('[data-commentform]', 'commentform', {
-            commentSection: this,
+        this.commentFormEl = await this.addChild('[data-commentform]', 'commentform', {
+            commentSectionEl: this,
             onCancel: this.options.commentFormOnCancel
         });
-        this.commentList = await this.addChild('[data-commentlist]', 'commentlist', {
-            commentSection: this,
+        this.commentListEl = await this.addChild('[data-commentlist]', 'commentlist', {
+            commentSectionEl: this,
             pageSize: this.options.pageSize,
             sortDirection: this.options.sortDirection,
             startAtBottom: this.options.startAtBottom,

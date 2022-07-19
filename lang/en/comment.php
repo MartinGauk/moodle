@@ -26,6 +26,7 @@ $string['commentsubcontext'] = 'Comments';
 $string['confirmdeletecomment'] = 'Do you really want to delete this comment?';
 $string['confirmdiscardchanges'] = 'Do you really want to discard your changes to this comment?';
 $string['content'] = 'Content';
+$string['copycommenturl'] = 'Copy link to comment';
 $string['delete'] = 'Delete';
 $string['deletecomment'] = 'Delete comment';
 $string['discardchanges'] = 'Discard changes';
