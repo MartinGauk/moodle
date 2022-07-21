@@ -271,12 +271,13 @@ class area {
     /**
      * Show the most recent comments within a comment area.
      *
-     * @param int $pagesize maximum number of comments to show initially (TODO better variable name?)
-     * @param int $displaymode One of \core_comment\output\renderer::DISPLAYMODE_*
+     * @param \stdClass|null $displayoptions Object containing display options.
+     * Please refer to the constructor of \core_comment\output\comments for documentation (linked below).
      * @return string HTML to display
      * @throws \coding_exception
+     * @see \core_comment\output\comments::__construct
      */
-    public function output_recent_comments(int $pagesize, int $displaymode) : string {
-        return $this->get_renderer()->render(new output\area_recent_comments($this, $displaymode));
+    public function output_recent_comments(\stdClass $displayoptions = null) : string {
+        return $this->get_renderer()->render(new output\comments($this, null, $displayoptions));
     }
 }

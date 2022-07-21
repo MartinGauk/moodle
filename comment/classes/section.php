@@ -78,14 +78,14 @@ abstract class section {
     /**
      * Show the comments in this section.
      *
-     * @param int $pagesize maximum number of comments to show initially (TODO better variable name?)
-     * @param int $displaymode One of \core_comment\output\renderer::DISPLAYMODE_*
-     * TODO more options
+     * @param \stdClass|null $displayoptions Object containing display options.
+     * Please refer to the constructor of \core_comment\output\comments for documentation (linked below).
      * @return string HTML to display
      * @throws \coding_exception
+     * @see \core_comment\output\comments::__construct
      */
-    public function output(int $pagesize, int $displaymode) : string {
-        return $this->area->get_renderer()->render(new output\section($this, $displaymode));
+    public function output(\stdClass $displayoptions = null) : string {
+        return $this->get_area()->get_renderer()->render(new output\comments($this->get_area(), $this, $displayoptions));
     }
 
     /**

@@ -45,7 +45,8 @@ export default class Comment extends Component {
             showreplies: this.showReplies,
             highlightedreply: this.highlightedReply,
             showreplyform: this.showReplyForm,
-            showitemlink: !this.commentSectionEl.itemId && !this.replyToEl,
+            showitemlink: (this.commentSectionEl.itemId === null || this.commentSectionEl.itemId === undefined)
+                && !this.replyToEl,
             wasmodified: this.comment.timecreated !== this.comment.timemodified,
             section: this.section,
         }, this.comment);

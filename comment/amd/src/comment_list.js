@@ -53,6 +53,7 @@ export default class CommentList extends Component {
             count: comments.length,
             moreavailableabove: this.moreAvailableAbove,
             moreavailablebelow: this.moreAvailableBelow,
+            startatbottom: this.startAtBottom
         };
     }
 
@@ -216,17 +217,25 @@ export default class CommentList extends Component {
         }
     }
 
+    async onHighlightDismissed() {
+        this.highlightedComment = null;
+        this.highlightedReply = null;
+        await this.render();
+    }
+
     async postRender() {
-        let comments = this.comments;
-        if (this.highlightedComment && !comments.includes(this.highlightedComment)) {
-            comments = comments.concat(this.highlightedComment);
-        }
-        await Promise.all(comments.map((comment) => {
+        await Promise.all(this.comments.map((comment) => {
             return this.addChild(`[data-comment="${comment.id}"]`, 'comment', {
                 commentListEl: this,
                 comment: comment
             });
         }));
+        if (this.highlightedComment) {
+            await this.addChild(`[data-commenthighlight="${this.highlightedComment.id}"]`, 'commenthighlight', {
+                commentListEl: this,
+                comment: this.highlightedComment
+            });
+        }
 
         this.addListener(`[data-loadmoreabove="${this.uniqid}"]`, 'click', (e) => {
             this.loadMore(true).catch(Notification.exception);
@@ -238,15 +247,6 @@ export default class CommentList extends Component {
             e.preventDefault();
             return false;
         });
-        if (this.highlightedComment) {
-            this.addListener(`[data-dismisshighlightedcomment="${this.highlightedComment.id}"]`, 'click', (e) => {
-                this.highlightedComment = null;
-                this.highlightedReply = null;
-                this.render().catch(Notification.exception);
-                e.preventDefault();
-                return false;
-            });
-        }
 
         if (!this.replyToEl) {
             this.addIntersectionObserver();

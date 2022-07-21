@@ -15,27 +15,34 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template core_comment/comment_body
+    @template core_comment/comment_highlight
 
-    Moodle comment body component template.
+    Moodle comment highlight component template.
 
-    The purpose of this template is to render the body of a single comment, containing its content. It may also be used
-    to display a preview of the content while it's being written.
+    The purpose of this template is to render a highlighted comment as part of a comment list.
 
     Classes required for JS:
     * none
 
     Data attributes required for JS:
-    * none
+    * data-comment Specifies the id of the comment to be inserted in the element
 
     Context variables required for this template:
-    * Comment as exported by core_comment\external\comment_exporter.php
+    * Highlighted comment as exported by core_comment\external\comment_exporter.php
 
     Example context (json):
     {
         // TODO fill with example comment
     }
 }}
-<div class="core_comment_comment_body">
-    <div class="comment-content">{{{content}}}</div>
+<div class="core_comment_comment_highlight {{#replyto}}reply{{/replyto}}">
+        {{^replyto}}{{#str}} highlightedcomment, core_comment {{/str}}{{/replyto}}
+        {{#replyto}}{{#str}} highlightedreply, core_comment {{/str}}{{/replyto}}
+        <div data-comment="{{id}}">
+        </div>
+        {{^replyto}}
+            <a class="btn btn-secondary" href="#" data-dismisshighlightedcomment="{{id}}">
+                {{#str}} dismisshighlightedcomment, core_comment {{/str}}
+            </a>
+        {{/replyto}}
 </div>

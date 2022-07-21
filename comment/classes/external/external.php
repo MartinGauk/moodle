@@ -224,7 +224,7 @@ class external extends \external_api {
 
         $renderoptions = [];
         if ($areaobj) {
-            $areaobj->get_area_render_options();
+            $renderoptions = $areaobj->get_area_render_options();
             array_walk($renderoptions, function (&$value, $key) {
                 $value = ['key' => $key, 'value' => $value];
             });

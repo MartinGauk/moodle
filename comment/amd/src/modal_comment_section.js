@@ -19,8 +19,8 @@
  * @copyright  2021 TU Berlin
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['core_comment/comments', 'core/modal', 'core/modal_registry'],
-    function(Comments, Modal, ModalRegistry) {
+define(['core_comment/comments', 'core/modal', 'core/modal_registry', 'core/notification'],
+    function(Comments, Modal, ModalRegistry, Notification) {
 
         let registered = false;
 
@@ -59,7 +59,7 @@ define(['core_comment/comments', 'core/modal', 'core/modal_registry'],
             const el = this.getBody().find('[data-commentsection]')[0];
             Comments.initCommentSection(el, Object.assign({
                 commentFormOnCancel: (() => this.hide())
-            }, this.getOptions()));
+            }, this.getOptions())).catch((e) => Notification.exception(e));
             Modal.prototype.show.call(this);
         };
 

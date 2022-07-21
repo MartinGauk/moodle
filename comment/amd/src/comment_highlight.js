@@ -13,7 +13,7 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
- * Comment item link module.
+ * Comment highlight module.
  *
  * @module     core_comment/comments
  * @copyright  2021 TU Berlin
@@ -21,19 +21,31 @@
  */
 
 import Component from 'core_comment/component';
+import Notification from 'core/notification';
 
-export default class CommentItemLink extends Component {
+export default class CommentHighlight extends Component {
 
     constructor(el, parent, options = {}) {
-        super('commentitemlink', el, parent);
-        this.commentEl = options.commentEl;
+        super('commenthighlight', el, parent);
+        this.commentListEl = options.commentListEl;
+        this.comment = options.comment;
     }
 
     async getContext() {
-        return Object.assign({},
-            this.commentEl.comment,
-            {
-                section: this.commentEl.section
-            });
+        return this.comment;
     }
+
+    async postRender() {
+        await this.addChild(`[data-comment="${this.comment.id}"]`, 'comment', {
+            commentListEl: this.commentListEl,
+            comment: this.comment
+        });
+
+        this.addListener(`[data-dismisshighlightedcomment="${this.comment.id}"]`, 'click', (e) => {
+            this.commentListEl.onHighlightDismissed().catch(Notification.exception);
+            e.preventDefault();
+            return false;
+        });
+    }
+
 }

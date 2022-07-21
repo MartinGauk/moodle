@@ -17,7 +17,7 @@
 {{!
     @template core_comment/comment_list
 
-    Moodle comment list template.
+    Moodle comment list component template.
 
     The purpose of this template is to render a list of comments and their replies.
 
@@ -35,6 +35,7 @@
     * count Size of comments array
     * moreavailablebefore Boolean specifying whether there are more comments available in this list before the first
     * moreavailableafter Boolean specifying whether there are more comments available in this list after the last
+    * startatbottom Boolean specifying whether the comment list is displayed bottom-first
 
     Example context (json):
     {
@@ -45,31 +46,24 @@
         "count": 1,
         "moreavailablebefore": false,
         "moreavailableafter": true,
+        "startatbottom": false
     }
 }}
-<div class="core_comment_comment_list {{#replyto}}replies{{/replyto}}">
-    {{#highlightedcomment}}
-        <div class="highlighted-comment">
-            {{^replyto}}{{#str}} highlightedcomment, core_comment {{/str}}{{/replyto}}
-            {{#replyto}}{{#str}} highlightedreply, core_comment {{/str}}{{/replyto}}
-            <div data-comment="{{id}}">
-            </div>
-            {{^replyto}}
-                <a class="btn btn-secondary" href="#" data-dismisshighlightedcomment="{{id}}">
-                    {{#str}} dismisshighlightedcomment, core_comment {{/str}}
-                </a>
-            {{/replyto}}
-        </div>
-    {{/highlightedcomment}}
+<div class="core_comment_comment_list{{#replyto}} replies{{/replyto}}{{#startatbottom}} start-at-bottom{{/startatbottom}}">
+    {{^startatbottom}}{{#highlightedcomment}}
+        <div data-commenthighlight="{{id}}"></div>
+    {{/highlightedcomment}}{{/startatbottom}}
     {{#moreavailableabove}}
         <div class="my-3">
             <a href="#" data-loadmoreabove="{{uniqid}}">{{#str}} loadmore, core_comment {{/str}}</a>
         </div>
     {{/moreavailableabove}}
-    {{#comments}}
-        <div data-comment="{{id}}">
-        </div>
-    {{/comments}}
+    <div class="comment-list-comments">
+        {{#comments}}
+            <div data-comment="{{id}}">
+            </div>
+        {{/comments}}
+    </div>
     {{^comments}}{{^highlightedcomment}}
         {{#str}} nocomments, core_comment {{/str}}
     {{/highlightedcomment}}{{/comments}}
@@ -78,4 +72,7 @@
             <a href="#" data-loadmorebelow="{{uniqid}}">{{#str}} loadmore, core_comment {{/str}}</a>
         </div>
     {{/moreavailablebelow}}
+    {{#startatbottom}}{{#highlightedcomment}}
+        <div data-commenthighlight="{{id}}"></div>
+    {{/highlightedcomment}}{{/startatbottom}}
 </div>

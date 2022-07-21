@@ -1,13 +1,12 @@
 .core_comment_comment_section {
 
-    .comment-section-form {
-        margin-bottom: 2rem;
-    }
-
     .comment-section-list {
         overflow-y: auto;
         display: flex;
         flex-flow: column;
+    }
+    .comment-section-form {
+        margin: 0 0 1em 0;
     }
 
     &.start-at-bottom {
@@ -15,8 +14,7 @@
             flex-flow: column-reverse;
         }
         .comment-section-form {
-            margin-top: .5rem;
-            margin-bottom: 0;
+            margin: .5em 0 0 0;
         }
     }
 
@@ -27,7 +25,6 @@
 
         .comment-section-list {
             flex: 1 1 1px;
-            overflow-y: auto;
         }
 
         .comment-section-form {
@@ -76,14 +73,30 @@
 }
 
 .core_comment_comment_list {
+
     .core_comment_comment {
         margin: 2em 0 2em 0;
     }
-    .highlighted-comment .core_comment_comment {
-        margin: .5em 0 1em 0;
+
+    .comment-list-comments {
+        margin: -1em 0 -1em 0;
+    }
+
+    .core_comment_comment_highlight {
+        margin: 2em 0 0 0;
+
+        .core_comment_comment {
+            margin: .5em 0 1em 0;
+        }
 
         .core_comment_comment_list.replies {
             margin-bottom: -1em;
+        }
+    }
+
+    &.start-at-bottom {
+        .core_comment_comment_highlight {
+            margin: 0 0 2em 0;
         }
     }
 

@@ -15,9 +15,9 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template core_comment/comment_body
+    @template core_comment/comment_header
 
-    Moodle comment header template.
+    Moodle comment header component template.
 
     The purpose of this template is to render the header of a single comment.
 
@@ -45,7 +45,7 @@
     }
 }}
 <div class="core_comment_comment_header">
-    <span class="comment-header-left">
+    <span class="comment-header-left text-muted">
         <span class="comment-author">
             {{#profileurl}}
                 <a href="{{profileurl}}">{{fullname}}</a>

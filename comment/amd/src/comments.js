@@ -41,17 +41,17 @@ export const init = async() => {
             pageSize: el.dataset.pagesize || 10
         };
         if ('modal' in el.dataset) {
-            await initCommentModal(options, el);
+            await initCommentModal(el, options);
         } else {
             await initCommentSection(el, options);
         }
     }
 };
 
-export const initCommentModal = async(options, triggerEl) => {
-    const title = options.itemId ?
-        await Str.get_string('comments', 'core') :
-        await Str.get_string('recentcomments', 'core_comment');
+export const initCommentModal = async(triggerEl, options) => {
+    const title = options.itemId === null || options.itemId === undefined ?
+        await Str.get_string('recentcomments', 'core_comment') :
+        await Str.get_string('comments', 'core');
     return await new Promise((resolve) => {
         require(['jquery', 'core/modal_factory', 'core_comment/modal_comment_section'],
             function($, ModalFactory, ModalCommentSection) {
@@ -98,18 +98,18 @@ const preloadHighlightedComment = async(options) => {
 
     if (highlightedCommentId) {
         const response = await getComment(highlightedCommentId, true);
-        if (!response.comments) {
+        if (!response.comments.length) {
             return;
         }
         const highlightedComment = response.comments[0];
 
         if (highlightedComment.contextid !== options.contextId ||
             highlightedComment.commentarea !== options.commentArea ||
-            (options.itemId && highlightedComment.itemid !== options.itemId)) {
+            (options.itemId !== null && options.itemId !== undefined && options.itemId !== highlightedComment.itemid)) {
             return;
         }
 
-        if (response.parents) {
+        if (response.parents.length) {
             options.highlightedComment = response.parents[0];
             options.highlightedReply = highlightedComment;
         } else {
@@ -145,7 +145,7 @@ const preloadComments = async(options, renderOptions) => {
     }
 
     options.sections = response.commentsections;
-    if (options.itemId) {
+    if (options.itemId !== null && options.itemId !== undefined) {
         options.section = response.commentsections[0];
     }
 
@@ -184,13 +184,15 @@ const createCommentSection = async(el, options) => {
         commentitemlinktemplate: 'core_comment/comment_item_link',
         commentheadertemplate: 'core_comment/comment_header',
         commentbodytemplate: 'core_comment/comment_body',
+        commenthighlighttemplate: 'core_comment/comment_highlight',
         commentsectionclass: 'core_comment/comment_section',
         commentlistclass: 'core_comment/comment_list',
         commentformclass: 'core_comment/comment_form',
         commentclass: 'core_comment/comment',
         commentitemlinkclass: 'core_comment/comment_item_link',
         commentheaderclass: 'core_comment/comment_header',
-        commentbodyclass: 'core_comment/comment_body'
+        commentbodyclass: 'core_comment/comment_body',
+        commenthighlightclass: 'core_comment/comment_highlight'
     };
 
     await Promise.all([
