@@ -91,7 +91,7 @@ class comments implements \renderable, \templatable {
      * @return array data ready for use in a mustache template
      */
     public function export_for_template(\renderer_base $renderer) : array {
-        $o = $this->displayoptions;
+        $o = $this->displayoptions ?? new \stdClass();
         $modal = !property_exists($o, 'displaymode') || $o->displaymode === renderer::DISPLAYMODE_MODAL;
         $modalbuttontext = $modal ? $this->getModalButtonText() : null;
         $fillheight = property_exists($o, 'fillheight') ? $o->fillheight : $modal;

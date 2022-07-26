@@ -190,6 +190,9 @@ class external extends \external_api {
             }
         }
 
+        // Export comments and sections.
+        $renderer = $PAGE->get_renderer('core');
+
         // Include parents.
         $parents = [];
         if ($params['includeparents']) {
@@ -199,12 +202,10 @@ class external extends \external_api {
                     continue;
                 }
                 $parent = $comment->get_replyto();
-                $parents[$parentid] = $parent;
+                $parentexporter = new comment_exporter($parent);
+                $parents[$parentid] = $parentexporter->export($renderer);
             }
         }
-
-        // Export comments and sections.
-        $renderer = $PAGE->get_renderer('core');
 
         $exportedcomments = [];
         foreach ($comments as $comment) {
@@ -241,7 +242,7 @@ class external extends \external_api {
             'warnings' => $warnings
         );
         if ($params['includeparents']) {
-            $result['parents'] = $parents;
+            $result['parents'] = array_values($parents);
         }
         return $result;
     }

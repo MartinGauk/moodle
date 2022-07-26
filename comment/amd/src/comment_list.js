@@ -33,8 +33,8 @@ export default class CommentList extends Component {
         this.replyToEl = options.replyToEl || null;
         this.pageSize = options.pageSize || 10;
         this.sortDirection = (options.sortDirection || 'DESC').toUpperCase();
-        this.startAtBottom = options.startAtBottom;
-        this.moreAvailableAbove = 'moreAvailableAbove' in options ? options.moreAvailableAbove : !!this.startAtBottom;
+        this.startAtBottom = !!options.startAtBottom;
+        this.moreAvailableAbove = 'moreAvailableAbove' in options ? options.moreAvailableAbove : this.startAtBottom;
         this.moreAvailableBelow = 'moreAvailableBelow' in options ? options.moreAvailableBelow : !this.startAtBottom;
         this.comments = options.preLoadedComments || [];
         this.highlightedComment = options.highlightedComment;
@@ -59,7 +59,7 @@ export default class CommentList extends Component {
 
     async loadMore(above = null) {
         if (above === null) {
-            above = this.startAtBottom;
+            above = !!this.startAtBottom;
         }
 
         // Start loading animation. Will stop automatically when the component is rendered again.

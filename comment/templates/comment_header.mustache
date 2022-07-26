@@ -45,7 +45,7 @@
     }
 }}
 <div class="core_comment_comment_header">
-    <span class="comment-header-left text-muted">
+    <span class="comment-header-left">
         <span class="comment-author">
             {{#profileurl}}
                 <a href="{{profileurl}}">{{fullname}}</a>
@@ -54,7 +54,6 @@
                 <span class="text-danger">{{fullname}}</span>
             {{/profileurl}}
         </span>
-        -
         <span class="comment-timecreated">{{timecreatedtext}}</span>
         {{#wasmodified}}
             <span class="comment-modified">

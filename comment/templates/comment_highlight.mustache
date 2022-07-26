@@ -35,14 +35,14 @@
         // TODO fill with example comment
     }
 }}
-<div class="core_comment_comment_highlight {{#replyto}}reply{{/replyto}}">
-        {{^replyto}}{{#str}} highlightedcomment, core_comment {{/str}}{{/replyto}}
-        {{#replyto}}{{#str}} highlightedreply, core_comment {{/str}}{{/replyto}}
+<div class="core_comment_comment_highlight {{#replytoid}}reply{{/replytoid}}">
+        {{^replytoid}}{{#str}} highlightedcomment, core_comment {{/str}}{{/replytoid}}
+        {{#replytoid}}{{#str}} highlightedreply, core_comment {{/str}}{{/replytoid}}
         <div data-comment="{{id}}">
         </div>
-        {{^replyto}}
+        {{^replytoid}}
             <a class="btn btn-secondary" href="#" data-dismisshighlightedcomment="{{id}}">
                 {{#str}} dismisshighlightedcomment, core_comment {{/str}}
             </a>
-        {{/replyto}}
+        {{/replytoid}}
 </div>

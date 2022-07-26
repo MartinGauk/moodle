@@ -58,12 +58,14 @@
             <a href="#" data-loadmoreabove="{{uniqid}}">{{#str}} loadmore, core_comment {{/str}}</a>
         </div>
     {{/moreavailableabove}}
-    <div class="comment-list-comments">
-        {{#comments}}
-            <div data-comment="{{id}}">
-            </div>
-        {{/comments}}
-    </div>
+    {{#count}}
+        <div class="comment-list-comments">
+            {{#comments}}
+                <div data-comment="{{id}}">
+                </div>
+            {{/comments}}
+        </div>
+    {{/count}}
     {{^comments}}{{^highlightedcomment}}
         {{#str}} nocomments, core_comment {{/str}}
     {{/highlightedcomment}}{{/comments}}
