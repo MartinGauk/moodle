@@ -145,7 +145,7 @@
     }
 }
 
-.core_comment_comment_body {
+.core_comment_comment_content {
     overflow-x: auto;
 
     .comment-content {
@@ -153,8 +153,27 @@
     }
 }
 
-.core_comment_comment_form .comment-form-controls input {
-    margin: 1em .5em 0 0;
+.core_comment_comment_form {
+    &.update-existing {
+        margin-bottom: .5em;
+    }
+    .comment-form-controls input {
+        margin: 1em .5em 0 0;
+    }
+}
+
+.show-less {
+    position: relative;
+    overflow-y: hidden;
+
+    .show-less-gradient {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2em;
+        background: linear-gradient(to bottom, #FFFFFF00 0%, #FFFFFFFF 100%);
+    }
 }
 
 @media (max-width: 495px) {

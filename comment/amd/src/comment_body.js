@@ -27,9 +27,74 @@ export default class CommentBody extends Component {
     constructor(el, parent, options = {}) {
         super('commentbody', el, parent);
         this.commentEl = options.commentEl;
+        this.comment = options.commentEl.comment;
+        this.height = 110;
+        this.expanded = false;
     }
 
     async getContext() {
-        return this.commentEl.comment;
+        return this.comment;
+    }
+
+    registerObserver() {
+        if (!window.MutationObserver) {
+            return;
+        }
+        this.observer = new MutationObserver(() => this.update);
+        this.observer.observe(this.contentElement, {
+            attributes: true,
+            childList: true,
+            characterData: true,
+            subtree: true
+        });
+    }
+
+    update() {
+        const collapsible = this.contentElement.clientHeight > this.height;
+        this.gradientElement.style.display = (collapsible && !this.expanded) ? 'block' : 'none';
+        this.expandElement.style.display = (collapsible && !this.expanded) ? 'inline-block' : 'none';
+        this.collapseElement.style.display = (collapsible && this.expanded) ? 'inline-block' : 'none';
+        this.showlessElement.style.maxHeight = (collapsible && !this.expanded) ? this.height + 'px' : 'initial';
+    }
+
+    expand() {
+        this.expanded = true;
+        this.update();
+    }
+
+    collapse() {
+        this.expanded = false;
+        this.update();
+    }
+
+    async postRender() {
+        await this.addChild(`[data-commentcontent="${this.comment.id}"]`, 'commentcontent', {
+            commentEl: this.commentEl
+        }, true, false);
+
+        this.addListener(`[data-showless-expand="${this.uniqid}"]`, 'click', (e) => {
+            this.expand();
+            e.preventDefault();
+            return false;
+        });
+        this.addListener(`[data-showless-collapse="${this.uniqid}"]`, 'click', (e) => {
+            this.collapse();
+            e.preventDefault();
+            return false;
+        });
+
+        this.showlessElement = this.el.querySelector(`[data-showless="${this.uniqid}"]`);
+        this.contentElement = this.el.querySelector(`[data-commentcontent="${this.comment.id}"]`);
+        this.gradientElement = this.el.querySelector(`[data-showless-gradient="${this.uniqid}"]`);
+        this.expandElement = this.el.querySelector(`[data-showless-expand="${this.uniqid}"]`);
+        this.collapseElement = this.el.querySelector(`[data-showless-collapse="${this.uniqid}"]`);
+
+        this.update();
+        this.registerObserver();
+    }
+
+    async dispose() {
+        this.observer.disconnect();
+        await super.dispose();
     }
 }

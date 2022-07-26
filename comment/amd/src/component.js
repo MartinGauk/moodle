@@ -96,10 +96,10 @@ export default class Component {
         });
     }
 
-    async addChild(selector, childName, options = {}, render = true) {
+    async addChild(selector, childName, options = {}, render = true, cached = true) {
         const childEl = this.el.querySelector(selector);
         if (childEl) {
-            if (this.children[selector]) {
+            if (cached && this.children[selector]) {
                 const child = this.children[selector];
                 childEl.replaceWith(child.el);
                 return child;

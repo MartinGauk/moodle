@@ -184,6 +184,7 @@ const createCommentSection = async(el, options) => {
         commentitemlinktemplate: 'core_comment/comment_item_link',
         commentheadertemplate: 'core_comment/comment_header',
         commentbodytemplate: 'core_comment/comment_body',
+        commentcontenttemplate: 'core_comment/comment_content',
         commenthighlighttemplate: 'core_comment/comment_highlight',
         commentsectionclass: 'core_comment/comment_section',
         commentlistclass: 'core_comment/comment_list',
@@ -192,6 +193,7 @@ const createCommentSection = async(el, options) => {
         commentitemlinkclass: 'core_comment/comment_item_link',
         commentheaderclass: 'core_comment/comment_header',
         commentbodyclass: 'core_comment/comment_body',
+        commentcontentclass: 'core_comment/comment_content',
         commenthighlightclass: 'core_comment/comment_highlight'
     };
 

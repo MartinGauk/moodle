@@ -15,17 +15,18 @@
     along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 }}
 {{!
-    @template core_comment/comment_body
+    @template core_comment/comment_content
 
-    Moodle comment body component template.
+    Moodle comment content component template.
 
-    The purpose of this template is to render the body of a single comment, containing its content.
+    The purpose of this template is to render the content of a single comment. It may also be used
+    to display a preview of the content while it's being written.
 
     Classes required for JS:
     * none
 
     Data attributes required for JS:
-    * data-commentcontent
+    * none
 
     Context variables required for this template:
     * Comment as exported by core_comment\external\comment_exporter.php
@@ -35,16 +36,6 @@
         // TODO fill with example comment
     }
 }}
-<div class="core_comment_comment_body">
-    <div class="show-less" data-showless="{{uniqid}}">
-        <div data-commentcontent="{{id}}">
-        </div>
-        <div data-showless-gradient="{{uniqid}}" class="show-less-gradient"></div>
-    </div>
-    <a href="#" data-showless-expand="{{uniqid}}">
-        {{#str}} showmore, core_comment {{/str}}
-    </a>
-    <a href="#" data-showless-collapse="{{uniqid}}">
-        {{#str}} showless, core_comment {{/str}}
-    </a>
+<div class="core_comment_comment_content">
+    <div class="comment-content">{{{content}}}</div>
 </div>
