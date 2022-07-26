@@ -65,22 +65,20 @@ class block_comments extends block_base {
         }
         list($context, $course, $cm) = get_context_info_array($this->page->context->id);
 
-        $args = new stdClass;
-        $args->context   = $this->page->context;
-        $args->course    = $course;
-        $args->area      = 'page_comments';
-        $args->itemid    = 0;
-        $args->component = 'block_comments';
-        $args->linktext  = get_string('showcomments');
-        $args->notoggle  = true;
-        $args->autostart = true;
-        $args->displaycancel = false;
-        $comment = new comment($args);
-        $comment->set_view_permission(true);
-        $comment->set_fullwidth();
+        $section = \core_comment\manager::get_comment_section(
+            'block_comments',
+            'page_comments',
+            $this->page->context,
+            0
+        );
+
+        $options = new \stdClass();
+        $options->displaymode = \core_comment\output\renderer::DISPLAYMODE_INLINE;
+        $options->maxlistheight = 300;
+        $options->startatbottom = true;
 
         $this->content = new stdClass();
-        $this->content->text = $comment->output(true);
+        $this->content->text = $section->output($options);
         $this->content->footer = '';
         return $this->content;
     }
