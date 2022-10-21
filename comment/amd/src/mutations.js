@@ -57,9 +57,12 @@ export default class {
                 return;
             }
 
+            stateManager.setReadOnly(false);
+
+            highlightedComment = this._initComment(stateManager, highlightedComment);
             if (response.parents.length) {
                 highlightedReply = highlightedComment;
-                highlightedComment = response.parents[0];
+                highlightedComment = this._initComment(stateManager, response.parents[0]);
             }
         } else if (highlightedComment.replytoid != undefined) {
             highlightedReply = highlightedComment;
@@ -68,9 +71,8 @@ export default class {
 
         stateManager.setReadOnly(false);
 
-        state.comments.add(highlightedComment);
         if (highlightedReply) {
-            state.comments.add(highlightedReply);
+            highlightedComment.showreplies = true;
             state.highlight.commentId = highlightedComment.id;
             state.highlight.replyId = highlightedReply.id;
         } else {
@@ -80,26 +82,50 @@ export default class {
         stateManager.setReadOnly(true);
     }
 
-    _initSection(loadedSection) {
-        return Object.assign({id: loadedSection.itemid}, loadedSection);
+    _initSection(stateManager, loadedSection) {
+        const state = stateManager.state;
+        const section = Object.assign({id: loadedSection.itemid}, loadedSection);
+        state.sections.add(section);
+        return section;
     }
 
-    _initComment(loadedComment) {
-        return Object.assign({
+    _initComment(stateManager, loadedComment) {
+        const state = stateManager.state;
+
+        if (state.comments.has(loadedComment.id)) {
+            return this._updateComment(stateManager, loadedComment);
+        }
+
+        const comment = Object.assign({
             isediting: false,
             showreplies: false,
             showreplyform: false,
             expanded: false
         }, loadedComment);
+        state.comments.add(comment);
+
+        state.commentReplies.add({
+            id: comment.id,
+            comments: [],
+            pagesize: 5,
+            sortdirection: 'ASC',
+            startatbottom: false,
+            moreavailableabove: false,
+            moreavailablebelow: true,
+            loadingmoreabove: false,
+            loadingmorebelow: false,
+        });
+        return comment;
     }
 
-    _updateComment(comment, updatedComment) {
-        Object.assign(comment, updatedComment, {isediting: false});
+    _updateComment(stateManager, updatedComment) {
+        const state = stateManager.state;
+        return Object.assign(state.comments.get(updatedComment.id), updatedComment, {isediting: false});
     }
 
     async _loadMore(stateManager, replyToId = null, above = null) {
         const state = stateManager.state;
-        const commentList = replyToId === null ? state.commentList : state.commentReplies[replyToId];
+        const commentList = replyToId === null ? state.commentList : state.commentReplies.get(replyToId);
         const comments = commentList.comments.map(c => state.comments.get(c.id));
 
         if (above === null) {
@@ -112,7 +138,6 @@ export default class {
         }
 
         stateManager.setReadOnly(true);
-        stateManager.setReadOnly(false);
 
         // We fetch comments starting from the timecreated of the topmost (or bottommost) comment. In order to ensure
         // that we fetch a complete page anyway, we count the number of already loaded comments with that exact
@@ -154,6 +179,8 @@ export default class {
             fetchCount, sortDirection, replyToId, timeFrom, timeTo
         );
 
+        stateManager.setReadOnly(false);
+
         // Save new comments.
         const moreAvailable = result.comments.length === fetchCount;
         let newComments;
@@ -168,18 +195,9 @@ export default class {
         }
 
         // Initialize comments and sections.
-        newComments = newComments.map(c => this._initComment(c));
-        const sections = result.commentsections.map(s => this._initSection(s));
+        newComments.forEach(c => this._initComment(stateManager, c));
+        const sections = result.commentsections.map(s => this._initSection(stateManager, s));
 
-        // Save new comments.
-        newComments.forEach(c => {
-            state.comments.add(c);
-        });
-
-        // Save new comment sections.
-        sections.forEach(s => {
-            state.sections.add(s);
-        });
         if (this.options.itemId != undefined) {
             state.section = sections[0];
         }
@@ -194,6 +212,9 @@ export default class {
     async _onCommentPosted(stateManager, comment) {
         const state = stateManager.state;
         const commentList = comment.replytoid == undefined ? state.commentList : state.commentReplies.get(comment.replytoid);
+        if (!commentList) {
+            return;
+        }
         if (commentList.sortdirection === 'DESC') {
             if (commentList.moreavailableabove) {
                 commentList.comments = [{id: comment.id}];
@@ -221,38 +242,19 @@ export default class {
 
         if (state.comments.has(savedComment.id)) {
             // Existing comment updated.
-            this._updateComment(state.comments.get(savedComment.id), savedComment);
+            this._updateComment(stateManager, savedComment);
 
         } else {
             // New comment posted.
-            const newComment = this._initComment(savedComment);
-            state.comments.add(newComment);
+            const newComment = this._initComment(stateManager, savedComment);
 
-            if (newComment.replytoid == undefined) {
-                state.commentReplies.add({
-                    id: savedComment.id,
-                    comments: [],
-                    pagesize: 5,
-                    sortdirection: 'ASC',
-                    startatbottom: false,
-                    moreavailableabove: false,
-                    moreavailablebelow: true,
-                    loadingmoreabove: false,
-                    loadingmorebelow: false,
-                });
-                await this._onCommentPosted(stateManager, newComment);
-
-            } else {
-                if (state.comments.has(newComment.replytoid)) {
-                    const replyTo = state.comments.get(newComment.replytoid);
-                    replyTo.replies++;
-                    replyTo.showreplies = true;
-                    replyTo.showreplyform = false;
-                }
-                if (state.commentReplies.has(newComment.replytoid)) {
-                    await this._onCommentPosted(stateManager, newComment);
-                }
+            if (newComment.replytoid != undefined && state.comments.has(newComment.replytoid)) {
+                const replyTo = state.comments.get(newComment.replytoid);
+                replyTo.replies++;
+                replyTo.showreplies = true;
+                replyTo.showreplyform = false;
             }
+            await this._onCommentPosted(stateManager, newComment);
         }
 
         stateManager.setReadOnly(true);

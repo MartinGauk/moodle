@@ -46,7 +46,7 @@ export default class CommentHighlight extends Component {
 
     async addListeners() {
         this.addListener(this.selectors.DISMISS_HIGHLIGHTED_COMMENT, 'click', (e) => {
-            this.reactive.dispatch('setHighlightedComment', [null]).catch(Notification.exception);
+            this.reactive.dispatch('setHighlightedComment', null).catch(Notification.exception);
             e.preventDefault();
             return false;
         });

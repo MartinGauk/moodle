@@ -38,6 +38,7 @@ export default class CommentList extends Component {
     getWatchers() {
         return [
             {watch: `commentList:updated`, handler: this.render},
+            {watch: `highlight.commentId:updated`, handler: this.render},
         ];
     }
 
@@ -50,7 +51,8 @@ export default class CommentList extends Component {
     }
 
     getHighlightedComment() {
-        return this.getState().comments.get(this.getState().highlight.commentId);
+        const highlightedCommentId = this.getState().highlight.commentId;
+        return highlightedCommentId !== null ? this.getState().comments.get(highlightedCommentId) : null;
     }
 
     async getContext() {

@@ -36,6 +36,11 @@ export default class CommentReplies extends CommentList {
         const replyToId = this.element.dataset.replytoid;
         return [
             {watch: `commentReplies[${replyToId}]:updated`, handler: this.render},
+            {watch: `highlight.replyId:updated`, handler: async() => {
+                if (this._hasHighlight) {
+                    await this.render();
+                }
+            }},
         ];
     }
 
@@ -44,9 +49,9 @@ export default class CommentReplies extends CommentList {
     }
 
     getHighlightedComment() {
-        if (this.getState().highlight.replyId == undefined ||
+        if (this.getState().highlight.replyId === null ||
             this.replyToId !== this.getState().highlight.commentId) {
-            return undefined;
+            return null;
         }
         return this.getState().comments.get(this.getState().highlight.replyId);
     }
@@ -67,5 +72,9 @@ export default class CommentReplies extends CommentList {
 
     async loadMore(above = null) {
         await this.reactive.dispatch('loadMore', this.replyToId, above);
+    }
+
+    async postRender() {
+        this._hasHighlight = !!this.getHighlightedComment();
     }
 }
