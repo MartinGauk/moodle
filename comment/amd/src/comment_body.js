@@ -24,16 +24,39 @@ import Component from 'core_comment/component';
 
 export default class CommentBody extends Component {
 
-    constructor(el, parent, options = {}) {
-        super('commentbody', el, parent);
-        this.commentEl = options.commentEl;
-        this.comment = options.commentEl.comment;
-        this.height = 110;
-        this.expanded = false;
+    constructor(descriptor) {
+        super(descriptor);
+        this.height = Number(this.element.dataset.height) || 110;
+        this.commentId = Number(this.element.dataset.commentid);
+        if (!Number.isInteger(this.commentId)) {
+            throw new Error('commentId missing in dataset');
+        }
+    }
+
+    create() {
+        this.selectors = {
+            COMMENT_CONTENT: `[data-for="commentcontent"]`,
+            SHOW_LESS: `[data-for="showless"]`,
+            SHOW_LESS_GRADIENT: `[data-for="showless-gradient"]`,
+            SHOW_LESS_EXPAND: `[data-for="showless-expand"]`,
+            SHOW_LESS_COLLAPSE: `[data-for="showless-collapse"]`
+        };
+    }
+
+    getWatchers() {
+        const commentId = this.element.dataset.commentid;
+        return [
+            {watch: `comments[${commentId}].expanded:updated`, handler: this.update},
+            {watch: `comments[${commentId}].content:updated`, handler: this.update},
+        ];
+    }
+
+    getComment() {
+        return this.getState().comments.get(this.commentId);
     }
 
     async getContext() {
-        return this.comment;
+        return this.getComment();
     }
 
     registerObserver() {
@@ -41,7 +64,7 @@ export default class CommentBody extends Component {
             return;
         }
         this.observer = new MutationObserver(() => this.update);
-        this.observer.observe(this.contentElement, {
+        this.observer.observe(this.getElement(this.selectors.COMMENT_CONTENT), {
             attributes: true,
             childList: true,
             characterData: true,
@@ -50,51 +73,38 @@ export default class CommentBody extends Component {
     }
 
     update() {
-        const collapsible = this.contentElement.clientHeight > this.height;
-        this.gradientElement.style.display = (collapsible && !this.expanded) ? 'block' : 'none';
-        this.expandElement.style.display = (collapsible && !this.expanded) ? 'inline-block' : 'none';
-        this.collapseElement.style.display = (collapsible && this.expanded) ? 'inline-block' : 'none';
-        this.showlessElement.style.maxHeight = (collapsible && !this.expanded) ? this.height + 'px' : 'initial';
+        const expanded = this.getComment().expanded;
+        const collapsible = this.getElement(this.selectors.COMMENT_CONTENT).clientHeight > this.height;
+        this.getElement(this.selectors.SHOW_LESS_GRADIENT).style.display = (collapsible && !expanded) ? 'block' : 'none';
+        this.getElement(this.selectors.SHOW_LESS_EXPAND).style.display = (collapsible && !expanded) ? 'inline-block' : 'none';
+        this.getElement(this.selectors.SHOW_LESS_COLLAPSE).style.display = (collapsible && expanded) ? 'inline-block' : 'none';
+        this.getElement(this.selectors.SHOW_LESS).style.maxHeight = (collapsible && !expanded) ? this.height + 'px' : 'initial';
     }
 
-    expand() {
-        this.expanded = true;
-        this.update();
+    async addListeners() {
+        this.addListener(this.selectors.SHOW_LESS_EXPAND, 'click', (e) => {
+            this.reactive.dispatch('setCommentExpanded', this.commentId, true);
+            e.preventDefault();
+            return false;
+        });
+        this.addListener(this.selectors.SHOW_LESS_COLLAPSE, 'click', (e) => {
+            this.reactive.dispatch('setCommentExpanded', this.commentId, false);
+            e.preventDefault();
+            return false;
+        });
     }
 
-    collapse() {
-        this.expanded = false;
-        this.update();
+    async addChildren() {
+        await this.addChild(this.selectors.COMMENT_CONTENT, 'commentcontent');
     }
 
     async postRender() {
-        await this.addChild(`[data-commentcontent="${this.comment.id}"]`, 'commentcontent', {
-            commentEl: this.commentEl
-        }, true, false);
-
-        this.addListener(`[data-showless-expand="${this.uniqid}"]`, 'click', (e) => {
-            this.expand();
-            e.preventDefault();
-            return false;
-        });
-        this.addListener(`[data-showless-collapse="${this.uniqid}"]`, 'click', (e) => {
-            this.collapse();
-            e.preventDefault();
-            return false;
-        });
-
-        this.showlessElement = this.el.querySelector(`[data-showless="${this.uniqid}"]`);
-        this.contentElement = this.el.querySelector(`[data-commentcontent="${this.comment.id}"]`);
-        this.gradientElement = this.el.querySelector(`[data-showless-gradient="${this.uniqid}"]`);
-        this.expandElement = this.el.querySelector(`[data-showless-expand="${this.uniqid}"]`);
-        this.collapseElement = this.el.querySelector(`[data-showless-collapse="${this.uniqid}"]`);
-
         this.update();
         this.registerObserver();
     }
 
-    async dispose() {
+    async destroy() {
         this.observer.disconnect();
-        await super.dispose();
+        await super.destroy();
     }
 }

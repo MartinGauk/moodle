@@ -25,7 +25,7 @@
     * none
 
     Data attributes required for JS:
-    * data-commentcontent
+    * none
 
     Context variables required for this template:
     * Comment as exported by core_comment\external\comment_exporter.php
@@ -36,15 +36,15 @@
     }
 }}
 <div class="core_comment_comment_body">
-    <div class="show-less" data-showless="{{uniqid}}">
-        <div data-commentcontent="{{id}}">
+    <div class="show-less" data-for="showless">
+        <div data-for="commentcontent" data-commentid="{{id}}">
         </div>
-        <div data-showless-gradient="{{uniqid}}" class="show-less-gradient"></div>
+        <div data-for="showless-gradient" class="show-less-gradient"></div>
     </div>
-    <a href="#" data-showless-expand="{{uniqid}}">
+    <a href="#" data-for="showless-expand">
         {{#str}} showmore, core_comment {{/str}}
     </a>
-    <a href="#" data-showless-collapse="{{uniqid}}">
+    <a href="#" data-for="showless-collapse">
         {{#str}} showless, core_comment {{/str}}
     </a>
 </div>

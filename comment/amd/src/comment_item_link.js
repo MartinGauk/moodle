@@ -24,16 +24,16 @@ import Component from 'core_comment/component';
 
 export default class CommentItemLink extends Component {
 
-    constructor(el, parent, options = {}) {
-        super('commentitemlink', el, parent);
-        this.commentEl = options.commentEl;
+    constructor(descriptor) {
+        super(descriptor);
+        this.commentId = Number(this.element.dataset.commentid);
+        if (!Number.isInteger(this.commentId)) {
+            throw new Error('commentId missing in dataset');
+        }
     }
 
     async getContext() {
-        return Object.assign({},
-            this.commentEl.comment,
-            {
-                section: this.commentEl.section
-            });
+        const comment = this.getState().comments.get(this.commentId);
+        return Object.assign({}, comment, {section: this.getState().sections.get(comment.itemid)});
     }
 }

@@ -25,13 +25,7 @@
     * none
 
     Data attributes required for JS:
-    * data-commentitemlink
-    * data-commentheader
-    * data-commentbody
-    * data-commenteditform
-    * data-highlightedreply
-    * data-commentreplies
-    * data-commentreplyform
+    * none
 
     Context variables required for this template:
     * isediting Boolean specifying whether the comment is being edited
@@ -39,8 +33,6 @@
     * showreplyform Boolean specifing whether the reply form is displayed
     * showsettings Boolean specifying whether the settings menu should be shown
     * showitemlink Boolean specifying whether a link to the context where the comment was posted should be shown
-    * wasmodified Boolean specifying whether this comment was modified
-    * highlightedreply Comment as exported by core_comment\external\comment_exporter.php
     * Comment as exported by core_comment\external\comment_exporter.php
 
     Example context (json):
@@ -49,15 +41,13 @@
         "showreplies": false,
         "showreplyform": false,
         "showitemlink": false,
-        "wasmodified": false,
-        "highlightedreply": // TODO fill with example comment
         // TODO fill with example comment
     }
 }}
 <div class="core_comment_comment {{#pseudonym}}pseudonymous{{/pseudonym}}">
     {{#showitemlink}}
         <div class="comment-item-link">
-            <div data-commentitemlink="{{id}}"></div>
+            <div data-for="commentitemlink" data-commentid="{{id}}"></div>
         </div>
     {{/showitemlink}}
     <div class="comment-row">
@@ -66,47 +56,42 @@
         </div>
         <div class="comment-container">
             <div class="comment-header">
-                <div data-commentheader="{{id}}"></div>
+                <div data-for="commentheader" data-commentid="{{id}}"></div>
             </div>
 
             <div class="comment-body">
                 {{#isediting}}
-                    <div data-commenteditform="{{id}}"></div>
+                    <div data-for="commenteditform" data-commentid="{{id}}"></div>
                 {{/isediting}}
                 {{^isediting}}
-                    <div data-commentbody="{{id}}"></div>
+                    <div data-for="commentbody" data-commentid="{{id}}"></div>
                 {{/isediting}}
             </div>
 
             <div class="comment-footer">
                 {{#canreply}}
-                    <a href="#" data-showreplyform="{{id}}">{{# str }} reply, core_comment {{/ str }}</a>
+                    <a href="#" data-for="showreplyform">{{# str }} reply, core_comment {{/ str }}</a>
                 {{/canreply}}
                 {{#replies}}
                     <span class="comment-replies-control">
                         {{^showreplies}}
-                            <a href="#" data-showreplies="{{id}}">▼ {{ replies }} {{# str }} nreplies, core_comment {{/ str }}</a>
+                            <a href="#" data-for="showreplies">▼ {{ replies }} {{# str }} nreplies, core_comment {{/ str }}</a>
                         {{/showreplies}}
                         {{#showreplies}}
-                            <a href="#" data-hidereplies="{{id}}">▲ {{ replies }} {{# str }} nreplies, core_comment {{/ str }}</a>
+                            <a href="#" data-for="hidereplies">▲ {{ replies }} {{# str }} nreplies, core_comment {{/ str }}</a>
                         {{/showreplies}}
                     </span>
                 {{/replies}}
             </div>
 
-            {{#highlightedreply}}
-                <div class="comment-replies-box">
-                    <div data-highlightedreply="{{id}}"></div>
-                </div>
-            {{/highlightedreply}}
             {{#showreplies}}
                 <div class="comment-replies-box">
-                    <div data-commentreplies="{{id}}"></div>
+                    <div data-for="commentreplies" data-replytoid="{{id}}"></div>
                 </div>
             {{/showreplies}}
             {{#showreplyform}}
                 <div class="comment-reply-box">
-                    <div data-commentreplyform="{{id}}"></div>
+                    <div data-for="commentreplyform" data-replytoid="{{id}}"></div>
                 </div>
             {{/showreplyform}}
         </div>

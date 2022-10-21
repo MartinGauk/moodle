@@ -22,147 +22,61 @@
 
 import Component from 'core_comment/component';
 import Comment from 'core_comment/comment';
-import * as Comments from 'core_comment/comments';
 import Notification from 'core/notification';
 
 export default class CommentList extends Component {
 
-    constructor(el, parent, options = {}) {
-        super('commentlist', el, parent);
-        this.commentSectionEl = options.commentSectionEl;
-        this.replyToEl = options.replyToEl || null;
-        this.pageSize = options.pageSize || 10;
-        this.sortDirection = (options.sortDirection || 'DESC').toUpperCase();
-        this.startAtBottom = !!options.startAtBottom;
-        this.moreAvailableAbove = 'moreAvailableAbove' in options ? options.moreAvailableAbove : this.startAtBottom;
-        this.moreAvailableBelow = 'moreAvailableBelow' in options ? options.moreAvailableBelow : !this.startAtBottom;
-        this.comments = options.preLoadedComments || [];
-        this.highlightedComment = options.highlightedComment;
-        this.highlightedReply = options.highlightedReply;
-    }
-
-    async getContext() {
-        let comments = this.comments;
-        if (this.highlightedComment) {
-            comments = comments.filter(c => c.id !== this.highlightedComment.id);
-        }
-        return {
-            replyto: this.replyToEl ? this.replyToEl.comment : null,
-            highlightedcomment: this.highlightedComment,
-            comments: comments,
-            count: comments.length,
-            moreavailableabove: this.moreAvailableAbove,
-            moreavailablebelow: this.moreAvailableBelow,
-            startatbottom: this.startAtBottom
+    create() {
+        this.selectors = {
+            LOAD_MORE_ABOVE: `[data-for="loadmoreabove"]`,
+            LOAD_MORE_BELOW: `[data-for="loadmorebelow"]`,
+            COMMENT: `[data-for="comment"]`,
+            COMMENT_HIGHLIGHT: `[data-for="commenthighlight"]`,
         };
     }
 
-    async loadMore(above = null) {
-        if (above === null) {
-            above = !!this.startAtBottom;
+    getWatchers() {
+        return [
+            {watch: `commentList:updated`, handler: this.render},
+        ];
+    }
+
+    getData() {
+        return this.getState().commentList;
+    }
+
+    getComments() {
+        return this.getData().comments;
+    }
+
+    getHighlightedComment() {
+        return this.getState().comments.get(this.getState().highlight.commentId);
+    }
+
+    async getContext() {
+        let comments = this.getComments();
+        const highlightedComment = this.getHighlightedComment();
+        if (highlightedComment) {
+            comments = comments.filter(c => c.id !== highlightedComment.id);
         }
-
-        // Start loading animation. Will stop automatically when the component is rendered again.
-        const buttonEl = this.el.querySelector(above ?
-            `[data-loadmoreabove="${this.uniqid}"]` : `[data-loadmorebelow="${this.uniqid}"]`);
-        if (buttonEl) {
-            buttonEl.outerHTML = '<i class="icon fa fa-circle-o-notch fa-spin fa-fw ml-4"></i>';
-        }
-
-        // We fetch comments starting from the timecreated of the topmost (or bottommost) comment. In order to ensure
-        // that we fetch a complete page anyway, we count the number of already loaded comments with that exact
-        // timecreated (overlap).
-        let time = null;
-        let overlap = 0;
-        if (this.comments && this.comments.length) {
-            if (above) {
-                time = this.comments[0].timecreated;
-                while (overlap < this.comments.length && this.comments[overlap].timecreated === time) {
-                    overlap++;
-                }
-            } else {
-                time = this.comments[this.comments.length - 1].timecreated;
-                while (overlap < this.comments.length && this.comments[this.comments.length - 1 - overlap].timecreated === time) {
-                    overlap++;
-                }
-            }
-        }
-        let timeFrom = null;
-        let timeTo = null;
-        if ((this.sortDirection === 'DESC') !== above) {
-            timeTo = time;
-        } else {
-            timeFrom = time;
-        }
-
-        // We add one to the page size and overlap to find out if there are more comments available after this page.
-        let pageSize = this.pageSize + overlap + 1;
-        let sortDirection = this.sortDirection;
-        if (above) {
-            sortDirection = (sortDirection === 'DESC') ? 'ASC' : 'DESC';
-        }
-
-        // Fetch comments.
-        const result = await Comments.getComments(
-            this.commentSectionEl.contextId, this.commentSectionEl.component, this.commentSectionEl.commentArea,
-            this.replyToEl ? this.replyToEl.comment.itemid : this.commentSectionEl.itemId, pageSize, sortDirection,
-            this.replyToEl ? this.replyToEl.comment.id : null, timeFrom, timeTo
-        );
-
-        // Save new comments.
-        const moreAvailable = result.comments.length === pageSize;
-        if (above) {
-            this.moreAvailableAbove = moreAvailable;
-            this.comments.unshift(...result.comments.reverse().slice(-this.pageSize - overlap, -overlap));
-        } else {
-            this.moreAvailableBelow = moreAvailable;
-            this.comments.push(...result.comments.slice(overlap, this.pageSize + overlap));
-        }
-
-        // Save new comment sections.
-        this.commentSectionEl.sections.push(
-            ...result.commentsections.filter(
-                section => !this.commentSectionEl.sections.find(other => other.itemid === section.itemid)
-            )
-        );
-
-        await this.render();
+        return Object.assign({},
+            this.getData(),
+            {
+                highlightedcomment: highlightedComment,
+                comments: comments,
+                count: comments.length
+            });
     }
 
     async onCommentDeleted(id) {
-        for (let i = 0; i < this.comments.length; i++) {
-            if (this.comments[i].id === id) {
-                this.comments.splice(i, 1);
-                break;
-            }
-        }
-        await this.render();
+        // TODO
         this.getChildren().filter((child) => child instanceof Comment && child.comment.id === id).forEach((child) => {
             this.removeChild(child);
         });
     }
 
     async onCommentPosted(comment) {
-        if (this.sortDirection === 'DESC') {
-            if (this.moreAvailableAbove) {
-                this.comments = [comment];
-                this.moreAvailableAbove = false;
-                await this.loadMore(false);
-            } else {
-                this.comments.unshift(comment);
-                await this.render();
-            }
-        } else {
-            if (this.moreAvailableBelow) {
-                this.comments = [comment];
-                this.moreAvailableBelow = false;
-                await this.loadMore(true);
-            } else {
-                this.comments.push(comment);
-                await this.render();
-            }
-        }
-
+        // TODO
         window.setTimeout(() => this.scrollToComment(comment.id), 0);
     }
 
@@ -187,8 +101,8 @@ export default class CommentList extends Component {
             this.intersectionObserver = null;
         }
 
-        const loadMoreAbove = this.el.querySelector(`[data-loadmoreabove="${this.uniqid}"]`);
-        const loadMoreBelow = this.el.querySelector(`[data-loadmorebelow="${this.uniqid}"]`);
+        const loadMoreAbove = this.getElement(this.selectors.LOAD_MORE_ABOVE);
+        const loadMoreBelow = this.getElement(this.selectors.LOAD_MORE_BELOW);
         if (!loadMoreAbove && !loadMoreBelow) {
             return;
         }
@@ -217,40 +131,35 @@ export default class CommentList extends Component {
         }
     }
 
-    async onHighlightDismissed() {
-        this.highlightedComment = null;
-        this.highlightedReply = null;
-        await this.render();
+    async loadMore(above = null) {
+        await this.reactive.dispatch('loadMore', null, above);
     }
 
-    async postRender() {
-        await Promise.all(this.comments.map((comment) => {
-            return this.addChild(`[data-comment="${comment.id}"]`, 'comment', {
-                commentListEl: this,
-                comment: comment
-            });
-        }));
-        if (this.highlightedComment) {
-            await this.addChild(`[data-commenthighlight="${this.highlightedComment.id}"]`, 'commenthighlight', {
-                commentListEl: this,
-                comment: this.highlightedComment
-            });
-        }
-
-        this.addListener(`[data-loadmoreabove="${this.uniqid}"]`, 'click', (e) => {
+    async addListeners() {
+        this.addListener(this.selectors.LOAD_MORE_ABOVE, 'click', (e) => {
             this.loadMore(true).catch(Notification.exception);
             e.preventDefault();
             return false;
         });
-        this.addListener(`[data-loadmorebelow="${this.uniqid}"]`, 'click', (e) => {
+        this.addListener(this.selectors.LOAD_MORE_BELOW, 'click', (e) => {
             this.loadMore(false).catch(Notification.exception);
             e.preventDefault();
             return false;
         });
+    }
 
-        if (!this.replyToEl) {
-            this.addIntersectionObserver();
+    async addChildren() {
+        await Promise.all(this.getComments().map(comment => {
+            return this.addChild(`${this.selectors.COMMENT}[data-commentId='${comment.id}']`, 'comment');
+        }));
+        const highlightedComment = this.getHighlightedComment();
+        if (highlightedComment) {
+            await this.addChild(this.selectors.COMMENT_HIGHLIGHT, 'commenthighlight');
         }
+    }
+
+    async postRender() {
+        this.addIntersectionObserver();
     }
 
 }

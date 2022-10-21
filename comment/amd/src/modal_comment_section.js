@@ -19,8 +19,8 @@
  * @copyright  2021 TU Berlin
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-define(['core_comment/comments', 'core/modal', 'core/modal_registry', 'core/notification'],
-    function(Comments, Modal, ModalRegistry, Notification) {
+define(['core_comment/comments', 'core_comment/events', 'core/modal', 'core/modal_registry', 'core/notification'],
+    function(Comments, CommentEvents, Modal, ModalRegistry, Notification) {
 
         let registered = false;
 
@@ -56,10 +56,9 @@ define(['core_comment/comments', 'core/modal', 'core/modal_registry', 'core/noti
         };
 
         ModalCommentSection.prototype.show = function() {
-            const el = this.getBody().find('[data-commentsection]')[0];
-            Comments.initCommentSection(el, Object.assign({
-                commentFormOnCancel: (() => this.hide())
-            }, this.getOptions())).catch((e) => Notification.exception(e));
+            const el = this.getBody().find('[data-for="commentsection"]')[0];
+            Comments.initCommentSection(el, this.getOptions()).catch((e) => Notification.exception(e));
+            el.addEventListener(CommentEvents.eventTypes.formCanceled, () => this.hide());
             Modal.prototype.show.call(this);
         };
 

@@ -21,101 +21,116 @@
  */
 
 import Component from 'core_comment/component';
-import * as Comments from 'core_comment/comments';
+import {eventTypes} from 'core_comment/events';
 import Notification from 'core/notification';
 import * as ModalFactory from 'core/modal_factory';
 import * as ModalEvents from 'core/modal_events';
 import * as Str from 'core/str';
 
 export default class CommentForm extends Component {
+    static getEvents() {
+        return {
+            formCanceled: eventTypes.formCanceled,
+            formSubmitted: eventTypes.formSubmitted,
+        };
+    }
 
-    constructor(el, parent, options = {}) {
-        super('commentform', el, parent);
-        this.commentSectionEl = options.commentSectionEl;
-        this.commentEl = options.commentEl;
-        this.onCancel = options.onCancel;
-        this.onSubmit = options.onSubmit;
-        if (this.commentEl) {
-            this.replyToEl = this.commentEl.commentListEl.replyToEl;
-        } else {
-            this.replyToEl = options.replyToEl;
-        }
-        if (this.commentEl) {
-            this.section = this.commentEl.section;
-        } else if (this.replyToEl) {
-            this.section = this.replyToEl.section;
-        } else {
-            this.section = this.commentSectionEl.section;
+    constructor(descriptor) {
+        super(descriptor);
+        this.commentId = Number(this.element.dataset.commentid);
+        this.replyToId = null;
+        if (!Number.isInteger(this.commentId)) {
+            this.commentId = null;
+            this.replyToId = Number(this.element.dataset.replytoid);
+            if (!Number.isInteger(this.replyToId)) {
+                this.replyToId = null;
+            }
         }
     }
 
+    create() {
+        this.selectors = {
+            CANCEL_COMMENT_FORM: `[data-for="cancelcommentform"]`,
+            FORM: `form`,
+            CONTENT_INPUT: `form [name="content"]`,
+        };
+    }
+
+    getComment() {
+        return this.commentId !== null ? this.getState().comments.get(this.commentId) : null;
+    }
+
+    getReplyTo() {
+        let replyToId = this.replyToId;
+        const comment = this.getComment();
+        if (comment) {
+            replyToId = comment.replytoid;
+        }
+        return replyToId !== null ? this.getState().comments.get(replyToId) : null;
+    }
+
+    getSection() {
+        if (this.getState().section) {
+            return this.getState().section;
+        }
+        const itemId = this.commentId !== null ? this.getComment().itemid : this.getReplyTo().itemid;
+        return this.getState().sections.get(itemId);
+    }
+
     async getContext() {
+        const section = this.getSection();
         return {
-            canpost: this.section.canpost,
+            canpost: section.canpost,
             cancancel: true,
-            allowpseudonym: this.section.allowpseudonym,
-            allowrealname: this.section.allowrealname,
-            comment: this.commentEl ? await this.commentEl.comment : null,
-            replyto: this.replyToEl ? await this.replyToEl.comment : null
+            allowpseudonym: section.allowpseudonym,
+            allowrealname: section.allowrealname,
+            comment: this.getComment(),
+            replyto: this.getReplyTo(),
         };
     }
 
     getData() {
+        const form = this.getElement(this.selectors.FORM);
         return {
-            content: this.form.content.value,
-            pseudonymous: this.form.pseudonymous ? this.form.pseudonymous.checked : false,
+            content: form.content.value,
+            pseudonymous: form.pseudonymous ? form.pseudonymous.checked : false,
             customdata: null
         };
     }
 
     async submit() {
         const data = this.getData();
+        const section = this.getSection();
         let comment = {
-            contextid: this.section.contextid,
-            component: this.section.component,
-            commentarea: this.section.commentarea,
-            itemid: this.section.itemid,
-            id: this.commentEl ? this.commentEl.comment.id : null,
-            replytoid: this.replyToEl ? this.replyToEl.comment.id : null,
+            contextid: section.contextid,
+            component: section.component,
+            commentarea: section.commentarea,
+            itemid: section.itemid,
+            id: this.commentId,
+            replytoid: this.commentId !== null ? this.getComment().replytoid : this.replyToId,
             content: data.content,
             pseudonymous: data.pseudonymous,
             customdata: data.customdata
         };
 
-        comment = this.callback('presave', [comment, this.form], comment);
+        const form = this.getElement(this.selectors.FORM);
+        comment = this.callback('presave', [comment, form], comment);
         if (!comment) {
             return;
         }
-        comment = this.callback(this.commentEl ? 'preupdate' : 'precreate', [comment, this.form], comment);
+        comment = this.callback(this.commentEl ? 'preupdate' : 'precreate', [comment, form], comment);
         if (!comment) {
             return;
         }
 
-        const savedComment = await Comments.saveComment(comment);
+        await this.reactive.dispatch('saveComment', comment);
 
-        this.callback('postsave', [savedComment]);
-        this.callback(this.commentEl ? 'postupdate' : 'postcreate', [savedComment]);
+        this.callback('postsave', [comment]);
+        this.callback(this.commentEl ? 'postupdate' : 'postcreate', [comment]);
 
-        if (this.onSubmit) {
-            this.onSubmit(savedComment);
-        }
-        if (this.commentEl) {
-            await this.commentEl.onUpdated(savedComment);
-        } else if (this.replyToEl) {
-            await this.replyToEl.onReplyPosted(savedComment);
-        } else {
-            await this.commentSectionEl.commentListEl.onCommentPosted(savedComment);
-        }
+        this.dispatchEvent(this.events.formSubmitted, {commentId: this.commentId, replyToId: this.replyToId});
+
         await this.render();
-    }
-
-    focus() {
-        const input = this.form.querySelector('[name="content"]');
-        if (input) {
-            input.focus();
-        } else {
-            this.el.focus();
-        }
     }
 
     isDirty() {
@@ -124,16 +139,9 @@ export default class CommentForm extends Component {
     }
 
     async cancel() {
-        this.form.reset();
-        this.el.firstChild.classList.add('empty');
-        if (this.commentEl) {
-            await this.commentEl.cancelEditing();
-        } else if (this.replyToEl && this.replyToEl.showReplyForm) {
-            await this.replyToEl.toggleReplyForm();
-        }
-        if (this.onCancel) {
-            this.onCancel();
-        }
+        this.getElement(this.selectors.FORM).reset();
+        this.element.firstChild.classList.add('empty');
+        this.dispatchEvent(this.events.formCanceled, {commentId: this.commentId, replyToId: this.replyToId});
     }
 
     async showCancelModal() {
@@ -155,31 +163,26 @@ export default class CommentForm extends Component {
         modal.show();
     }
 
-    async postRender() {
-        this.form = this.el.querySelector('form');
-        this.originalData = this.getData();
-        if (this.originalData.content === '') {
-            this.el.firstChild.classList.add('empty');
-        }
-
-        this.form.onsubmit = () => {
+    async addListeners() {
+        this.addListener(this.selectors.FORM, 'submit', (e) => {
             this.submit().catch(Notification.exception);
+            e.preventDefault();
             return false;
-        };
-        this.addListener('form [name="content"]', 'keydown', (e) => {
+        });
+        this.addListener(this.selectors.CONTENT_INPUT, 'keydown', (e) => {
             if (e.which === 13 && e.ctrlKey) {
                 e.preventDefault();
                 this.submit().catch(Notification.exception);
             }
         });
-        this.addListener('form [name="content"]', 'input', (e) => {
+        this.addListener(this.selectors.CONTENT_INPUT, 'input', (e) => {
             if (e.target.value === '') {
-                this.el.firstChild.classList.add('empty');
+                this.element.firstChild.classList.add('empty');
             } else {
-                this.el.firstChild.classList.remove('empty');
+                this.element.firstChild.classList.remove('empty');
             }
         });
-        this.addListener('[data-cancelcommentform]', 'click', (e) => {
+        this.addListener(this.selectors.CANCEL_COMMENT_FORM, 'click', (e) => {
             if (this.isDirty()) {
                 this.showCancelModal();
             } else {
@@ -188,6 +191,13 @@ export default class CommentForm extends Component {
             e.preventDefault();
             return false;
         });
+    }
+
+    async postRender() {
+        this.originalData = this.getData();
+        if (this.originalData.content === '') {
+            this.element.firstChild.classList.add('empty');
+        }
 
         const unsavedChangesString = await Str.get_string('unsavedchanges', 'core_comment');
         window.addEventListener("beforeunload", (e) => {

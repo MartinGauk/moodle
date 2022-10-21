@@ -22,36 +22,56 @@
 
 import * as templates from 'core/templates';
 import Notification from 'core/notification';
+import {BaseComponent} from 'core/reactive';
 
-export default class Component {
+export default class Component extends BaseComponent {
 
-    constructor(name, el, parent) {
-        this.name = name;
-        this.el = el;
-        this.parent = parent;
-        this.uniqid = null;
-        if (parent) {
-            this.renderOptions = parent.renderOptions;
-        } else {
-            this.renderOptions = {};
+    constructor(descriptor) {
+        super(descriptor);
+        this.name = descriptor.name;
+        this.parent = descriptor.parent;
+        if (!descriptor.name) {
+            throw new Error('Name missing in descriptor');
         }
+        this.uniqid = null;
         this.children = {};
     }
 
     async getTemplate() {
         const templateKey = this.name + 'template';
-        if (!(templateKey in this.renderOptions)) {
+        const renderOptions = this.getRenderOptions();
+        if (!(templateKey in renderOptions)) {
             throw new Error('Template key not found in renderoptions: ' + templateKey);
         }
-        return this.renderOptions[templateKey];
+        return renderOptions[templateKey];
     }
 
     async getContext() {
         return {};
     }
 
+    getRenderOptions() {
+        return this.reactive.renderOptions;
+    }
+
+    getState() {
+        return this.reactive.stateManager.state;
+    }
+
+    stateReady() {
+        this.render().catch(Notification.exception);
+    }
+
     async preRender(template, context) {
         return context;
+    }
+
+    async addListeners() {
+        // Nop.
+    }
+
+    async addChildren() {
+        // Nop.
     }
 
     // eslint-disable-next-line no-unused-vars
@@ -75,10 +95,13 @@ export default class Component {
             this.uniqid = context.uniqid;
 
             this.detachChildren();
-            templates.replaceNodeContents(this.el, html, js);
+            templates.replaceNodeContents(this.element, html, js);
+
+            await this.addListeners();
+            await this.addChildren();
 
             await this.postRender(template, context);
-            this.callback('postrender', [template, context, this.el]);
+            this.callback('postrender', [template, context, this.element]);
         } catch (e) {
             await Notification.exception(e);
         }
@@ -90,29 +113,32 @@ export default class Component {
 
     detachChildren() {
         this.getChildren().forEach((child) => {
-            if (child.el.parentElement) {
-                child.el.parentElement.removeChild(child.el);
+            if (child.element.parentElement) {
+                child.element.parentElement.removeChild(child.element);
             }
         });
     }
 
-    async addChild(selector, childName, options = {}, render = true, cached = true) {
-        const childEl = this.el.querySelector(selector);
+    async addChild(selector, childName, cached = true) {
+        const childEl = this.getElement(selector);
         if (childEl) {
             if (cached && this.children[selector]) {
                 const child = this.children[selector];
-                childEl.replaceWith(child.el);
+                childEl.replaceWith(child.element);
                 return child;
             } else {
                 const childClassKey = childName + 'class';
-                if (!(childClassKey in this.renderOptions)) {
+                const renderOptions = this.getRenderOptions();
+                if (!(childClassKey in renderOptions)) {
                     throw new Error('Component class key not found in renderoptions: ' + childClassKey);
                 }
-                const child = new this.renderOptions[childClassKey](childEl, this, options);
+                const child = new renderOptions[childClassKey]({
+                    element: childEl,
+                    name: childName,
+                    parent: this,
+                    reactive: this.reactive
+                });
                 this.children[selector] = child;
-                if (render) {
-                    await child.render();
-                }
                 return child;
             }
         }
@@ -121,39 +147,37 @@ export default class Component {
 
     removeChild(child) {
         Object.entries(this.children)
-            // eslint-disable-next-line no-unused-vars
-            .filter(([key, value]) => value === child)
-            // eslint-disable-next-line no-unused-vars
-            .forEach(([key, value]) => {
+            .filter(([, value]) => value === child)
+            .forEach(([key,]) => {
                 this.children[key].dispose();
                 delete this.children[key];
             });
     }
 
     addListener(selector, event, callback) {
-        this.addListeners(selector, [event], callback);
-    }
-
-    addListeners(selector, events, callback) {
-        const targetEl = this.el.querySelector(selector);
+        const targetEl = this.getElement(selector);
         if (targetEl) {
-            events.forEach(event => targetEl.addEventListener(event, callback));
+            this.addEventListener(targetEl, event, callback);
         }
     }
 
     focus() {
-        this.el.focus();
+        const focusable = this.element.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (focusable) {
+            focusable.focus();
+        }
     }
 
     callback(callbackName, args, defaultValue = undefined) {
         const callbackKey = this.name + callbackName;
-        if (this.renderOptions[callbackKey]) {
-            const type = typeof this.renderOptions[callbackKey];
+        const renderOptions = this.getRenderOptions();
+        if (renderOptions[callbackKey]) {
+            const type = typeof renderOptions[callbackKey];
             if (type !== 'function') {
                 throw new Error("Expected callback function to be of type 'function', got '" + type + "' instead.");
             }
             try {
-                return this.renderOptions[callbackKey](...args);
+                return renderOptions[callbackKey](...args);
             } catch (e) {
                 Notification.exception(e);
             }
@@ -161,12 +185,12 @@ export default class Component {
         return defaultValue;
     }
 
-    async disposeChildren() {
-        await Promise.all(this.getChildren().map((child) => child.dispose()));
+    async unregisterChildren() {
+        await Promise.all(this.getChildren().map((child) => child.unregister()));
         this.children = {};
     }
 
-    async dispose() {
-        await this.disposeChildren();
+    async destroy() {
+        await this.unregisterChildren();
     }
 }

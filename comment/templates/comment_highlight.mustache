@@ -25,7 +25,7 @@
     * none
 
     Data attributes required for JS:
-    * data-comment Specifies the id of the comment to be inserted in the element
+    * none
 
     Context variables required for this template:
     * Highlighted comment as exported by core_comment\external\comment_exporter.php
@@ -38,10 +38,10 @@
 <div class="core_comment_comment_highlight {{#replytoid}}reply{{/replytoid}}">
         {{^replytoid}}{{#str}} highlightedcomment, core_comment {{/str}}{{/replytoid}}
         {{#replytoid}}{{#str}} highlightedreply, core_comment {{/str}}{{/replytoid}}
-        <div data-comment="{{id}}">
+        <div data-for="comment" data-commentid="{{id}}">
         </div>
         {{^replytoid}}
-            <a class="btn btn-secondary" href="#" data-dismisshighlightedcomment="{{id}}">
+            <a class="btn btn-secondary" href="#" data-for="dismisshighlightedcomment">
                 {{#str}} dismisshighlightedcomment, core_comment {{/str}}
             </a>
         {{/replytoid}}

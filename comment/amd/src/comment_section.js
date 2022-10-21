@@ -24,44 +24,41 @@ import Component from 'core_comment/component';
 
 export default class CommentSection extends Component {
 
-    constructor(el, parent = null, options = {}) {
-        super('commentsection', el, parent);
-        this.options = options;
-        this.renderOptions = options.renderOptions;
-        this.contextId = options.contextId;
-        this.component = options.component;
-        this.commentArea = options.commentArea;
-        this.itemId = options.itemId;
-        this.section = options.section;
-        this.sections = options.sections;
+    constructor(descriptor) {
+        super(descriptor);
+        this.startAtBottom = !!this.element.dataset.startAtBottom;
+        this.fillHeight = !!this.element.dataset.fillHeight;
+        this.maxListHeight = Number(this.element.dataset.maxListHeight);
+        if (!Number.isInteger(this.maxListHeight)) {
+            this.maxListHeight = null;
+        }
     }
 
-    async getContext() {
-        return {
-            startatbottom: this.options.startAtBottom,
-            fillheight: this.options.fillHeight,
-            maxlistheight: this.options.maxListHeight,
-            showform: this.section && this.section.canpost,
-            section: this.section
+    create() {
+        this.selectors = {
+            COMMENT_FORM: `[data-for="commentform"]`,
+            COMMENT_LIST: `[data-for="commentlist"]`
         };
     }
 
-    async postRender() {
-        this.commentFormEl = await this.addChild('[data-commentform]', 'commentform', {
-            commentSectionEl: this,
-            onCancel: this.options.commentFormOnCancel
-        });
-        this.commentListEl = await this.addChild('[data-commentlist]', 'commentlist', {
-            commentSectionEl: this,
-            pageSize: this.options.pageSize,
-            sortDirection: this.options.sortDirection,
-            startAtBottom: this.options.startAtBottom,
-            preLoadedComments: this.options.comments,
-            moreAvailableAbove: this.options.moreAvailableAbove,
-            moreAvailableBelow: this.options.moreAvailableBelow,
-            highlightedComment: this.options.highlightedComment,
-            highlightedReply: this.options.highlightedReply
-        });
+    getSection() {
+        return this.getState().section || null;
+    }
+
+    async getContext() {
+        const section = this.getSection();
+        return {
+            startatbottom: this.startAtBottom,
+            fillheight: this.fillHeight,
+            maxlistheight: this.maxListHeight,
+            showform: section && section.canpost,
+            section: section
+        };
+    }
+
+    async addChildren() {
+        this.commentFormEl = await this.addChild(this.selectors.COMMENT_FORM, 'commentform');
+        this.commentListEl = await this.addChild(this.selectors.COMMENT_LIST, 'commentlist');
     }
 
 }

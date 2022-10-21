@@ -25,27 +25,35 @@ import Notification from 'core/notification';
 
 export default class CommentHighlight extends Component {
 
-    constructor(el, parent, options = {}) {
-        super('commenthighlight', el, parent);
-        this.commentListEl = options.commentListEl;
-        this.comment = options.comment;
+    constructor(descriptor) {
+        super(descriptor);
+        this.commentId = Number(this.element.dataset.commentid);
+        if (!Number.isInteger(this.commentId)) {
+            throw new Error('commentId missing in dataset');
+        }
+    }
+
+    create() {
+        this.selectors = {
+            HIGHLIGHTED_COMMENT: `[data-for="highlightedcomment"]`,
+            DISMISS_HIGHLIGHTED_COMMENT: `[data-for="dismisshighlightedcomment"]`
+        };
     }
 
     async getContext() {
-        return this.comment;
+        return this.getState().comments.get(this.commentId);
     }
 
-    async postRender() {
-        await this.addChild(`[data-comment="${this.comment.id}"]`, 'comment', {
-            commentListEl: this.commentListEl,
-            comment: this.comment
-        });
-
-        this.addListener(`[data-dismisshighlightedcomment="${this.comment.id}"]`, 'click', (e) => {
-            this.commentListEl.onHighlightDismissed().catch(Notification.exception);
+    async addListeners() {
+        this.addListener(this.selectors.DISMISS_HIGHLIGHTED_COMMENT, 'click', (e) => {
+            this.reactive.dispatch('setHighlightedComment', [null]).catch(Notification.exception);
             e.preventDefault();
             return false;
         });
+    }
+
+    async addChildren() {
+        await this.addChild(this.selectors.HIGHLIGHTED_COMMENT, 'comment');
     }
 
 }

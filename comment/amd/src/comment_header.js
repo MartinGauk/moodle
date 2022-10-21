@@ -27,13 +27,42 @@ import * as Str from 'core/str';
 
 export default class CommentHeader extends Component {
 
-    constructor(el, parent, options = {}) {
-        super('commentheader', el, parent);
-        this.commentEl = options.commentEl;
+    constructor(descriptor) {
+        super(descriptor);
+        this.commentId = Number(this.element.dataset.commentid);
+        if (!Number.isInteger(this.commentId)) {
+            throw new Error('commentId missing in dataset');
+        }
+    }
+
+    create() {
+        this.selectors = {
+            DELETE_COMMENT: `[data-for="deletecomment"]`,
+            EDIT_COMMENT: `[data-for="editcomment"]`,
+            COPY_COMMENT_URL: `[data-for="copycommenturl"]`,
+        };
+    }
+
+    getWatchers() {
+        const commentId = this.element.dataset.commentid;
+        return [
+            {watch: `comments[${commentId}].fullname:updated`, handler: this.render},
+            {watch: `comments[${commentId}].profileurl:updated`, handler: this.render},
+            {watch: `comments[${commentId}].usermodifiedfullname:updated`, handler: this.render},
+            {watch: `comments[${commentId}].timemodifiedtext:updated`, handler: this.render},
+            {watch: `comments[${commentId}].isediting:updated`, handler: this.render},
+        ];
+    }
+
+    getComment() {
+        return this.getState().comments.get(this.commentId);
     }
 
     async getContext() {
-        return await this.commentEl.getContext();
+        const comment = this.getComment();
+        return Object.assign({
+            wasmodified: comment.timecreated !== comment.timemodified
+        }, comment);
     }
 
     async showDeleteModal() {
@@ -51,24 +80,24 @@ export default class CommentHeader extends Component {
         });
         modal.setSaveButtonText(deleteString);
         modal.getRoot().on(ModalEvents.save, () => {
-            this.commentEl.delete().catch(Notification.exception);
+            this.reactive.dispatch('deleteComment', this.commentId).catch(Notification.exception);
         });
         modal.show();
     }
 
-    async postRender() {
-        this.addListener(`[data-deletecomment="${this.commentEl.comment.id}"]`, 'click', (e) => {
+    async addListeners() {
+        this.addListener(this.selectors.DELETE_COMMENT, 'click', (e) => {
             this.showDeleteModal().catch(Notification.exception);
             e.preventDefault();
             return false;
         });
-        this.addListener(`[data-editcomment="${this.commentEl.comment.id}"]`, 'click', (e) => {
-            this.commentEl.startEditing();
+        this.addListener(this.selectors.EDIT_COMMENT, 'click', (e) => {
+            this.reactive.dispatch('setEditing', this.commentId, true).catch(Notification.exception);
             e.preventDefault();
             return false;
         });
-        this.addListener(`[data-copycommenturl="${this.commentEl.comment.id}"]`, 'click', (e) => {
-            navigator.clipboard.writeText(this.commentEl.comment.commenturl);
+        this.addListener(this.selectors.COPY_COMMENT_URL, 'click', (e) => {
+            navigator.clipboard.writeText(this.getComment().commenturl);
             e.preventDefault();
             return false;
         });

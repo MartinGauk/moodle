@@ -29,17 +29,12 @@
 
     Context variables required for this template:
     * isediting Boolean specifying whether the comment is being edited
-    * showreplies Boolean specifing whether replies are displayed
-    * showreplyform Boolean specifing whether the reply form is displayed
-    * showsettings Boolean specifying whether the settings menu should be shown
     * wasmodified Boolean specifying whether this comment was modified
     * Comment as exported by core_comment\external\comment_exporter.php
 
     Example context (json):
     {
         "isediting": false,
-        "showreplies": false,
-        "showreplyform": false,
         "wasmodified": false,
         // TODO fill with example comment
     }
@@ -75,16 +70,16 @@
                 </a>
                 <div class="dropdown-menu dropdown-menu-right">
                     {{#canedit}}{{^isediting}}
-                        <a href="#" class="dropdown-item" data-editcomment="{{id}}">
+                        <a href="#" class="dropdown-item" data-for="editcomment">
                             <i class="icon fa fa-pencil fa-fw"></i> {{# str }} edit, core_comment {{/ str }}
                         </a>
                     {{/isediting}}{{/canedit}}
                     {{#candelete}}
-                        <a href="#" class="dropdown-item" data-deletecomment="{{id}}">
+                        <a href="#" class="dropdown-item" data-for="deletecomment">
                             <i class="icon fa fa-trash fa-fw"></i> {{# str }} delete, core_comment {{/ str }}
                         </a>
                     {{/candelete}}
-                    <a href="#" class="dropdown-item" data-copycommenturl="{{id}}">
+                    <a href="#" class="dropdown-item" data-for="copycommenturl">
                         <i class="icon fa fa-link fa-fw"></i> {{# str }} copycommenturl, core_comment {{/ str }}
                     </a>
                 </div>

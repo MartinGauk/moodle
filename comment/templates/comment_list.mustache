@@ -25,13 +25,11 @@
     * none
 
     Data attributes required for JS:
-    * data-comment Specifies the id of the comment to be inserted in the element
-    * data-loadmorebefore
-    * data-loadmoreafter
+    * none
 
     Context variables required for this template:
     * replyto Comment that these are replies to as exported by core_comment\external\comment_exporter.php (optional)
-    * comments Array of comments as exported by core_comment\external\comment_exporter.php
+    * comments Array of comments containing only the "id" field
     * count Size of comments array
     * moreavailablebefore Boolean specifying whether there are more comments available in this list before the first
     * moreavailableafter Boolean specifying whether there are more comments available in this list after the last
@@ -41,7 +39,8 @@
     {
         "replyto": // TODO fill with example comment
         "comments": [
-            // TODO fill with example comments
+            {"id": 42},
+            {"id": 43}
         ],
         "count": 1,
         "moreavailablebefore": false,
@@ -51,17 +50,22 @@
 }}
 <div class="core_comment_comment_list{{#replyto}} replies{{/replyto}}{{#startatbottom}} start-at-bottom{{/startatbottom}}">
     {{^startatbottom}}{{#highlightedcomment}}
-        <div data-commenthighlight="{{id}}"></div>
+        <div data-for="commenthighlight" data-commentid="{{id}}"></div>
     {{/highlightedcomment}}{{/startatbottom}}
     {{#moreavailableabove}}
         <div class="my-3">
-            <a href="#" data-loadmoreabove="{{uniqid}}">{{#str}} loadmore, core_comment {{/str}}</a>
+            {{#loadingmoreabove}}
+                <i class="icon fa fa-circle-o-notch fa-spin fa-fw ml-4"></i>
+            {{/loadingmoreabove}}
+            {{^loadingmoreabove}}
+                <a href="#" data-for="loadmoreabove">{{#str}} loadmore, core_comment {{/str}}</a>
+            {{/loadingmoreabove}}
         </div>
     {{/moreavailableabove}}
     {{#count}}
         <div class="comment-list-comments">
             {{#comments}}
-                <div data-comment="{{id}}">
+                <div data-for="comment" data-commentid="{{id}}">
                 </div>
             {{/comments}}
         </div>
@@ -71,10 +75,15 @@
     {{/highlightedcomment}}{{/comments}}
     {{#moreavailablebelow}}
         <div class="my-3">
-            <a href="#" data-loadmorebelow="{{uniqid}}">{{#str}} loadmore, core_comment {{/str}}</a>
+            {{#loadingmorebelow}}
+                <i class="icon fa fa-circle-o-notch fa-spin fa-fw ml-4"></i>
+            {{/loadingmorebelow}}
+            {{^loadingmorebelow}}
+                <a href="#" data-for="loadmorebelow">{{#str}} loadmore, core_comment {{/str}}</a>
+            {{/loadingmorebelow}}
         </div>
     {{/moreavailablebelow}}
     {{#startatbottom}}{{#highlightedcomment}}
-        <div data-commenthighlight="{{id}}"></div>
+        <div data-for="commenthighlight" data-commentid="{{id}}"></div>
     {{/highlightedcomment}}{{/startatbottom}}
 </div>

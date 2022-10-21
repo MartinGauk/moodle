@@ -12,34 +12,24 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
 /**
- * Comment content module.
+ * Javascript events for the comment component.
  *
- * @module     core_comment/comments
- * @copyright  2021 TU Berlin
+ * @module     core_comment/events
+ * @copyright  2022 TU Berlin
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-import Component from 'core_comment/component';
+import {dispatchEvent} from 'core/event_dispatcher';
 
-export default class CommentContent extends Component {
+/**
+ * Events for the core_comment subsystem.
+ */
+export const eventTypes = {
+    stateChanged: 'core_comment:stateChanged',
+    formCanceled: 'core_comment:formCanceled',
+    formSubmitted: 'core_comment:formSubmitted',
+};
 
-    constructor(descriptor) {
-        super(descriptor);
-        this.commentId = Number(this.element.dataset.commentid);
-        if (!Number.isInteger(this.commentId)) {
-            throw new Error('commentId missing in dataset');
-        }
-    }
-
-    getWatchers() {
-        const commentId = this.element.dataset.commentid;
-        return [
-            {watch: `comments[${commentId}].content:updated`, handler: this.render},
-        ];
-    }
-
-    async getContext() {
-        return this.getState().comments.get(this.commentId);
-    }
-}
+export const notifyStateChanged = (detail, target) => dispatchEvent(eventTypes.stateChanged, detail, target);

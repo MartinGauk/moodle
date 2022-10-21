@@ -26,8 +26,7 @@
     * none
 
     Data attributes required for JS:
-    * data-commentlist
-    * data-commentform
+    * none
 
     Context variables required for this template:
     * startatbottom Boolean specifying whether the comment form is below the comment list
@@ -48,18 +47,18 @@
 <div class="core_comment_comment_section{{#fillheight}} fill-height{{/fillheight}}{{#startatbottom}} start-at-bottom{{/startatbottom}}">
     {{^startatbottom}}
         {{#showform}}
-            <div class="comment-section-form" data-commentform></div>
+            <div class="comment-section-form" data-for="commentform"></div>
         {{/showform}}
     {{/startatbottom}}
     <div class="comment-section-list-container">
         <div class="comment-section-list"
             {{#maxlistheight}} style="max-height: {{maxlistheight}}px;"{{/maxlistheight}}
-             data-commentlist>
+             data-for="commentlist">
         </div>
     </div>
     {{#startatbottom}}
         {{#showform}}
-            <div class="comment-section-form" data-commentform></div>
+            <div class="comment-section-form" data-for="commentform"></div>
         {{/showform}}
     {{/startatbottom}}
 </div>
