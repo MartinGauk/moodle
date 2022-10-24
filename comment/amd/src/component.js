@@ -35,10 +35,10 @@ export default class Component extends BaseComponent {
         }
         this.uniqid = null;
         this.children = {};
-        this.renderPromise = new Promise((resolve, reject) => {
-            this._resolveRenderPromise = resolve;
-            this._rejectRenderPromise = reject;
-        });
+        this.rendering = false;
+        this.rendered = false;
+        this.renderingQueued = false;
+        this._createRenderPromise();
     }
 
     async getTemplate() {
@@ -84,6 +84,18 @@ export default class Component extends BaseComponent {
     }
 
     async render() {
+        if (this.rendering) {
+            if (this.renderingQueued) {
+                return;
+            }
+            this.renderingQueued = true;
+            await this.renderPromise;
+            this.renderingQueued = false;
+        }
+        this.rendering = true;
+        if (this.rendered) {
+            this._createRenderPromise();
+        }
         try {
             const template = await this.getTemplate();
             let context = await this.getContext();
@@ -106,8 +118,12 @@ export default class Component extends BaseComponent {
 
             await this.postRender(template, context);
             this.callback('postrender', [template, context, this.element]);
+
+            this.rendered = true;
+            this.rendering = false;
             this._resolveRenderPromise();
         } catch (e) {
+            this.rendering = false;
             this._rejectRenderPromise(e);
             await Notification.exception(e);
         }
@@ -189,6 +205,13 @@ export default class Component extends BaseComponent {
             }
         }
         return defaultValue;
+    }
+
+    _createRenderPromise() {
+        this.renderPromise = new Promise((resolve, reject) => {
+            this._resolveRenderPromise = resolve;
+            this._rejectRenderPromise = reject;
+        });
     }
 
     async unregisterChildren() {

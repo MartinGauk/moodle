@@ -32,6 +32,7 @@
     * startatbottom Boolean specifying whether the comment form is below the comment list
     * fillheight Boolean specifying whether the comment section should fill the available height of it's parent element
     * showform Boolean specifying whether the comment form should be shown
+    * compact Boolean specifying whether a compact layout should be used
     * section Comment section as exported by core_comment\external\comment_section_exporter.php
 
     Example context (json):
@@ -39,12 +40,13 @@
         "startatbottom": false,
         "fillheight": false,
         "showform": true,
+        "compact": false,
         "section": {
             // TODO fill with example section
         }
     }
 }}
-<div class="core_comment_comment_section{{#fillheight}} fill-height{{/fillheight}}{{#startatbottom}} start-at-bottom{{/startatbottom}}">
+<div class="core_comment_comment_section{{#fillheight}} fill-height{{/fillheight}}{{#startatbottom}} start-at-bottom{{/startatbottom}}{{#compact}} compact{{/compact}}">
     {{^startatbottom}}
         {{#showform}}
             <div class="comment-section-form" data-for="commentform"></div>

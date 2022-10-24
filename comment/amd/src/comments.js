@@ -24,6 +24,8 @@ import Notification from 'core/notification';
 import * as Str from 'core/str';
 import CommentReactive from 'core_comment/reactive';
 
+const COMPACT_LAYOUT_WIDTH = 300;
+
 export const init = async() => {
     for (const el of document.querySelectorAll('[data-commentsection]')) {
         const options = {
@@ -70,6 +72,9 @@ export const initCommentModal = async(triggerEl, options) => {
 
 export const initCommentSection = async(el, options) => {
     if (!el.comments) {
+        if (options.compact === null || options.compact === undefined) {
+            options.compact = el.offsetWidth < COMPACT_LAYOUT_WIDTH;
+        }
         el.comments = new CommentReactive(el, options);
         await el.comments.load();
     }

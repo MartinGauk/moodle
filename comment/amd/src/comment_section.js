@@ -26,9 +26,10 @@ export default class CommentSection extends Component {
 
     constructor(descriptor) {
         super(descriptor);
-        this.startAtBottom = !!this.element.dataset.startAtBottom;
-        this.fillHeight = !!this.element.dataset.fillHeight;
-        this.maxListHeight = Number(this.element.dataset.maxListHeight);
+        this.startAtBottom = this.element.dataset.startatbottom === 'true';
+        this.fillHeight = this.element.dataset.fillheight === 'true';
+        this.maxListHeight = Number(this.element.dataset.maxlistheight);
+        this.compact = this.element.dataset.compact === 'true';
         if (!Number.isInteger(this.maxListHeight)) {
             this.maxListHeight = null;
         }
@@ -52,6 +53,7 @@ export default class CommentSection extends Component {
             fillheight: this.fillHeight,
             maxlistheight: this.maxListHeight,
             showform: section && section.canpost,
+            compact: this.compact,
             section: section
         };
     }

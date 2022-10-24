@@ -133,6 +133,19 @@ export default class extends Reactive {
             })
         ]);
 
+        if (this.options.startAtBottom != undefined) {
+            this.target.dataset.startatbottom = this.options.startAtBottom;
+        }
+        if (this.options.fillHeight != undefined) {
+            this.target.dataset.fillheight = this.options.fillHeight;
+        }
+        if (this.options.maxListHeight != undefined) {
+            this.target.dataset.maxlistheight = this.options.maxListHeight;
+        }
+        if (this.options.compact != undefined) {
+            this.target.dataset.compact = this.options.compact;
+        }
+
         this.commentSection = new this.renderOptions.commentsectionclass({
             element: this.target,
             name: 'commentsection',

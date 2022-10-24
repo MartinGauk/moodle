@@ -106,7 +106,11 @@ export default class Comment extends Component {
             return false;
         });
         this.addListener(this.selectors.SHOW_REPLY_FORM, 'click', (e) => {
-            this.reactive.dispatch('setShowReplyForm', this.commentId, true).catch(Notification.exception);
+            if (this.getComment().showreplyform) {
+                this.commentReplyForm.focus();
+            } else {
+                this.reactive.dispatch('setShowReplyForm', this.commentId, true).catch(Notification.exception);
+            }
             e.preventDefault();
             return false;
         });

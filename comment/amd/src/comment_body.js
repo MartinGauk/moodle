@@ -26,10 +26,12 @@ export default class CommentBody extends Component {
 
     constructor(descriptor) {
         super(descriptor);
-        this.height = Number(this.element.dataset.height) || 110;
         this.commentId = Number(this.element.dataset.commentid);
         if (!Number.isInteger(this.commentId)) {
             throw new Error('commentId missing in dataset');
+        }
+        if (!Number.isInteger(this.height)) {
+            this.height = 110;
         }
     }
 
@@ -95,7 +97,8 @@ export default class CommentBody extends Component {
     }
 
     async addChildren() {
-        await this.addChild(this.selectors.COMMENT_CONTENT, 'commentcontent');
+        const content = await this.addChild(this.selectors.COMMENT_CONTENT, 'commentcontent');
+        await content.renderPromise;
     }
 
     async postRender() {
