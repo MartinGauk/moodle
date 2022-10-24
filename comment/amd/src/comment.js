@@ -52,9 +52,9 @@ export default class Comment extends Component {
     getWatchers() {
         const commentId = this.element.dataset.commentid;
         return [
-            {watch: `comments[${commentId}].isediting:updated`, handler: this.render},
+            {watch: `comments[${commentId}].isediting:updated`, handler: this._onIsEditingUpdated},
             {watch: `comments[${commentId}].showreplies:updated`, handler: this.render},
-            {watch: `comments[${commentId}].showreplyform:updated`, handler: this.render},
+            {watch: `comments[${commentId}].showreplyform:updated`, handler: this._onShowReplyFormUpdated},
             {watch: `comments[${commentId}].replies:updated`, handler: this.render},
         ];
     }
@@ -78,8 +78,20 @@ export default class Comment extends Component {
         }, comment);
     }
 
-    async _onShowReplyForm() {
-        this.commentReplyForm.focus(); // TODO
+    async _onIsEditingUpdated() {
+        await this.render();
+        if (this.getComment().isediting) {
+            await this.commentEditForm.renderPromise;
+            this.commentEditForm.focus();
+        }
+    }
+
+    async _onShowReplyFormUpdated() {
+        await this.render();
+        if (this.getComment().showreplyform) {
+            await this.commentReplyForm.renderPromise;
+            this.commentReplyForm.focus();
+        }
     }
 
     async addListeners() {
@@ -106,13 +118,16 @@ export default class Comment extends Component {
         this.addListener(this.selectors.COMMENT_EDIT_FORM, eventTypes.formCanceled, () => {
             this.reactive.dispatch('setEditing', this.commentId, false).catch(Notification.exception);
         });
+        this.addListener(this.selectors.COMMENT_REPLY_FORM, eventTypes.formCanceled, () => {
+            this.reactive.dispatch('setShowReplyForm', this.commentId, false).catch(Notification.exception);
+        });
     }
 
     async addChildren() {
         await this.addChild(this.selectors.COMMENT_ITEM_LINK, 'commentitemlink');
 
         // Render comment header.
-        this.commentHeaderEl = await this.addChild(this.selectors.COMMENT_HEADER, 'commentheader');
+        await this.addChild(this.selectors.COMMENT_HEADER, 'commentheader');
 
         // Render editing form or comment body.
         if (this.getComment().isediting) {
@@ -131,7 +146,7 @@ export default class Comment extends Component {
 
         // Render replies.
         if (this.getComment().showreplies) {
-            this.commentReplies = await this.addChild(this.selectors.COMMENT_REPLIES, 'commentreplies');
+            await this.addChild(this.selectors.COMMENT_REPLIES, 'commentreplies');
         }
     }
 }

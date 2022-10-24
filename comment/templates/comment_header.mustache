@@ -64,8 +64,8 @@
         {{/wasmodified}}
     </span>
     <div class="comment-header-right">
-        <div class="comment-settings btn-group dropdown">
-                <a class="action-icon clickable text-muted" data-toggle="dropdown" role="button" data-boundary="window" tabindex="0">
+        <div id="commentsettings{{uniqid}}" class="comment-settings btn-group dropdown">
+                <a class="action-icon clickable text-muted" data-toggle="dropdown" role="button" tabindex="0">
                     <i class="icon fa fa-ellipsis-v fa-fw"></i>
                 </a>
                 <div class="dropdown-menu dropdown-menu-right">
@@ -86,3 +86,15 @@
             </div>
     </div>
 </div>
+{{#js}}
+require(['jquery'], function($) {
+    const settings = $('#commentsettings{{uniqid}}');
+    const settingsMenu = settings.find('.dropdown-menu');
+    settings.on('show.bs.dropdown', () => {
+        $('body').append(settingsMenu);
+    });
+    settings.on('hidden.bs.dropdown', () => {
+        settings.append(settingsMenu);
+    });
+});
+{{/js}}

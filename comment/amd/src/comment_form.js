@@ -207,6 +207,5 @@ export default class CommentForm extends Component {
             (e || window.event).returnValue = unsavedChangesString; // Gecko + IE.
             return unsavedChangesString; // Gecko + Webkit, Safari, Chrome etc.
         });
-
     }
 }

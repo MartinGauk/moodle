@@ -16,7 +16,7 @@
         &:before, &:after {
             content: "";
             position: absolute;
-            z-index: 1001;
+            z-index: 999;
             left: 0;
             pointer-events: none;
             width: 100%;
@@ -81,7 +81,7 @@
             margin: 1em 0 0 0;
         }
         .comment-reply-box {
-            margin: 1em 0 0 0;
+            margin: .5em 0 0 0;
         }
     }
 }
@@ -116,12 +116,16 @@
     .core_comment_comment_highlight {
         margin: 0 0 2em 0;
 
-        .core_comment_comment {
+        .highlighted-comment {
             margin: 1em 0 1em 0;
         }
 
         &.reply {
-            margin: 1em 0 0 0;
+            margin: 1em 0 1.5em 0;
+
+            .highlighted-comment {
+                margin: .5em 0 0 0;
+            }
         }
     }
 
@@ -154,11 +158,12 @@
 }
 
 .core_comment_comment_form {
-    &.update-existing {
-        margin-bottom: .5em;
-    }
-    .comment-form-controls input {
-        margin: 1em .5em 0 0;
+    .comment-form {
+        padding: .5em;
+
+        .comment-form-controls input {
+            margin: .75em .5em 0 0;
+        }
     }
 }
 

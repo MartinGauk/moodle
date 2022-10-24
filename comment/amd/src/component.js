@@ -35,6 +35,10 @@ export default class Component extends BaseComponent {
         }
         this.uniqid = null;
         this.children = {};
+        this.renderPromise = new Promise((resolve, reject) => {
+            this._resolveRenderPromise = resolve;
+            this._rejectRenderPromise = reject;
+        });
     }
 
     async getTemplate() {
@@ -102,7 +106,9 @@ export default class Component extends BaseComponent {
 
             await this.postRender(template, context);
             this.callback('postrender', [template, context, this.element]);
+            this._resolveRenderPromise();
         } catch (e) {
+            this._rejectRenderPromise(e);
             await Notification.exception(e);
         }
     }
