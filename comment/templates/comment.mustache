@@ -46,54 +46,72 @@
 }}
 <div class="core_comment_comment {{#pseudonym}}pseudonymous{{/pseudonym}}">
     {{#showitemlink}}
-        <div class="comment-item-link">
-            <div data-for="commentitemlink" data-commentid="{{id}}"></div>
-        </div>
+        {{$itemlink}}
+            <div class="comment-item-link">
+                <div data-for="commentitemlink" data-commentid="{{id}}"></div>
+            </div>
+        {{/itemlink}}
     {{/showitemlink}}
-    <div class="comment-row">
-        <div class="comment-avatar">
-            {{{avatar}}}
-        </div>
-        <div class="comment-container">
-            <div class="comment-header">
-                <div data-for="commentheader" data-commentid="{{id}}"></div>
-            </div>
-
-            <div class="comment-body">
-                {{#isediting}}
-                    <div data-for="commenteditform" data-commentid="{{id}}"></div>
-                {{/isediting}}
-                {{^isediting}}
-                    <div data-for="commentbody" data-commentid="{{id}}"></div>
-                {{/isediting}}
-            </div>
-
-            <div class="comment-footer">
-                {{#canreply}}
-                    <a href="#" data-for="showreplyform">{{# str }} reply, core_comment {{/ str }}</a>
-                {{/canreply}}
-                {{#replies}}
-                    <span class="comment-replies-control">
-                        {{^showreplies}}
-                            <a href="#" data-for="showreplies">▼ {{ replies }} {{# str }} nreplies, core_comment {{/ str }}</a>
-                        {{/showreplies}}
-                        {{#showreplies}}
-                            <a href="#" data-for="hidereplies">▲ {{ replies }} {{# str }} nreplies, core_comment {{/ str }}</a>
-                        {{/showreplies}}
-                    </span>
-                {{/replies}}
-            </div>
-
-            {{#showreplies}}
-                <div class="comment-replies-box">
-                    <div data-for="commentreplies" data-replytoid="{{id}}"></div>
+    {{$row}}
+        <div class="comment-row">
+            {{$avatar}}
+                <div class="comment-avatar">
+                    {{{avatar}}}
                 </div>
-            {{/showreplies}}
-            {{#showreplyform}}
-                <div class="comment-reply-box">
-                    <div data-for="commentreplyform" data-replytoid="{{id}}"></div>
+            {{/avatar}}
+            {{$container}}
+                <div class="comment-container">
+                    {{$header}}
+                        <div class="comment-header">
+                            <div data-for="commentheader" data-commentid="{{id}}"></div>
+                        </div>
+                    {{/header}}
+
+                    {{$body}}
+                        <div class="comment-body">
+                            {{#isediting}}
+                                <div data-for="commenteditform" data-commentid="{{id}}"></div>
+                            {{/isediting}}
+                            {{^isediting}}
+                                <div data-for="commentbody" data-commentid="{{id}}"></div>
+                            {{/isediting}}
+                        </div>
+                    {{/body}}
+
+                    {{$footer}}
+                        <div class="comment-footer">
+                            {{#canreply}}
+                                {{$replycontrol}}
+                                    <a href="#" class="comment-reply-control" data-for="showreplyform">{{# str }} reply, core_comment {{/ str }}</a>
+                                {{/replycontrol}}
+                            {{/canreply}}
+                            {{#replies}}
+                                {{$repliescontrol}}
+                                    <span class="comment-replies-control">
+                                        {{^showreplies}}
+                                            <a href="#" data-for="showreplies">▼ {{ replies }} {{# str }} nreplies, core_comment {{/ str }}</a>
+                                        {{/showreplies}}
+                                        {{#showreplies}}
+                                            <a href="#" data-for="hidereplies">▲ {{ replies }} {{# str }} nreplies, core_comment {{/ str }}</a>
+                                        {{/showreplies}}
+                                    </span>
+                                {{/repliescontrol}}
+                            {{/replies}}
+                        </div>
+                    {{/footer}}
+
+                    {{#showreplies}}
+                        <div class="comment-replies-box">
+                            <div data-for="commentreplies" data-replytoid="{{id}}"></div>
+                        </div>
+                    {{/showreplies}}
+                    {{#showreplyform}}
+                        <div class="comment-reply-box">
+                            <div data-for="commentreplyform" data-replytoid="{{id}}"></div>
+                        </div>
+                    {{/showreplyform}}
                 </div>
-            {{/showreplyform}}
+            {{/container}}
         </div>
-    </div>
+    {{/row}}
 </div>

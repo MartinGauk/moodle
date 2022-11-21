@@ -66,7 +66,7 @@ export const saveComment = async(comment) => {
                     replytoid: comment.replytoid != undefined ? comment.replytoid : undefined,
                     content: comment.content,
                     pseudonymous: comment.pseudonymous,
-                    customdata: comment.customdata || '',
+                    customdata: comment.customdata ? JSON.stringify(comment.customdata) : '',
                 }
             }},
     ])[0];

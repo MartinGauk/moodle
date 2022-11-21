@@ -84,7 +84,11 @@ export default class {
 
     _initSection(stateManager, loadedSection) {
         const state = stateManager.state;
-        const section = Object.assign({id: loadedSection.itemid}, loadedSection);
+        const section = Object.assign(
+            {id: loadedSection.itemid},
+            loadedSection,
+            {renderoptions: Object.fromEntries(loadedSection.renderoptions.map(entry => [entry.key, entry.value]))}
+        );
         state.sections.add(section);
         return section;
     }
@@ -101,7 +105,9 @@ export default class {
             showreplies: false,
             showreplyform: false,
             expanded: false
-        }, loadedComment);
+        }, loadedComment, {
+            customdata: loadedComment.customdata ? JSON.parse(loadedComment.customdata) : {}
+        });
         state.comments.add(comment);
 
         state.commentReplies.add({
@@ -236,6 +242,7 @@ export default class {
 
     async saveComment(stateManager, comment) {
         const savedComment = await api.saveComment(comment);
+        Object.assign(comment, savedComment);
 
         const state = stateManager.state;
         stateManager.setReadOnly(false);

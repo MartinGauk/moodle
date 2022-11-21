@@ -15,7 +15,7 @@
 /**
  * Comment module.
  *
- * @module     core_comment/comments
+ * @module     core_comment/comment
  * @copyright  2021 TU Berlin
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */

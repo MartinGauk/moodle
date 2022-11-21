@@ -36,15 +36,18 @@
     }
 }}
 <div class="core_comment_comment_body">
-    <div class="show-less" data-for="showless">
-        <div data-for="commentcontent" data-commentid="{{id}}">
+    {{$showless}}
+        <div class="show-less" data-for="showless">
+            {{$content}}
+                <div data-for="commentcontent" data-commentid="{{id}}"></div>
+            {{/content}}
+            <div data-for="showless-gradient" class="show-less-gradient"></div>
         </div>
-        <div data-for="showless-gradient" class="show-less-gradient"></div>
-    </div>
-    <a href="#" data-for="showless-expand">
-        {{#str}} showmore, core_comment {{/str}}
-    </a>
-    <a href="#" data-for="showless-collapse">
-        {{#str}} showless, core_comment {{/str}}
-    </a>
+        <a href="#" data-for="showless-expand">
+            {{#str}} showmore, core_comment {{/str}}
+        </a>
+        <a href="#" data-for="showless-collapse">
+            {{#str}} showless, core_comment {{/str}}
+        </a>
+    {{/showless}}
 </div>

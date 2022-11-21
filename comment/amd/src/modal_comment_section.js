@@ -15,7 +15,7 @@
 /**
  * Comment section modal.
  *
- * @module     core_comment/comments
+ * @module     core_comment/modal_comment_section
  * @copyright  2021 TU Berlin
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -55,11 +55,11 @@ define(['core_comment/comments', 'core_comment/events', 'core/modal', 'core/moda
             return this.options;
         };
 
-        ModalCommentSection.prototype.show = function() {
+        ModalCommentSection.prototype.show = async function() {
+            await Modal.prototype.show.call(this);
             const el = this.getBody().find('[data-for="commentsection"]')[0];
-            Comments.initCommentSection(el, this.getOptions()).catch((e) => Notification.exception(e));
             el.addEventListener(CommentEvents.eventTypes.formCanceled, () => this.hide());
-            Modal.prototype.show.call(this);
+            await Comments.initCommentSection(el, this.getOptions()).catch((e) => Notification.exception(e));
         };
 
         // Automatically register with the modal registry the first time this module is imported so that you can create modals

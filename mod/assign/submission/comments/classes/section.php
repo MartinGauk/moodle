@@ -168,7 +168,7 @@ class section extends \core_comment\section {
      * @param comment_search|null $search the search this comment
      * @return comment
      */
-    public function construct_comment_from_db(\stdClass $record, ?comment_search $search = null) : comment {
+    public function construct_comment_from_db(\stdClass $record, ?comment_search $search = null): comment {
         $comment = comment::construct_from_db($this, $record, $search);
 
         if ($this->isblindmarking) {

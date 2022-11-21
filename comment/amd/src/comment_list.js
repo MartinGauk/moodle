@@ -15,7 +15,7 @@
 /**
  * Comment list module.
  *
- * @module     core_comment/comments
+ * @module     core_comment/comment_list
  * @copyright  2021 TU Berlin
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -152,6 +152,7 @@ export default class CommentList extends Component {
 
     async addChildren() {
         await Promise.all(this.getComments().map(comment => {
+            // TODO apply renderOptions from correct section
             return this.addChild(`${this.selectors.COMMENT}[data-commentId='${comment.id}']`, 'comment');
         }));
         const highlightedComment = this.getHighlightedComment();

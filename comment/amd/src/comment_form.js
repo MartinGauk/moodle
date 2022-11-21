@@ -15,7 +15,7 @@
 /**
  * Comment form module.
  *
- * @module     core_comment/comments
+ * @module     core_comment/comment_form
  * @copyright  2021 TU Berlin
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
@@ -92,7 +92,7 @@ export default class CommentForm extends Component {
     getData() {
         const form = this.getElement(this.selectors.FORM);
         return {
-            content: form.content.value,
+            content: form.content ? form.content.value : '',
             pseudonymous: form.pseudonymous ? form.pseudonymous.checked : false,
             customdata: null
         };

@@ -51,21 +51,26 @@
 }}
 <div class="core_comment_comment_form {{#comment}}update-existing{{/comment}}{{^comment}}new-comment{{/comment}} {{#replyto}}reply{{/replyto}}">
     {{#canpost}}
+        {{$beforeform}}{{/beforeform}}
         <form class="mform comment-form">
+            {{$beforeformfields}}{{/beforeformfields}}
+            {{$beforepseudonym}}{{/beforepseudonym}}
             {{#allowpseudonym}}
                 <div class="form-check comment-pseudonymous-input">
                     <input id="pseudonymToggle{{uniqid}}" type="checkbox"
                            {{#comment.pseudonymous}}checked disabled{{/comment.pseudonymous}}
                            {{^comment}}{{^allowrealname}}checked disabled{{/allowrealname}}{{/comment}}
                            name="pseudonymous" class="form-check-input">
-                    <label for="pseudonymToggle{{uniqid}}"> {{# str }} hiderealname, core_comment {{/ str }}</label>
+                    <label for="pseudonymToggle{{uniqid}}">{{# str }} hiderealname, core_comment {{/ str }}</label>
                     <a class="btn btn-link {{#comment.pseudonymous}}disabled{{/comment.pseudonymous}} p-0" role="button"
-                        data-container="body" data-toggle="popover" data-html="true" tabindex="0" data-trigger="focus"
-                        data-content="{{#cleanstr}} hiderealnamehelp, core_comment, {{#str}} pseudonymous, core_comment {{/str}}{{/cleanstr}}">
+                       data-container="body" data-toggle="popover" data-html="true" tabindex="0" data-trigger="focus"
+                       data-content="{{#cleanstr}} hiderealnamehelp, core_comment, {{#str}} pseudonymous, core_comment {{/str}}{{/cleanstr}}">
                         {{#pix}}help, core, {{/pix}}
                     </a>
                 </div>
             {{/allowpseudonym}}
+            {{$afterpseudonym}}{{/afterpseudonym}}
+            {{$beforecontent}}{{/beforecontent}}
             <div class="comment-content-input">
                 <label for="contentInput{{uniqid}}" class="sr-only">{{# str }} content, core_comment {{/ str }}</label>
                 <div id="responsiveTextArea{{uniqid}}" class="responsive-textarea">
@@ -76,20 +81,29 @@
                     <div class="form-control"></div>
                 </div>
             </div>
+            {{$aftercontent}}{{/aftercontent}}
+            {{$afterformfields}}{{/afterformfields}}
+            {{$beforecontrols}}{{/beforecontrols}}
             <div class="comment-form-controls">
-                <input type="submit" class="btn btn-primary" value="{{!
+                {{$beforesubmitbutton}}{{/beforesubmitbutton}}
+                <input type="submit" class="btn btn-primary comment-form-control" value="{{!
                     }}{{#comment}}{{!
-                    }}{{^replyto}}{{# str }} updatecomment, core_comment {{/ str }}{{/replyto}}{{!
-                    }}{{#replyto}}{{# str }} updatereply, core_comment {{/ str }}{{/replyto}}{{!
+                        }}{{^replyto}}{{# str }} updatecomment, core_comment {{/ str }}{{/replyto}}{{!
+                        }}{{#replyto}}{{# str }} updatereply, core_comment {{/ str }}{{/replyto}}{{!
                     }}{{/comment}}{{^comment}}{{!
-                    }}{{^replyto}}{{# str }} postcomment, core_comment {{/ str }}{{/replyto}}{{!
-                    }}{{#replyto}}{{# str }} postreply, core_comment {{/ str }}{{/replyto}}{{!
+                        }}{{^replyto}}{{# str }} postcomment, core_comment {{/ str }}{{/replyto}}{{!
+                        }}{{#replyto}}{{# str }} postreply, core_comment {{/ str }}{{/replyto}}{{!
                     }}{{/comment}}">
+                {{$aftersubmitbutton}}{{/aftersubmitbutton}}
+                {{$beforecancelbutton}}{{/beforecancelbutton}}
                 {{#cancancel}}
-                    <input type="button" data-for="cancelcommentform" class="btn btn-secondary" value="{{# str }} cancel, core {{/ str }}">
+                    <input type="button" data-for="cancelcommentform" class="btn btn-secondary comment-form-control" value="{{# str }} cancel, core {{/ str }}">
                 {{/cancancel}}
+                {{$aftercancelbutton}}{{/aftercancelbutton}}
             </div>
+            {{$aftercontrols}}{{/aftercontrols}}
         </form>
+        {{$afterform}}{{/afterform}}
     {{/canpost}}
 </div>
 {{#js}}

@@ -40,7 +40,9 @@
     }
 }}
 <div class="core_comment_comment_header">
+    {{$beforeleft}}{{/beforeleft}}
     <span class="comment-header-left">
+        {{$beforeauthor}}{{/beforeauthor}}
         <span class="comment-author">
             {{#profileurl}}
                 <a href="{{profileurl}}">{{fullname}}</a>
@@ -49,7 +51,11 @@
                 <span class="text-danger">{{fullname}}</span>
             {{/profileurl}}
         </span>
+        {{$afterauthor}}{{/afterauthor}}
+        {{$beforetimecreated}}{{/beforetimecreated}}
         <span class="comment-timecreated">{{timecreatedtext}}</span>
+        {{$aftertimecreated}}{{/aftertimecreated}}
+        {{$beforemodified}}{{/beforemodified}}
         {{#wasmodified}}
             <span class="comment-modified">
                 <a class="btn btn-none p-0 text-muted" role="button" data-container="body" data-toggle="popover"
@@ -62,8 +68,12 @@
                 </a>
             </span>
         {{/wasmodified}}
+        {{$aftermodified}}{{/aftermodified}}
     </span>
+    {{$afterleft}}{{/afterleft}}
+    {{$beforeright}}{{/beforeright}}
     <div class="comment-header-right">
+        {{$beforesettings}}{{/beforesettings}}
         <div id="commentsettings{{uniqid}}" class="comment-settings btn-group dropdown">
                 <a class="action-icon clickable text-muted" data-toggle="dropdown" role="button" tabindex="0">
                     <i class="icon fa fa-ellipsis-v fa-fw"></i>
@@ -84,7 +94,9 @@
                     </a>
                 </div>
             </div>
+        {{$aftersettings}}{{/aftersettings}}
     </div>
+    {{$afterright}}{{/afterright}}
 </div>
 {{#js}}
 require(['jquery'], function($) {

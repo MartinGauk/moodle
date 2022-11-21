@@ -46,6 +46,7 @@ export default class extends Reactive {
                 comments: [],
                 commentList: {
                     comments: [],
+                    startatbottom: options.startAtBottom,
                     sortdirection: options.sortDirection,
                     pagesize: options.pageSize,
                     moreavailableabove: false,
@@ -134,16 +135,16 @@ export default class extends Reactive {
         ]);
 
         if (this.options.startAtBottom != undefined) {
-            this.target.dataset.startatbottom = this.options.startAtBottom;
+            this.target.dataset.startatbottom = !!this.options.startAtBottom;
         }
         if (this.options.fillHeight != undefined) {
-            this.target.dataset.fillheight = this.options.fillHeight;
+            this.target.dataset.fillheight = !!this.options.fillHeight;
         }
         if (this.options.maxListHeight != undefined) {
             this.target.dataset.maxlistheight = this.options.maxListHeight;
         }
         if (this.options.compact != undefined) {
-            this.target.dataset.compact = this.options.compact;
+            this.target.dataset.compact = !!this.options.compact;
         }
 
         this.commentSection = new this.renderOptions.commentsectionclass({
