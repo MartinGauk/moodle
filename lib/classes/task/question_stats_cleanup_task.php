@@ -51,15 +51,14 @@ class question_stats_cleanup_task extends scheduled_task {
         mtrace("\n  Cleaning up old question statistics cache records...", '');
 
         $expiretime = time() - 5 * HOURSECS;
-        $DB->delete_records_select('question_statistics', 'timemodified < ?', [$expiretime]);
-        $responseanlysisids = $DB->get_records_select_menu('question_response_analysis',
-            'timemodified < ?',
-            [$expiretime],
-            'id',
-            'id, id AS id2');
-        $DB->delete_records_list('question_response_analysis', 'id', $responseanlysisids);
-        $DB->delete_records_list('question_response_count', 'analysisid', $responseanlysisids);
+        $transaction = $DB->start_delegated_transaction();
 
+        $DB->delete_records_select('question_statistics', 'timemodified < ?', [$expiretime]);
+        $DB->delete_records_subquery('question_response_count', 'analysisid', 'id',
+                'SELECT id FROM {question_response_analysis} WHERE timemodified < ?', [$expiretime]);
+        $DB->delete_records_select('question_response_analysis', 'timemodified < ?', [$expiretime]);
+
+        $transaction->allow_commit();
         mtrace('done.');
     }
 }
